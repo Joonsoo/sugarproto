@@ -387,7 +387,7 @@ class ProtoDefGenerator(val ast: SugarProtoAst.CompilationUnit) {
     }
     val imports = requiredImports + ast.imports.map { it.toValue() }
     imports.forEach { import ->
-      builder.append("import \"$import\"\n")
+      builder.append("import \"$import\";\n")
     }
     if (imports.isNotEmpty()) {
       builder.append("\n")
