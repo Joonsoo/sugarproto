@@ -152,6 +152,7 @@ class ProtoDefGenerator(val ast: SugarProtoAst.CompilationUnit) {
       is SugarProtoAst.OptionalType -> {
         val elemType = traverseTypeNoStream(type.elemType, namingContext, localNames)
         check(!elemType.optional) { "Optional of optional type is not supported" }
+        check(!elemType.repeated) { "Optional of repeated type is not supported" }
         check(elemType.kind != FieldKindEnum.MapKind) { "Optional of map is not supported" }
         ProtoFieldType(elemType.kind, true, elemType.repeated, elemType.type)
       }

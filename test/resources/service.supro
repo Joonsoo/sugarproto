@@ -70,3 +70,25 @@ sealed Ast {
 
   }
 }
+
+message MyMessage {
+  1 rep: repeated<string>
+  2 opt: optional<string>
+}
+
+message MyMessage {
+  1 reprep: repeated<{1 rep: repeated<string>}>
+  2 optrep: optional<{1 rep: repeated<string>}>
+}
+
+service MyService {
+  rpc listenEvents: {1 target: string} -> stream<sealed {
+    1 opened: {1 name: string}
+    2 closed: {1 name: string}
+    3 shutdown: {}
+  }>
+}
+
+service MyService {
+  rpc helloWorld: HelloWorldReq -> HelloWorldRes
+}
