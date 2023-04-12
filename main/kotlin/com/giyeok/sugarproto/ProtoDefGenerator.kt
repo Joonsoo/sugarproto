@@ -24,7 +24,7 @@ class ProtoDefGenerator(val ast: SugarProtoAst.CompilationUnit) {
 
   fun createMessageName(namingContext: NamingContext): String =
     namingContext.names.flatMap { it.split('_') }
-      .joinToString("") { it[0].uppercase() + it.substring(1) }
+      .joinToString("") { it.replaceFirstChar { it.uppercase() } }
 
   fun convertMessageDef(
     name: String,
@@ -404,7 +404,7 @@ class ProtoDefGenerator(val ast: SugarProtoAst.CompilationUnit) {
           def.rpcs.forEach { rpc ->
             val inType = if (rpc.isInTypeStream) "stream ${rpc.inType}" else rpc.inType
             val outType = if (rpc.isOutTypeStream) "stream ${rpc.outType}" else rpc.outType
-            builder.append("  rpc ${rpc.name}($inType) returns ($outType);\n")
+            builder.append("  rpc ${rpc.name.replaceFirstChar { it.uppercase() }}($inType) returns ($outType);\n")
           }
           builder.append("}\n")
         }

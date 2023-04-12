@@ -6,7 +6,7 @@ import "dao.proto"
 option java_outer_classname = "ServiceProto"
 
 service Datclub3 {
-  rpc helloWorld: HelloWorldReq {1 message: string} -> {1 echo: string}
+  rpc helloWorld: HelloWorldReq {1 message: string} -> HelloWorldRes
 
   rpc signInByFirebaseAuth: {
     1 firebase_id_token: string
@@ -43,6 +43,10 @@ service Datclub3 {
   rpc verifyUserIdentity: Req -> Res where
     Req = VerifyUserIdentityReq {1 message: string},
     Res = {1 echo: string}
+}
+
+message HelloWorldRes {
+  1 echo: string
 }
 
 sealed Ast {
