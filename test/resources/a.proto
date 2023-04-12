@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+message Ast {
+  oneof ast {
+    AstBinOp bin_op = 1;
+  }
+}
+
+message AstBinOp {
+  string op = 1;
+  Ast lhs = 2;
+  Ast rhs = 3;
+}

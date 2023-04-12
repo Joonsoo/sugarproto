@@ -1,0 +1,122 @@
+CompilationUnit = (WS PackageDef)? (WS ImportDef)* (WS OptionDef)* (WS TopLevelDef)* WS
+                  {CompilationUnit(pkgDef=$0, imports=$1, options=$2, defs=$3)}
+
+PackageDef = "package"&Tk WS FullIdent
+ImportDef = "import"&Tk WS StringLiteral
+
+OptionDef = "option"&Tk WS OptionName WS '=' WS Constant {OptionDef(name=$2, value=$6)}
+OptionName = (Ident {FullIdent([$0])} | '(' WS FullIdent WS ')' $2) (WS '.' WS Ident)*
+             {OptionName(name=$0, trailings=$1)}
+
+Constant: Constant = Ident-("true" | "false") {FullIdent(names=[$0])}
+  | Ident (WS '.' WS Ident)+ {FullIdent(names=[$0] + $1)}
+  | ('+' | '-') WS IntLiteral
+  | ('+' | '-') WS FloatLiteral
+  | StringLiteral
+  | BoolLiteral
+
+TopLevelDef: TopLevelDef = ServiceDef | MessageDef | SealedDef
+
+ServiceDef = "service"&Tk WS Ident WS '{' (WS RpcDef)* WS '}' {ServiceDef(name=$2, rpcs=$5)}
+RpcDef = "rpc"&Tk WS Ident WS ':' WS Type WS "->" WS Type (WS "where"&Tk WS RpcTypeWheres)?
+         {RpcDef(name=$2, inType=$6, outType=$10, wheres=$11)}
+RpcTypeWheres = RpcTypeWhere (WS ',' WS RpcTypeWhere)* {RpcTypeWheres(wheres=[$0] + $1)}
+RpcTypeWhere = Ident WS '=' WS Type {RpcTypeWhere(name=$0, typ=$4)}
+
+Type: Type = PrimitiveType&Tk {PrimitiveType(typ=$0)}
+  | RepeatedType
+  | OptionalType
+  | MapType
+  | StreamType
+  | OnTheFlyMessageType
+  | OnTheFlySealedMessageType
+  | TypeName
+
+PrimitiveType: %PrimitiveTypeEnum = 
+    "double" {%DOUBLE} | "float" {%FLOAT} | "int32" {%INT32} | "int64" {%INT64}
+  | "uint32" {%UINT32} | "uint64" {%UINT64} | "sint32" {%SINT32} | "sint64" {%SINT64}
+  | "fixed32" {%FIXED32} | "fixed64" {%FIXED64} | "sfixed32" {%SFIXED32} | "sfixed64" {%SFIXED64}
+  | "bool" {%BOOL} | "string" {%STRING} | "bytes" {%BYTES}
+
+RepeatedType = "repeated"&Tk WS '<' WS Type WS '>' {RepeatedType(elemType=$4)}
+OptionalType = "optional"&Tk WS '<' WS Type WS '>' {OptionalType(elemType=$4)}
+MapType = "map"&Tk WS '<' WS Type WS ',' WS Type WS '>' {MapType(keyType=$4, valueType=$8)}
+StreamType = "stream"&Tk WS '<' WS Type WS '>' {StreamType(elemType=$4)}
+
+OnTheFlyMessageType = (IdentNoSealed WS)? '{' (WS MessageMemberDef)* WS '}'
+                      {OnTheFlyMessageType(name=$0$0, fields=$2)}
+OnTheFlySealedMessageType = "sealed"&Tk (WS IdentNoSealed)? WS '{' (WS SealedMemberDef)* WS '}'
+                            {OnTheFlySealedMessageType(name=$1, fields=$4)}
+
+TypeName: TypeName = IdentName-TypeNameKeyword {SingleName(name=$0)}
+  | '`' IdentName '`' {SingleName(name=$1)}
+  | Ident (WS '.' WS Ident)+ {MultiName(names=[$0] + $1)}
+TypeNameKeyword = "double" | "float" | "int32" | "int64"
+  | "uint32" | "uint64" | "sint32" | "sint64"
+  | "fixed32" | "fixed64" | "sfixed32" | "sfixed64"
+  | "bool" | "string" | "bytes"
+
+
+MessageDef = "message"&Tk WS Ident WS '{' (WS MessageMemberDef)* WS '}' {MessageDef(name=$2, members=$5)}
+
+MessageMemberDef: MessageMemberDef = FieldDef | OneOfDef | MessageDef
+FieldDef = IntLiteral WS Ident WS ':' WS Type (WS FieldOptions)? {FieldDef(tag=$0, name=$2, typ=$6, options=$7)}
+FieldOptions = '[' (WS FieldOption (WS ',' WS FieldOption)*)? WS ']' {FieldOptions(options=$1{[$1] + $2} ?: [])}
+FieldOption = OptionName WS '=' WS Constant {FieldOption(name=$0, value=$4)}
+
+OneOfDef = "oneof"&Tk WS Ident WS '{' (WS OneOfMemberDef)* WS '}' {OneOfDef(name=$2, members=$5)}
+OneOfMemberDef: OneOfMemberDef = OptionDef | FieldDef
+
+SealedDef = "sealed"&Tk WS Ident WS '{' (WS SealedMemberDef)* WS '}' {SealedDef(name=$2, members=$5)}
+SealedMemberDef: SealedMemberDef = FieldDef
+
+
+Letter = 'a-zA-Z'
+DecimalDigit = '0-9'
+Ident = IdentName {Ident(name=str($0))}
+  | '`' IdentName '`' {Ident(name=str($1))}
+IdentNoSealed = IdentName-("sealed") {Ident(name=str($0))}
+  | '`' IdentName '`'  {Ident(name=str($1))}
+IdentName = <Letter (Letter | DecimalDigit | '_')* {str($0, $1)}>
+FullIdent = Ident (WS '.' WS Ident)* {FullIdent(names=[$0] + $1)}
+
+
+BoolLiteral = ("true" {%TRUE} | "false" {%FALSE})&Tk {BoolLiteral(value: %BoolValueEnum=$0)}
+
+IntLiteral: IntLiteral = <"0" {ZeroIntLiteral()} | DecimalLiteral | OctalLiteral | HexLiteral>
+DecimalLiteral: DecimalLiteral = '1-9' '0-9'* {DecimalLiteral(value=str($0, $1))}
+OctalLiteral: OctalLiteral = '0' '0-7'+ {OctalLiteral(value=str($1))}
+HexLiteral: HexLiteral = '0' 'xX' HexDigit+ {HexLiteral(value=str($2))}
+HexDigit = '0-9a-fA-F'
+
+FloatLiteral: AbstractFloatLiteral = Decimals '.' Decimals? Exponent? {FloatLiteral(intPart=$0, fracPart=$2, exp=$3)}
+  | Decimals Exponent {FloatLiteral(intPart=$0, fracPart=null, exp=$1)}
+  | '.' Decimals Exponent? {FloatLiteral(intPart=null, fracPart=$1, exp=$2)}
+  | "inf"&Tk {Inf()}
+  | "nan"&Tk {Nan()}
+Decimals = DecimalDigit+ {str($0)}
+Exponent = 'eE' '+\-'? Decimals {Exponent(sign=$1, exp=$2)}
+
+StringLiteral = StringLiteralSingle (WS StringLiteralSingle)* {StringLiteral(singles=[$0] + $1)}
+StringLiteralSingle = '\'' CharValue* '\'' {StringLiteralSingle(value=$1)}
+  |  '"' CharValue* '"' {StringLiteralSingle(value=$1)}
+CharValue: CharValue = PlainChar | HexEscape | OctEscape | CharEscape | UnicodeEscape | UnicodeLongEscape
+PlainChar = .-'\\\'"' {PlainChar(value=$0)}
+HexEscape = '\\' 'xX' HexDigit+ {HexEscape(value=str($2))}
+OctEscape = '\\' '0-7' ('0-7' '0-7'?)? {OctEscape(code=str($1, $2))}
+CharEscape = '\\' 'abfnrtv\\\'"' {CharEscape(code=$1)}
+UnicodeEscape = '\\' 'u' HexDigit HexDigit HexDigit HexDigit {UnicodeEscape(value=str($2, $3, $4, $5))}
+UnicodeLongEscape: UnicodeLongEscape = '\\' 'u' (
+    "000" HexDigit HexDigit HexDigit HexDigit HexDigit
+    {UnicodeLongEscape(code="000" + str($1, $2, $3, $4, $5))}
+  | "0010" HexDigit HexDigit HexDigit HexDigit
+    {UnicodeLongEscape(code="0010" + str($1, $2, $3, $4))}
+)
+
+
+Tk = <'a-zA-Z0-9_'+>
+WS = (' \n\r\t' | Comment)*
+Comment = LineComment | BlockComment
+LineComment = "//" (.-'\n')* (EOF | '\n')
+BlockComment = "/*" (. !"*/")* . "*/" | "/**/"
+EOF = !.

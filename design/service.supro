@@ -1,0 +1,50 @@
+package com.giyeok.datclub3.api
+
+import "google/protobuf/empty.proto"
+import "google/protobuf/timestamp.proto"
+import "dao.proto"
+
+option java_outer_classname = "ServiceProto"
+
+service Datclub3 {
+  rpc helloWorld: {1 message: string} -> {1 echo: string}
+
+  rpc signInByFirebaseAuth: {
+    1 firebase_id_token: string
+  } -> {
+    1 auth_token: string
+    2 refresh_token: string
+    3 refresh_token_expire_time: google.protobuf.Timestamp
+    4 private_user_data: com.giyeok.datclub3.proto.UserData
+    4 is_new_user: bool
+  }
+
+  rpc renewAuthToken: {
+    1 auth_token: string
+    2 refresh_token: string
+  } -> {
+    1 auth_token: string
+    2 refresh_token_expire_time: google.protobuf.Timestamp
+    3 private_user_data: com.giyeok.datclub3.proto.UserData
+  }
+
+  rpc renewRefreshToken: {
+    1 auth_token: string
+    2 refresh_token: string
+  } -> {
+    1 refresh_token: string
+    2 refresh_token_expire_time: google.protobuf.Timestamp
+  }
+
+  rpc signOut: {
+    1 auth_token: string
+    2 refresh_token: string
+  } -> {}
+
+  rpc verifyUserIdentity: {
+    1 auth_token: string
+  } -> {
+    1 hello: string
+  }
+}
+

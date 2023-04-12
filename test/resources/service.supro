@@ -1,0 +1,68 @@
+package com.giyeok.datclub3.api
+
+import "google/protobuf/timestamp.proto"
+import "dao.proto"
+
+option java_outer_classname = "ServiceProto"
+
+service Datclub3 {
+  rpc helloWorld: HelloWorldReq {1 message: string} -> {1 echo: string}
+
+  rpc signInByFirebaseAuth: {
+    1 firebase_id_token: string
+  } -> {
+    1 auth_token: string [packed=true]
+    2 refresh_token: string
+    3 refresh_token_expire_time: google.protobuf.Timestamp
+    4 private_user_data: com.giyeok.datclub3.proto.UserData
+    4 is_new_user: bool
+  }
+
+  rpc renewAuthToken: {
+    1 auth_token: string
+    2 refresh_token: string
+  } -> {
+    1 auth_token: string
+    2 refresh_token_expire_time: google.protobuf.Timestamp
+    3 private_user_data: com.giyeok.datclub3.proto.UserData
+  }
+
+  rpc renewRefreshToken: {
+    1 auth_token: string
+    2 refresh_token: string
+  } -> {
+    1 refresh_token: string
+    2 refresh_token_expire_time: google.protobuf.Timestamp
+  }
+
+  rpc signOut: {
+    1 auth_token: string
+    2 refresh_token: string
+  } -> {}
+
+  rpc verifyUserIdentity: Req -> Res where
+    Req = VerifyUserIdentityReq {1 message: string},
+    Res = {1 echo: string}
+}
+
+sealed Ast {
+  // on-the-fly 메시지 타입 정의. 이름은 { 앞에 써서 강제로 지정할 수도 있고, 안하면 알아서 적당히 생성(e.g. AstBinOp)
+  1 bin_op: {
+    1 op: string
+    2 lhs: Ast
+    3 rhs: Ast
+  }
+  2 un_op: {
+    1 op: string
+    2 operand: Ast
+  }
+  3 literal: sealed {
+    1 string_literal: string
+    2 int_literal: string
+    3 float_literal: string
+  }
+  // backtick을 쓰면 키워드도 이름으로 사용 가능
+  4 sealed: `sealed` {
+
+  }
+}
