@@ -305,7 +305,9 @@ class ProtoDefGenerator(val ast: SugarProtoAst.CompilationUnit) {
     is SugarProtoAst.HexLiteral -> TODO()
     is SugarProtoAst.OctalLiteral -> TODO()
     is SugarProtoAst.ZeroIntLiteral -> TODO()
-    is SugarProtoAst.StringLiteral -> TODO()
+    is SugarProtoAst.StringLiteral ->
+      // TODO escape
+      "\"${this.toValue()}\""
   }
 
   fun generateFieldDef(
@@ -386,11 +388,24 @@ class ProtoDefGenerator(val ast: SugarProtoAst.CompilationUnit) {
     if (ast.pkgDef != null) {
       builder.append("package ${ast.pkgDef!!.names.joinToString(".") { it.name }};\n\n")
     }
+
     val imports = requiredImports + ast.imports.map { it.toValue() }
     imports.forEach { import ->
+      // TODO escape
       builder.append("import \"$import\";\n")
     }
     if (imports.isNotEmpty()) {
+      builder.append("\n")
+    }
+
+    ast.options.forEach { option ->
+      builder.append("option ")
+      builder.append(option.name.toProtoString())
+      builder.append(" = ")
+      builder.append(option.value.toProtoString())
+      builder.append(";\n")
+    }
+    if (ast.options.isNotEmpty()) {
       builder.append("\n")
     }
 
