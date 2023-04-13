@@ -1,0 +1,5 @@
+
+enum Hello {
+  -1 world
+  2 best
+}

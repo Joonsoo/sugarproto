@@ -15,11 +15,12 @@ Constant: Constant = Ident-("true" | "false") {FullIdent(names=[$0])}
   | StringLiteral
   | BoolLiteral
 
-TopLevelDef: TopLevelDef = ServiceDef | MessageDef | SealedDef
+TopLevelDef: TopLevelDef = ServiceDef | MessageDef | SealedDef | EnumDef
 
-ServiceDef = "service"&Tk WS Ident WS '{' (WS RpcDef)* WS '}' {ServiceDef(name=$2, rpcs=$5)}
-RpcDef = "rpc"&Tk WS Ident WS ':' WS Type WS "->" WS Type (WS "where"&Tk WS RpcTypeWheres)?
-         {RpcDef(name=$2, inType=$6, outType=$10, wheres=$11)}
+ServiceDef = "service"&Tk WS Ident WS '{' (WS ServiceMember)* WS '}' {ServiceDef(name=$2, members=$5)}
+ServiceMember: ServiceMember = RpcDef | OptionDef
+RpcDef = "rpc"&Tk WS Ident WS ':' WS Type WS "->" WS Type (WS "where"&Tk WS RpcTypeWheres)? (WS FieldOptions)?
+         {RpcDef(name=$2, inType=$6, outType=$10, wheres=$11, options=$12)}
 RpcTypeWheres = RpcTypeWhere (WS ',' WS RpcTypeWhere)* {RpcTypeWheres(wheres=[$0] + $1)}
 RpcTypeWhere = Ident WS '=' WS Type {RpcTypeWhere(name=$0, typ=$4)}
 
@@ -30,6 +31,7 @@ Type: Type = PrimitiveType&Tk {PrimitiveType(typ=$0)}
   | StreamType
   | OnTheFlyMessageType
   | OnTheFlySealedMessageType
+  | OnTheFlyEnumType
   | TypeName
 
 PrimitiveType: %PrimitiveTypeEnum = 
@@ -43,10 +45,12 @@ OptionalType = "optional"&Tk WS '<' WS Type WS '>' {OptionalType(elemType=$4)}
 MapType = "map"&Tk WS '<' WS Type WS ',' WS Type WS '>' {MapType(keyType=$4, valueType=$8)}
 StreamType = "stream"&Tk WS '<' WS Type WS '>' {StreamType(elemType=$4)}
 
-OnTheFlyMessageType = (IdentNoSealed WS)? '{' (WS MessageMemberDef)* WS '}'
-                      {OnTheFlyMessageType(name=$0$0, fields=$2)}
+OnTheFlyMessageType = (IdentNoSealedEnum WS)? '{' (WS MessageMembers)? WS '}'
+                      {OnTheFlyMessageType(name=$0$0, fields=$2 ?: [])}
 OnTheFlySealedMessageType = "sealed"&Tk (WS IdentNoSealed)? WS '{' (WS SealedMemberDef)* WS '}'
                             {OnTheFlySealedMessageType(name=$1, fields=$4)}
+OnTheFlyEnumType = "enum"&Tk (WS IdentNoEnum)? WS '{' (WS EnumMembers)? WS '}'
+                   {OnTheFlyEnumType(name=$1, fields=$4 ?: [])}
 
 TypeName: TypeName = IdentName-TypeNameKeyword {SingleName(name=$0)}
   | '`' IdentName '`' {SingleName(name=$1)}
@@ -57,9 +61,10 @@ TypeNameKeyword = "double" | "float" | "int32" | "int64"
   | "bool" | "string" | "bytes"
 
 
-MessageDef = "message"&Tk WS Ident WS '{' (WS MessageMemberDef)* WS '}' {MessageDef(name=$2, members=$5)}
+MessageDef = "message"&Tk WS Ident WS '{' (WS MessageMembers)? WS '}' {MessageDef(name=$2, members=$5 ?: [])}
+MessageMembers = MessageMemberDef ((WS ',' WS | WSNL) MessageMemberDef)* {[$0] + $1}
 
-MessageMemberDef: MessageMemberDef = FieldDef | OneOfDef | MessageDef
+MessageMemberDef: MessageMemberDef = FieldDef | EnumDef | MessageDef | OptionDef | OneOfDef | ReservedDef
 FieldDef = IntLiteral WS Ident WS ':' WS Type (WS FieldOptions)? {FieldDef(tag=$0, name=$2, typ=$6, options=$7)}
 FieldOptions = '[' (WS FieldOption (WS ',' WS FieldOption)*)? WS ']' {FieldOptions(options=$1{[$1] + $2} ?: [])}
 FieldOption = OptionName WS '=' WS Constant {FieldOption(name=$0, value=$4)}
@@ -67,15 +72,31 @@ FieldOption = OptionName WS '=' WS Constant {FieldOption(name=$0, value=$4)}
 OneOfDef = "oneof"&Tk WS Ident WS '{' (WS OneOfMemberDef)* WS '}' {OneOfDef(name=$2, members=$5)}
 OneOfMemberDef: OneOfMemberDef = OptionDef | FieldDef
 
+ReservedDef = "reserved"&Tk WS '(' WS ReservedItem (WS ',' WS ReservedItem)* (WS ',')? WS ')'
+              {ReservedDef(ranges=[$4] + $5)}
+ReservedItem: ReservedItem = ReservedRange | Ident
+ReservedRange = IntLiteral (WS ".." WS ReservedRangeEnd)?
+                {ReservedRange(reservedStart=$0, reservedEnd=$1)}
+ReservedRangeEnd: ReservedRangeEnd = IntLiteral | "max"&Tk {Max()}
+
 SealedDef = "sealed"&Tk WS Ident WS '{' (WS SealedMemberDef)* WS '}' {SealedDef(name=$2, members=$5)}
 SealedMemberDef: SealedMemberDef = FieldDef
 
+EnumDef = "enum"&Tk WS Ident WS '{' (WS EnumMembers)? WS '}' {EnumDef(name=$2, members=$5 ?: [])}
+EnumMembers = EnumMemberDef ((WS ',' WS | WSNL) EnumMemberDef)* {[$0] + $1}
+EnumMemberDef: EnumMemberDef = OptionDef | EnumFieldDef
+EnumFieldDef = ('-' WS)? IntLiteral WS Ident (WS FieldOptions)?
+               {EnumFieldDef(minusTag=ispresent($0$0), tag=$1, name=$3, options=$4)}
 
 Letter = 'a-zA-Z'
 DecimalDigit = '0-9'
 Ident = IdentName {Ident(name=str($0))}
   | '`' IdentName '`' {Ident(name=str($1))}
+IdentNoSealedEnum = IdentName-("sealed" | "enum") {Ident(name=str($0))}
+  | '`' IdentName '`'  {Ident(name=str($1))}
 IdentNoSealed = IdentName-("sealed") {Ident(name=str($0))}
+  | '`' IdentName '`'  {Ident(name=str($1))}
+IdentNoEnum = IdentName-("enum") {Ident(name=str($0))}
   | '`' IdentName '`'  {Ident(name=str($1))}
 IdentName = <Letter (Letter | DecimalDigit | '_')* {str($0, $1)}>
 FullIdent = Ident (WS '.' WS Ident)* {FullIdent(names=[$0] + $1)}
@@ -116,6 +137,8 @@ UnicodeLongEscape: UnicodeLongEscape = '\\' 'u' (
 
 Tk = <'a-zA-Z0-9_'+>
 WS = (' \n\r\t' | Comment)*
+// TODO WSNL은 줄 바꿈 문자가 최소 하나는 포함된 WS. BlockComment 처리 추가
+WSNL = ' \r\t'* ('\n' | LineComment) WS
 Comment = LineComment | BlockComment
 LineComment = "//" (.-'\n')* (EOF | '\n')
 BlockComment = "/*" (. !"*/")* . "*/" | "/**/"

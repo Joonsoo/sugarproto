@@ -82,7 +82,7 @@ message MyMessage {
 }
 
 service MyService {
-  rpc listenEvents: {1 target: string} -> stream<sealed {
+  rpc listenEvents: stream<{1 target: string}> -> stream<sealed {
     1 opened: {1 name: string}
     2 closed: {1 name: string}
     3 shutdown: {}
@@ -91,4 +91,39 @@ service MyService {
 
 service MyService {
   rpc helloWorld: HelloWorldReq -> HelloWorldRes
+}
+
+message Message1 {
+  1 my_map: map<string, {1 on_the_fly: string}>
+}
+
+message ParentMessage {
+  option msgOption = "true?"
+
+  message NestedMessage {
+    option msgOption = "true?"
+    1 good: string
+  }
+
+  enum MyEnum {
+    option hello = true
+    1 HELLO [good = "hello", bad = "bye"]
+    2 GOOD
+  }
+}
+
+enum MyEnum {
+  -1 HELLO
+  -2 GOOD
+}
+
+service EnumService {
+  rpc hello: {
+    1 question: string
+    2 question_type: enum {0 NORMAL, 1 SEARCH}
+  } -> {1 answer: string}
+}
+
+message Reserved {
+  reserved(2, 5, hello, 9..12, 15..max)
 }
