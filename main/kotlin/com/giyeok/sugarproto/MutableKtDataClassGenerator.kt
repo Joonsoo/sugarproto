@@ -27,9 +27,28 @@ class MutableKtDataClassGenerator(
     }
   }
 
+  fun TypeExpr.isInt() =
+    (this is TypeExpr.PrimitiveType) && (this.typ == SugarProtoAst.PrimitiveTypeEnum.INT32)
+
   fun kotlinTypeOf(typ: TypeExpr): String = when (typ) {
     TypeExpr.EmptyMessage -> "Empty"
-    is TypeExpr.MapType -> "MutableMap<${kotlinTypeOf(typ.keyType)}, ${kotlinTypeOf(typ.valueType)}>"
+    is TypeExpr.MapType -> {
+      if (gdxMode) {
+        // TODO 타입 추가
+        if (typ.keyType.isInt()) {
+          if (typ.valueType.isInt()) {
+            "IntIntMap"
+          } else {
+            "IntMap<${kotlinTypeOf(typ.valueType)}>"
+          }
+        } else {
+          "ObjectMap<${kotlinTypeOf(typ.keyType)}, ${kotlinTypeOf(typ.valueType)}>"
+        }
+      } else {
+        "MutableMap<${kotlinTypeOf(typ.keyType)}, ${kotlinTypeOf(typ.valueType)}>"
+      }
+    }
+
     is TypeExpr.MessageOrEnumName -> typ.name
     is TypeExpr.PrimitiveType -> when (typ.typ) {
       SugarProtoAst.PrimitiveTypeEnum.BOOL -> "Boolean"
@@ -53,7 +72,12 @@ class MutableKtDataClassGenerator(
   fun generateFieldType(builder: StringBuilder, fieldType: ProtoFieldType) {
     if (fieldType.repeated) {
       if (gdxMode) {
-        builder.append("GdxArray<")
+        // TODO libgdx의 BooleanArray, LongArray 등 추가
+        if (fieldType.type.isInt()) {
+          builder.append("IntArray")
+        } else {
+          builder.append("GdxArray<")
+        }
       } else {
         builder.append("MutableList<")
       }
@@ -216,7 +240,7 @@ class MutableKtDataClassGenerator(
                   TypeExpr.EmptyMessage -> TODO()
                   is TypeExpr.MapType -> {
                     // TODO Gdx의 IntMap 등 활용
-                    TODO()
+                    "???"
                   }
                 }
                 if (member.type.optional) {
