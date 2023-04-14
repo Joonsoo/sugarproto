@@ -528,13 +528,13 @@ class ProtoDefGenerator(val ast: SugarProtoAst.CompilationUnit) {
         }
 
         is ProtoMessageMember.ProtoMessageOptionDef -> {
-          generateComments(builder, member.comments, indent)
+          generateComments(builder, member.comments, "$indent  ")
           builder.append(indent)
           generateOption(builder, member.optionDef, "$indent  ")
         }
 
         is ProtoMessageMember.ProtoReservedDef -> {
-          generateComments(builder, member.comments, indent)
+          generateComments(builder, member.comments, "$indent  ")
           builder.append(indent)
           builder.append("  reserved ")
           val reserves = member.reserved.map { reserve ->
