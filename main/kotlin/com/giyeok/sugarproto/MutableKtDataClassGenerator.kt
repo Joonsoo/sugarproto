@@ -52,7 +52,11 @@ class MutableKtDataClassGenerator(
 
   fun generateFieldType(builder: StringBuilder, fieldType: ProtoFieldType) {
     if (fieldType.repeated) {
-      builder.append("MutableList<")
+      if (gdxMode) {
+        builder.append("GdxArray<")
+      } else {
+        builder.append("MutableList<")
+      }
     }
     builder.append(kotlinTypeOf(fieldType.type))
     if (fieldType.repeated) {
@@ -178,7 +182,7 @@ class MutableKtDataClassGenerator(
                       if (gdxMode) {
                         postProcessors.add(
                           listOf(
-                            "proto.${memberName}.forEach { elem ->",
+                            "proto.${memberName}List.forEach { elem ->",
                             "  instance.$memberName.add(elem)",
                             "}",
                           )
