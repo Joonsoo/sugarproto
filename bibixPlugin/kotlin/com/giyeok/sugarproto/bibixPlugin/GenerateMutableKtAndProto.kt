@@ -17,6 +17,11 @@ class GenerateMutableKtAndProto {
       (context.arguments.getValue("protoOuterClassName") as StringValue).value
     val packageName = (context.arguments.getValue("packageName") as StringValue).value
     val kotlinFileName = (context.arguments.getValue("kotlinFileName") as StringValue).value
+    val imports =
+      (context.arguments.getValue("imports").nullOr<ListValue>())?.values?.map { value ->
+        (value as StringValue).value
+      }
+    val gdxMode = (context.arguments.getValue("gdxMode") as BooleanValue).value
 
     val parsed = SugarProtoParser.parse(source.readText())
     val traverseResult = DefTraverser(parsed).traverse()
@@ -32,12 +37,18 @@ class GenerateMutableKtAndProto {
     ).generate()
     protoDest.writeText(protoDef)
 
+    val ktImports = (imports?.toMutableSet() ?: mutableSetOf())
+    if (gdxMode) {
+      ktImports.add("com.badlogic.gdx.utils.Array as GdxArray")
+    }
     val mutableKt = MutableKtDataClassGenerator(
       packageName,
       traverseResult.imports,
       traverseResult.options,
       traverseResult.defs,
-      "$protoOuterClassName."
+      ktImports.toList().sorted(),
+      "$protoOuterClassName.",
+      gdxMode,
     ).generate()
     val ktSrcDir = packageName.split('.').fold(srcsRoot) { a, b -> a.resolve(b) }
     ktSrcDir.createDirectories()

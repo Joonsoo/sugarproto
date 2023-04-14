@@ -5,7 +5,9 @@ class MutableKtDataClassGenerator(
   val imports: Set<String>,
   val options: List<SugarProtoAst.OptionDef>,
   val defs: List<ProtoDef>,
+  val improts: List<String>,
   val protoOuterClassName: String,
+  val gdxMode: Boolean,
 ) {
   fun appendComments(
     builder: StringBuilder,
@@ -93,6 +95,13 @@ class MutableKtDataClassGenerator(
       builder.append("package $packageName\n\n")
     }
 
+    imports.forEach {
+      builder.append("import $it\n")
+    }
+    if (imports.isNotEmpty()) {
+      builder.append("\n")
+    }
+
     defs.forEach { def ->
       when (def) {
         is ProtoEnumDef -> {
@@ -119,6 +128,10 @@ class MutableKtDataClassGenerator(
           }
           builder.append("  companion object {\n")
           builder.append("    fun fromProto(proto: $protoOuterClassName${def.name}): ${def.name} {\n")
+          builder.append("      TODO()\n")
+          builder.append("    }\n")
+          builder.append("    fun toProto(): $protoOuterClassName${def.name} {\n")
+          builder.append("      TODO()\n")
           builder.append("    }\n")
           builder.append("  }\n")
           builder.append("}\n\n")
@@ -152,29 +165,56 @@ class MutableKtDataClassGenerator(
           }
           builder.append(") {\n")
           builder.append("  companion object {\n")
-          builder.append("    fun fromProto(proto: ${protoOuterClassName}$className): $className = $className(\n")
+          builder.append("    fun fromProto(proto: ${protoOuterClassName}$className): $className {\n")
+          builder.append("      val instance = $className(\n")
+          val postProcessors = mutableListOf<List<String>>()
           def.members.forEach { member ->
             when (member) {
               is ProtoMessageMember.ProtoFieldDef -> {
                 val memberName = camelCase(member.name)
-                builder.append("      $memberName = ")
+                builder.append("        $memberName = ")
                 val processor = when (member.type.type) {
                   is TypeExpr.PrimitiveType ->
                     if (member.type.repeated) {
-                      "proto.${memberName}List.toMutableList()"
+                      if (gdxMode) {
+                        postProcessors.add(
+                          listOf(
+                            "proto.${memberName}.forEach { elem ->",
+                            "  instance.$memberName.add(elem)",
+                            "}",
+                          )
+                        )
+                        "GdxArray(proto.${memberName}Count)"
+                      } else {
+                        "proto.${memberName}List.toMutableList()"
+                      }
                     } else {
                       "proto.$memberName"
                     }
 
                   is TypeExpr.MessageOrEnumName ->
                     if (member.type.repeated) {
-                      "proto.${memberName}List.map { ${capitalCamelCase(member.type.type.name)}.fromProto(it) }.toMutableList()"
+                      if (gdxMode) {
+                        postProcessors.add(
+                          listOf(
+                            "proto.${memberName}.forEach { elem ->",
+                            "  instance.$memberName.add(${capitalCamelCase(member.type.type.name)}.fromProto(proto.$memberName))",
+                            "}",
+                          )
+                        )
+                        "GdxArray(proto.${memberName}Count)"
+                      } else {
+                        "proto.${memberName}List.map { ${capitalCamelCase(member.type.type.name)}.fromProto(it) }.toMutableList()"
+                      }
                     } else {
                       "${capitalCamelCase(member.type.type.name)}.fromProto(proto.$memberName)"
                     }
 
                   TypeExpr.EmptyMessage -> TODO()
-                  is TypeExpr.MapType -> TODO()
+                  is TypeExpr.MapType -> {
+                    // TODO Gdx의 IntMap 등 활용
+                    TODO()
+                  }
                 }
                 if (member.type.optional) {
                   builder.append("if (!proto.has${capitalCamelCase(member.name)}()) null else $processor")
@@ -194,7 +234,14 @@ class MutableKtDataClassGenerator(
               is ProtoMessageMember.ProtoOneOf -> TODO()
             }
           }
-          builder.append("    )\n")
+          builder.append("      )\n")
+          postProcessors.forEach { postProcessor ->
+            postProcessor.forEach { line ->
+              builder.append("      $line\n")
+            }
+          }
+          builder.append("      return instance\n")
+          builder.append("    }\n")
           builder.append("  }\n")
           builder.append("  fun toProto(builder: ${protoOuterClassName}$className.Builder) {\n")
           builder.append("  }\n")
