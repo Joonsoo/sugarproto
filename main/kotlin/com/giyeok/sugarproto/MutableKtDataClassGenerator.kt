@@ -2,10 +2,9 @@ package com.giyeok.sugarproto
 
 class MutableKtDataClassGenerator(
   val packageName: String?,
-  val imports: Set<String>,
   val options: List<SugarProtoAst.OptionDef>,
   val defs: List<ProtoDef>,
-  val improts: List<String>,
+  val imports: List<String>,
   val protoOuterClassName: String,
   val gdxMode: Boolean,
 ) {

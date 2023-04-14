@@ -43,7 +43,6 @@ class GenerateMutableKtAndProto {
     }
     val mutableKt = MutableKtDataClassGenerator(
       packageName,
-      traverseResult.imports,
       traverseResult.options,
       traverseResult.defs,
       ktImports.toList().sorted(),
