@@ -70,9 +70,22 @@ bibixPlugin {
 def generateProto(
   source: file,
   filename: string,
-): file = bibixPlugin.impl:com.giyeok.sugarproto.bibixPlugin.Generate
+): file = bibixPlugin.impl:com.giyeok.sugarproto.bibixPlugin.GenerateProto
 
 bibixTest = generateProto(
   source = "test/resources/service.supro",
   filename = "service.proto",
 )
+
+class Generated(
+  srcsRoot: directory,
+  protoFile: file,
+)
+
+def generateMutableKtAndProto(
+  source: file,
+  protoFileName: string,
+  protoOuterClassName: string,
+  packageName: string,
+  kotlinFileName: string,
+): Generated = bibixPlugin.impl:com.giyeok.sugarproto.bibixPlugin.GenerateMutableKtAndProto
