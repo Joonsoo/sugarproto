@@ -69,27 +69,26 @@ class MutableKtDataClassGenerator(
     }
   }
 
-  fun generateFieldType(builder: StringBuilder, fieldType: ProtoFieldType) {
+  fun String.withOptional(optional: Boolean) = if (optional) "$this?" else this
+
+  fun gdxArrayType(fieldType: ProtoFieldType): String =
+    if (fieldType.type.isInt()) {
+      "IntArray"
+    } else {
+      "GdxArray<${kotlinTypeOf(fieldType.type)}>"
+    }.withOptional(fieldType.optional)
+
+  fun generateFieldType(fieldType: ProtoFieldType): String =
     if (fieldType.repeated) {
       if (gdxMode) {
         // TODO libgdx의 BooleanArray, LongArray 등 추가
-        if (fieldType.type.isInt()) {
-          builder.append("IntArray")
-        } else {
-          builder.append("GdxArray<")
-        }
+        gdxArrayType(fieldType)
       } else {
-        builder.append("MutableList<")
+        "MutableList<${kotlinTypeOf(fieldType.type)}>".withOptional(fieldType.optional)
       }
+    } else {
+      kotlinTypeOf(fieldType.type)
     }
-    builder.append(kotlinTypeOf(fieldType.type))
-    if (fieldType.repeated) {
-      builder.append(">")
-    }
-    if (fieldType.optional) {
-      builder.append("?")
-    }
-  }
 
   fun memberShouldBeVar(typ: ProtoFieldType): Boolean {
     if (!typ.repeated && typ.type is TypeExpr.PrimitiveType) {
@@ -174,7 +173,7 @@ class MutableKtDataClassGenerator(
                 appendComments(builder, member.comments, "  ")
                 val varVal = if (memberShouldBeVar(member.type)) "var" else "val"
                 builder.append("  $varVal ${camelCase(member.name)}: ")
-                generateFieldType(builder, member.type)
+                builder.append(generateFieldType(member.type))
                 builder.append(",\n")
               }
 
@@ -211,7 +210,7 @@ class MutableKtDataClassGenerator(
                             "}",
                           )
                         )
-                        "GdxArray(proto.${memberName}Count)"
+                        "${gdxArrayType(member.type.copy(optional = false))}(proto.${memberName}Count)"
                       } else {
                         "proto.${memberName}List.toMutableList()"
                       }
@@ -239,8 +238,25 @@ class MutableKtDataClassGenerator(
 
                   TypeExpr.EmptyMessage -> TODO()
                   is TypeExpr.MapType -> {
-                    // TODO Gdx의 IntMap 등 활용
-                    "???"
+                    if (gdxMode) {
+                      val valueProcessor = when (val valType = member.type.type.valueType) {
+                        TypeExpr.EmptyMessage -> TODO()
+                        is TypeExpr.MapType -> TODO()
+                        is TypeExpr.MessageOrEnumName -> "${capitalCamelCase(valType.name)}.fromProto(value)"
+                        is TypeExpr.PrimitiveType -> "value"
+                      }
+                      postProcessors.add(
+                        listOf(
+                          "proto.${memberName}List.forEach { (key, value) ->",
+                          "  instance.$memberName.add($valueProcessor)",
+                          "}",
+                        )
+                      )
+                      "${kotlinTypeOf(member.type.type)}()"
+                    } else {
+                      // proto.tileChunkRowsMap.map { it.key to it.value }.toMap().toMutableMap()
+                      TODO()
+                    }
                   }
                 }
                 if (member.type.optional) {
@@ -302,7 +318,7 @@ class MutableKtDataClassGenerator(
                   builder.append("data class ${capitalCamelCase(member.field.name)}(")
                   val varVal = if (memberShouldBeVar(subType)) "var" else "val"
                   builder.append("$varVal ${camelCase(member.field.name)}: ")
-                  generateFieldType(builder, subType)
+                  builder.append(generateFieldType(subType))
                   builder.append("): $sealedName()\n")
                 }
               }
