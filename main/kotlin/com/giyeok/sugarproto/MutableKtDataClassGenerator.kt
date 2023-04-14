@@ -201,7 +201,7 @@ class MutableKtDataClassGenerator(
                         postProcessors.add(
                           listOf(
                             "proto.${memberName}List.forEach { elem ->",
-                            "  instance.$memberName.add(${capitalCamelCase(member.type.type.name)}.fromProto(proto.$memberName))",
+                            "  instance.$memberName.add(${capitalCamelCase(member.type.type.name)}.fromProto(elem))",
                             "}",
                           )
                         )
