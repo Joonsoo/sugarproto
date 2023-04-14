@@ -200,7 +200,7 @@ class MutableKtDataClassGenerator(
                       if (gdxMode) {
                         postProcessors.add(
                           listOf(
-                            "proto.${memberName}.forEach { elem ->",
+                            "proto.${memberName}List.forEach { elem ->",
                             "  instance.$memberName.add(${capitalCamelCase(member.type.type.name)}.fromProto(proto.$memberName))",
                             "}",
                           )
