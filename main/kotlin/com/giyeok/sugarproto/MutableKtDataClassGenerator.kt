@@ -71,23 +71,23 @@ class MutableKtDataClassGenerator(
 
   fun String.withOptional(optional: Boolean) = if (optional) "$this?" else this
 
-  fun gdxArrayType(fieldType: ProtoFieldType): String =
-    if (fieldType.type.isInt()) {
+  fun gdxArrayType(elemType: TypeExpr): String =
+    if (elemType.isInt()) {
       "IntArray"
     } else {
-      "GdxArray<${kotlinTypeOf(fieldType.type)}>"
-    }.withOptional(fieldType.optional)
+      "GdxArray<${kotlinTypeOf(elemType)}>"
+    }
 
   fun generateFieldType(fieldType: ProtoFieldType): String =
     if (fieldType.repeated) {
       if (gdxMode) {
         // TODO libgdx의 BooleanArray, LongArray 등 추가
-        gdxArrayType(fieldType)
+        gdxArrayType(fieldType.type).withOptional(fieldType.optional)
       } else {
         "MutableList<${kotlinTypeOf(fieldType.type)}>".withOptional(fieldType.optional)
       }
     } else {
-      kotlinTypeOf(fieldType.type)
+      kotlinTypeOf(fieldType.type).withOptional(fieldType.optional)
     }
 
   fun memberShouldBeVar(typ: ProtoFieldType): Boolean {
@@ -210,7 +210,7 @@ class MutableKtDataClassGenerator(
                             "}",
                           )
                         )
-                        "${gdxArrayType(member.type.copy(optional = false))}(proto.${memberName}Count)"
+                        "${gdxArrayType(member.type.type)}(proto.${memberName}Count)"
                       } else {
                         "proto.${memberName}List.toMutableList()"
                       }
@@ -247,8 +247,8 @@ class MutableKtDataClassGenerator(
                       }
                       postProcessors.add(
                         listOf(
-                          "proto.${memberName}List.forEach { (key, value) ->",
-                          "  instance.$memberName.add($valueProcessor)",
+                          "proto.${memberName}Map.forEach { (key, value) ->",
+                          "  instance.$memberName.put(key, $valueProcessor)",
                           "}",
                         )
                       )
