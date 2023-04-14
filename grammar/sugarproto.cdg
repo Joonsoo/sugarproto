@@ -1,4 +1,4 @@
-CompilationUnit = (WS PackageDef)? (WS ImportDef)* (WS OptionDef)* (WS TopLevelDef)* WS
+CompilationUnit = (WS PackageDef)? (WS ImportDef)* (WS OptionDef)* TopLevelDefWS* WS
                   {CompilationUnit(pkgDef=$0, imports=$1, options=$2, defs=$3)}
 
 PackageDef = "package"&Tk WS FullIdent
@@ -15,9 +15,11 @@ Constant: Constant = Ident-("true" | "false") {FullIdent(names=[$0])}
   | StringLiteral
   | BoolLiteral
 
+TopLevelDefWS = WS TopLevelDef {TopLevelDefWS(comments=$0, def=$1)}
 TopLevelDef: TopLevelDef = ServiceDef | MessageDef | SealedDef | EnumDef
 
-ServiceDef = "service"&Tk WS Ident WS '{' (WS ServiceMember)* WS '}' {ServiceDef(name=$2, members=$5)}
+ServiceDef = "service"&Tk WS Ident WS '{' ServiceMemberWS* WS '}' {ServiceDef(name=$2, members=$5)}
+ServiceMemberWS = WS ServiceMember {ServiceMemberWS(comments=$0, member=$1)}
 ServiceMember: ServiceMember = RpcDef | OptionDef
 RpcDef = "rpc"&Tk WS Ident WS ':' WS Type WS "->" WS Type (WS "where"&Tk WS RpcTypeWheres)? (WS FieldOptions)?
          {RpcDef(name=$2, inType=$6, outType=$10, wheres=$11, options=$12)}
@@ -45,11 +47,11 @@ OptionalType = "optional"&Tk WS '<' WS Type WS '>' {OptionalType(elemType=$4)}
 MapType = "map"&Tk WS '<' WS Type WS ',' WS Type WS '>' {MapType(keyType=$4, valueType=$8)}
 StreamType = "stream"&Tk WS '<' WS Type WS '>' {StreamType(elemType=$4)}
 
-OnTheFlyMessageType = (IdentNoSealedEnum WS)? '{' (WS MessageMembers)? WS '}'
+OnTheFlyMessageType = (IdentNoSealedEnum WS)? '{' MessageMembersWS? WS '}'
                       {OnTheFlyMessageType(name=$0$0, fields=$2 ?: [])}
-OnTheFlySealedMessageType = "sealed"&Tk (WS IdentNoSealed)? WS '{' (WS SealedMemberDef)* WS '}'
-                            {OnTheFlySealedMessageType(name=$1, fields=$4)}
-OnTheFlyEnumType = "enum"&Tk (WS IdentNoEnum)? WS '{' (WS EnumMembers)? WS '}'
+OnTheFlySealedMessageType = "sealed"&Tk (WS IdentNoSealed)? WS '{' SealedMembersWS? WS '}'
+                            {OnTheFlySealedMessageType(name=$1, fields=$4 ?: [])}
+OnTheFlyEnumType = "enum"&Tk (WS IdentNoEnum)? WS '{' EnumMembersWS? WS '}'
                    {OnTheFlyEnumType(name=$1, fields=$4 ?: [])}
 
 TypeName: TypeName = IdentName-TypeNameKeyword {SingleName(name=$0)}
@@ -61,15 +63,18 @@ TypeNameKeyword = "double" | "float" | "int32" | "int64"
   | "bool" | "string" | "bytes"
 
 
-MessageDef = "message"&Tk WS Ident WS '{' (WS MessageMembers)? WS '}' {MessageDef(name=$2, members=$5 ?: [])}
-MessageMembers = MessageMemberDef ((WS ',' WS | WSNL) MessageMemberDef)* {[$0] + $1}
+MessageDef = "message"&Tk WS Ident WS '{' MessageMembersWS? WS '}' {MessageDef(name=$2, members=$5 ?: [])}
+MessageMembersWS = WS MessageMemberDef ((WS ',' WS | WSNL) MessageMemberDef {MessageMemberDefWS(comments=$0, def=$1)})*
+                   {[MessageMemberDefWS(comments=$0, def=$1)] + $2}
 
 MessageMemberDef: MessageMemberDef = FieldDef | EnumDef | MessageDef | OptionDef | OneOfDef | ReservedDef
 FieldDef = IntLiteral WS Ident WS ':' WS Type (WS FieldOptions)? {FieldDef(tag=$0, name=$2, typ=$6, options=$7)}
 FieldOptions = '[' (WS FieldOption (WS ',' WS FieldOption)*)? WS ']' {FieldOptions(options=$1{[$1] + $2} ?: [])}
 FieldOption = OptionName WS '=' WS Constant {FieldOption(name=$0, value=$4)}
 
-OneOfDef = "oneof"&Tk WS Ident WS '{' (WS OneOfMemberDef)* WS '}' {OneOfDef(name=$2, members=$5)}
+OneOfDef = "oneof"&Tk WS Ident WS '{' OneOfMembersWS? WS '}' {OneOfDef(name=$2, members=$5 ?: [])}
+OneOfMembersWS = WS OneOfMemberDef ((WS ',' WS | WSNL) OneOfMemberDef {OneOfMembersDefWS(comments=$0, def=$1)})*
+                 {[OneOfMembersDefWS(comments=$0, def=$1)] + $2}
 OneOfMemberDef: OneOfMemberDef = OptionDef | FieldDef
 
 ReservedDef = "reserved"&Tk WS '(' WS ReservedItem (WS ',' WS ReservedItem)* (WS ',')? WS ')'
@@ -79,11 +84,14 @@ ReservedRange = IntLiteral (WS ".." WS ReservedRangeEnd)?
                 {ReservedRange(reservedStart=$0, reservedEnd=$1)}
 ReservedRangeEnd: ReservedRangeEnd = IntLiteral | "max"&Tk {Max()}
 
-SealedDef = "sealed"&Tk WS Ident WS '{' (WS SealedMemberDef)* WS '}' {SealedDef(name=$2, members=$5)}
+SealedDef = "sealed"&Tk WS Ident WS '{' SealedMembersWS? WS '}' {SealedDef(name=$2, members=$5 ?: [])}
+SealedMembersWS = WS SealedMemberDef ((WS ',' WS | WSNL) SealedMemberDef {SealedMemberDefWS(comments=$0, def=$1)})*
+                  {[SealedMemberDefWS(comments=$0, def=$1)] + $2}
 SealedMemberDef: SealedMemberDef = FieldDef
 
-EnumDef = "enum"&Tk WS Ident WS '{' (WS EnumMembers)? WS '}' {EnumDef(name=$2, members=$5 ?: [])}
-EnumMembers = EnumMemberDef ((WS ',' WS | WSNL) EnumMemberDef)* {[$0] + $1}
+EnumDef = "enum"&Tk WS Ident WS '{' EnumMembersWS? WS '}' {EnumDef(name=$2, members=$5 ?: [])}
+EnumMembersWS = WS EnumMemberDef ((WS ',' WS | WSNL) EnumMemberDef {EnumMemberDefWS(comments=$0, def=$1)})*
+                {[EnumMemberDefWS(comments=$0, def=$1)] + $2}
 EnumMemberDef: EnumMemberDef = OptionDef | EnumFieldDef
 EnumFieldDef = ('-' WS)? IntLiteral WS Ident (WS FieldOptions)?
                {EnumFieldDef(minusTag=ispresent($0$0), tag=$1, name=$3, options=$4)}
@@ -136,10 +144,12 @@ UnicodeLongEscape: UnicodeLongEscape = '\\' 'u' (
 
 
 Tk = <'a-zA-Z0-9_'+>
-WS = (' \n\r\t' | Comment)*
+// sugarproto에서는 생성된 proto에 코멘트도 살려주기 위해서 WS도 반환값이 있음
+WS: [Comment?] = (' \n\r\t' {null} | Comment)*
 // TODO WSNL은 줄 바꿈 문자가 최소 하나는 포함된 WS. BlockComment 처리 추가
-WSNL = ' \r\t'* ('\n' | LineComment) WS
-Comment = LineComment | BlockComment
-LineComment = "//" (.-'\n')* (EOF | '\n')
-BlockComment = "/*" (. !"*/")* . "*/" | "/**/"
+WSNL: [Comment?] = ' \r\t'* ('\n' {null} | LineComment) WS {[$1] + $2}
+Comment: Comment = LineComment | BlockComment
+LineComment = "//" (.-'\n')* (EOF | '\n') {LineComment(content=str($1))}
+BlockComment = "/*" (. !"*/")* . "*/" {BlockComment(content=str($1$0, $2))}
+  | "/**/" {BlockComment(content="")}
 EOF = !.

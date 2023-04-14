@@ -8,19 +8,20 @@ class ProtoDefGenerator(val ast: SugarProtoAst.CompilationUnit) {
   private val defs = mutableListOf<ProtoDef>()
 
   fun traverse() {
-    ast.defs.forEach { def ->
-      when (def) {
+    ast.defs.forEach { defWS ->
+      val comments = defWS.comments.filterNotNull()
+      when (val def = defWS.def) {
         is SugarProtoAst.ServiceDef ->
-          traverseServiceDef(def)
+          traverseServiceDef(comments, def)
 
         is SugarProtoAst.MessageDef ->
-          traverseMessageDef(def)
+          traverseMessageDef(comments, def)
 
         is SugarProtoAst.SealedDef ->
-          traverseSealedDef(def)
+          traverseSealedDef(comments, def)
 
         is SugarProtoAst.EnumDef ->
-          traverseEnumDef(def)
+          traverseEnumDef(comments, def)
       }
     }
   }
@@ -30,16 +31,19 @@ class ProtoDefGenerator(val ast: SugarProtoAst.CompilationUnit) {
       .joinToString("") { it.replaceFirstChar { it.uppercase() } }
 
   fun convertMessageDef(
+    comments: List<SugarProtoAst.Comment>,
     name: String,
-    members: List<SugarProtoAst.MessageMemberDef>,
+    members: List<SugarProtoAst.MessageMemberDefWS>,
     namingContext: NamingContext,
   ): ProtoMessageDef {
-    val protoMembers = members.map { member ->
+    val protoMembers = members.map { memberWS ->
       val currentNamingContext = namingContext + name
-      when (member) {
+      val memberComments = memberWS.comments.filterNotNull()
+      when (val member = memberWS.def) {
         is SugarProtoAst.FieldDef -> {
           val fieldDef = traverseType(member.typ, currentNamingContext + member.name, mapOf())
           ProtoMessageMember.ProtoFieldDef(
+            memberComments,
             fieldDef.valueType,
             member.name.name,
             member.tag,
@@ -48,23 +52,29 @@ class ProtoDefGenerator(val ast: SugarProtoAst.CompilationUnit) {
         }
 
         is SugarProtoAst.EnumDef -> {
-          val nestedEnum = convertEnumDef(member.name.name, member.members)
+          val nestedEnum = convertEnumDef(memberComments, member.name.name, member.members)
           ProtoMessageMember.ProtoNestedEnumDef(nestedEnum)
         }
 
         is SugarProtoAst.MessageDef -> {
           val nestedMessage =
-            convertMessageDef(member.name.name, member.members, currentNamingContext + name)
+            convertMessageDef(
+              memberComments,
+              member.name.name,
+              member.members,
+              currentNamingContext + name
+            )
           ProtoMessageMember.ProtoNestedMessageDef(nestedMessage)
         }
 
         is SugarProtoAst.OptionDef -> {
-          ProtoMessageMember.ProtoMessageOptionDef(member)
+          ProtoMessageMember.ProtoMessageOptionDef(memberComments, member)
         }
 
         is SugarProtoAst.OneOfDef -> {
-          val oneofMembers = member.members.map { oneOfMember ->
-            when (oneOfMember) {
+          val oneofMembers = member.members.map { oneOfMemberWS ->
+            val oneofComments = oneOfMemberWS.comments.filterNotNull()
+            when (val oneOfMember = oneOfMemberWS.def) {
               is SugarProtoAst.FieldDef -> {
                 val fieldDef = traverseType(
                   oneOfMember.typ,
@@ -73,6 +83,7 @@ class ProtoDefGenerator(val ast: SugarProtoAst.CompilationUnit) {
                 )
                 ProtoMessageMember.ProtoOneOfMember.OneOfField(
                   ProtoMessageMember.ProtoFieldDef(
+                    oneofComments,
                     fieldDef.valueType,
                     member.name.name,
                     oneOfMember.tag,
@@ -82,24 +93,30 @@ class ProtoDefGenerator(val ast: SugarProtoAst.CompilationUnit) {
               }
 
               is SugarProtoAst.OptionDef ->
-                ProtoMessageMember.ProtoOneOfMember.OneOfOption(oneOfMember)
+                ProtoMessageMember.ProtoOneOfMember.OneOfOption(oneofComments, oneOfMember)
             }
           }
-          ProtoMessageMember.ProtoOneOf(member.name.name, oneofMembers)
+          ProtoMessageMember.ProtoOneOf(memberComments, member.name.name, oneofMembers)
         }
 
         is SugarProtoAst.ReservedDef ->
-          ProtoMessageMember.ProtoReservedDef(member.ranges)
+          ProtoMessageMember.ProtoReservedDef(memberComments, member.ranges)
       }
     }
-    return ProtoMessageDef(name, protoMembers)
+    return ProtoMessageDef(comments, name, protoMembers)
   }
 
-  fun convertEnumDef(name: String, members: List<SugarProtoAst.EnumMemberDef>): ProtoEnumDef {
-    val protoMembers: List<ProtoEnumMember> = members.map { member ->
-      when (member) {
+  fun convertEnumDef(
+    comments: List<SugarProtoAst.Comment>,
+    name: String,
+    members: List<SugarProtoAst.EnumMemberDefWS>
+  ): ProtoEnumDef {
+    val protoMembers: List<ProtoEnumMember> = members.map { memberWS ->
+      val memberComments = memberWS.comments.filterNotNull()
+      when (val member = memberWS.def) {
         is SugarProtoAst.EnumFieldDef ->
           ProtoEnumMember.EnumValueDef(
+            memberComments,
             member.minusTag,
             member.tag,
             member.name.name,
@@ -107,18 +124,20 @@ class ProtoDefGenerator(val ast: SugarProtoAst.CompilationUnit) {
           )
 
         is SugarProtoAst.OptionDef ->
-          ProtoEnumMember.EnumOption(member)
+          ProtoEnumMember.EnumOption(memberComments, member)
       }
     }
-    return ProtoEnumDef(name, protoMembers)
+    return ProtoEnumDef(comments, name, protoMembers)
   }
 
   fun convertSealedDef(
+    comments: List<SugarProtoAst.Comment>,
     name: String,
-    members: List<SugarProtoAst.SealedMemberDef>
+    members: List<SugarProtoAst.SealedMemberDefWS>
   ): ProtoMessageDef {
-    val protoMembers: List<ProtoMessageMember.ProtoOneOfMember> = members.map { member ->
-      when (member) {
+    val protoMembers: List<ProtoMessageMember.ProtoOneOfMember> = members.map { memberWS ->
+      val memberComments = memberWS.comments.filterNotNull()
+      when (val member = memberWS.def) {
         is SugarProtoAst.FieldDef -> {
           val fieldType =
             traverseType(member.typ, NamingContext(listOf(name, member.name.name)), mapOf())
@@ -129,6 +148,7 @@ class ProtoDefGenerator(val ast: SugarProtoAst.CompilationUnit) {
           check(fieldValueType.kind != FieldKindEnum.MapKind) { "map is not allowed for oneof member" }
           ProtoMessageMember.ProtoOneOfMember.OneOfField(
             ProtoMessageMember.ProtoFieldDef(
+              memberComments,
               fieldValueType,
               member.name.name,
               member.tag,
@@ -138,7 +158,11 @@ class ProtoDefGenerator(val ast: SugarProtoAst.CompilationUnit) {
         }
       }
     }
-    return ProtoMessageDef(name, listOf(ProtoMessageMember.ProtoOneOf(name, protoMembers)))
+    return ProtoMessageDef(
+      comments,
+      name,
+      listOf(ProtoMessageMember.ProtoOneOf(listOf(), name, protoMembers))
+    )
   }
 
   fun traverseTypeNoStream(
@@ -164,13 +188,14 @@ class ProtoDefGenerator(val ast: SugarProtoAst.CompilationUnit) {
       }
 
       is SugarProtoAst.OnTheFlyMessageType -> {
-        if (type.fields.isEmpty()) {
+        if (type.fields.isEmpty() && type.name == null) {
           requiredImports.add("google/protobuf/empty.proto")
           ProtoFieldType(FieldKindEnum.MessageKind, false, false, "google.protobuf.Empty")
         } else {
           val messageName = type.name?.name ?: createMessageName(namingContext)
           // top level에 새로 들어가는 메시지이기 때문에 naming context clear
-          val protoMessage = convertMessageDef(messageName, type.fields, NamingContext())
+          // TODO comment
+          val protoMessage = convertMessageDef(listOf(), messageName, type.fields, NamingContext())
           defs.add(protoMessage)
           ProtoFieldType(FieldKindEnum.MessageKind, false, false, messageName)
         }
@@ -178,14 +203,16 @@ class ProtoDefGenerator(val ast: SugarProtoAst.CompilationUnit) {
 
       is SugarProtoAst.OnTheFlySealedMessageType -> {
         val messageName = type.name?.name ?: createMessageName(namingContext)
-        val protoMessage = convertSealedDef(messageName, type.fields)
+        // TODO comment
+        val protoMessage = convertSealedDef(listOf(), messageName, type.fields)
         defs.add(protoMessage)
         ProtoFieldType(FieldKindEnum.MessageKind, false, false, messageName)
       }
 
       is SugarProtoAst.OnTheFlyEnumType -> {
         val enumName = type.name?.name ?: createMessageName(namingContext + "enum")
-        val enumMessage = convertEnumDef(enumName, type.fields)
+        // TODO comment
+        val enumMessage = convertEnumDef(listOf(), enumName, type.fields)
         defs.add(enumMessage)
         ProtoFieldType(FieldKindEnum.MessageKind, false, false, enumName)
       }
@@ -262,11 +289,15 @@ class ProtoDefGenerator(val ast: SugarProtoAst.CompilationUnit) {
       else -> ProtoStreamableFieldType(false, traverseTypeNoStream(type, namingContext, localNames))
     }
 
-  fun traverseServiceDef(serviceDef: SugarProtoAst.ServiceDef) {
-    val rpcs = serviceDef.members.map { member ->
-      when (member) {
+  fun traverseServiceDef(
+    comments: List<SugarProtoAst.Comment>,
+    serviceDef: SugarProtoAst.ServiceDef
+  ) {
+    val rpcs = serviceDef.members.map { memberWS ->
+      val memberComments = memberWS.comments.filterNotNull()
+      when (val member = memberWS.member) {
         is SugarProtoAst.OptionDef -> {
-          TODO()
+          ServiceMember.ServiceOption(memberComments, member)
         }
 
         is SugarProtoAst.RpcDef -> {
@@ -297,6 +328,7 @@ class ProtoDefGenerator(val ast: SugarProtoAst.CompilationUnit) {
           check(!outType.optional) { "Response type of RPC ${serviceDef.name} cannot be optional" }
           check(!outType.repeated) { "Response type of RPC ${serviceDef.name} cannot be repeated" }
           ServiceMember.ProtoRpcDef(
+            memberComments,
             rpc.name.name,
             isInTypeStream,
             inType.type,
@@ -307,20 +339,23 @@ class ProtoDefGenerator(val ast: SugarProtoAst.CompilationUnit) {
         }
       }
     }
-    defs.add(ProtoServiceDef(serviceDef.name.name, rpcs))
+    defs.add(ProtoServiceDef(comments, serviceDef.name.name, rpcs))
   }
 
-  fun traverseMessageDef(messageDef: SugarProtoAst.MessageDef) {
-    defs.add(convertMessageDef(messageDef.name.name, messageDef.members, NamingContext()))
+  fun traverseMessageDef(
+    comments: List<SugarProtoAst.Comment>,
+    messageDef: SugarProtoAst.MessageDef
+  ) {
+    defs.add(convertMessageDef(comments, messageDef.name.name, messageDef.members, NamingContext()))
   }
 
-  fun traverseSealedDef(sealedDef: SugarProtoAst.SealedDef) {
-    val messageDef = convertSealedDef(sealedDef.name.name, sealedDef.members)
+  fun traverseSealedDef(comments: List<SugarProtoAst.Comment>, sealedDef: SugarProtoAst.SealedDef) {
+    val messageDef = convertSealedDef(comments, sealedDef.name.name, sealedDef.members ?: listOf())
     defs.add(messageDef)
   }
 
-  fun traverseEnumDef(enumDef: SugarProtoAst.EnumDef) {
-    val protoEnumDef = convertEnumDef(enumDef.name.name, enumDef.members)
+  fun traverseEnumDef(comments: List<SugarProtoAst.Comment>, enumDef: SugarProtoAst.EnumDef) {
+    val protoEnumDef = convertEnumDef(comments, enumDef.name.name, enumDef.members)
     defs.add(protoEnumDef)
   }
 
@@ -382,23 +417,24 @@ class ProtoDefGenerator(val ast: SugarProtoAst.CompilationUnit) {
 
   fun generateFieldDef(
     builder: StringBuilder,
-    member: ProtoMessageMember.ProtoFieldDef,
+    field: ProtoMessageMember.ProtoFieldDef,
     indent: String
   ) {
+    generateComments(builder, field.comments, "$indent  ")
     builder.append(indent)
     builder.append("  ")
-    if (member.type.optional) {
+    if (field.type.optional) {
       builder.append("optional ")
     }
-    if (member.type.repeated) {
+    if (field.type.repeated) {
       builder.append("repeated ")
     }
-    builder.append(member.type.type)
+    builder.append(field.type.type)
     builder.append(" ")
-    builder.append(member.name)
+    builder.append(field.name)
     builder.append(" = ")
-    builder.append(member.tag.toValueString())
-    member.options?.let { options ->
+    builder.append(field.tag.toValueString())
+    field.options?.let { options ->
       generateOptions(builder, options, indent)
     }
     builder.append(";\n")
@@ -428,7 +464,40 @@ class ProtoDefGenerator(val ast: SugarProtoAst.CompilationUnit) {
     is SugarProtoAst.OctalLiteral -> "0${this.value}"
   }
 
+  fun generateComments(
+    builder: StringBuilder,
+    comments: List<SugarProtoAst.Comment>,
+    indent: String
+  ) {
+    comments.forEach { comment ->
+      when (comment) {
+        is SugarProtoAst.LineComment -> {
+          builder.append(indent)
+          builder.append("// ")
+          builder.append(comment.content.trim())
+          builder.append("\n")
+        }
+
+        is SugarProtoAst.BlockComment -> TODO()
+      }
+    }
+  }
+
+  fun generateOption(
+    builder: java.lang.StringBuilder,
+    option: SugarProtoAst.OptionDef,
+    indent: String
+  ) {
+    builder.append(indent)
+    builder.append("option ")
+    builder.append(option.name.toProtoString())
+    builder.append(" = ")
+    builder.append(option.value.toProtoString())
+    builder.append(";\n")
+  }
+
   fun generateMessageDef(builder: StringBuilder, messageDef: ProtoMessageDef, indent: String) {
+    generateComments(builder, messageDef.comments, indent)
     builder.append("${indent}message ${messageDef.name} {\n")
     messageDef.members.forEach { member ->
       when (member) {
@@ -441,6 +510,7 @@ class ProtoDefGenerator(val ast: SugarProtoAst.CompilationUnit) {
           generateEnumDef(builder, member.enum, "$indent  ")
 
         is ProtoMessageMember.ProtoOneOf -> {
+          generateComments(builder, member.comments, "$indent  ")
           builder.append(indent)
           builder.append("  oneof ${member.name} {\n")
           member.members.forEach { oneofMember ->
@@ -448,18 +518,23 @@ class ProtoDefGenerator(val ast: SugarProtoAst.CompilationUnit) {
               is ProtoMessageMember.ProtoOneOfMember.OneOfField ->
                 generateFieldDef(builder, oneofMember.field, "$indent  ")
 
-              is ProtoMessageMember.ProtoOneOfMember.OneOfOption -> TODO()
+              is ProtoMessageMember.ProtoOneOfMember.OneOfOption -> {
+                generateComments(builder, oneofMember.comments, "$indent  ")
+                generateOption(builder, oneofMember.option, "$indent    ")
+              }
             }
           }
           builder.append("$indent  }\n")
         }
 
         is ProtoMessageMember.ProtoMessageOptionDef -> {
+          generateComments(builder, member.comments, indent)
           builder.append(indent)
-          builder.append("  option ${member.optionDef.name.toProtoString()} = ${member.optionDef.value.toProtoString()};\n")
+          generateOption(builder, member.optionDef, "$indent  ")
         }
 
         is ProtoMessageMember.ProtoReservedDef -> {
+          generateComments(builder, member.comments, indent)
           builder.append(indent)
           builder.append("  reserved ")
           val reserves = member.reserved.map { reserve ->
@@ -489,13 +564,17 @@ class ProtoDefGenerator(val ast: SugarProtoAst.CompilationUnit) {
   }
 
   fun generateEnumDef(builder: StringBuilder, enumDef: ProtoEnumDef, indent: String) {
+    generateComments(builder, enumDef.comments, indent)
     builder.append("${indent}enum ${enumDef.name} {\n")
     enumDef.members.forEach { member ->
       when (member) {
-        is ProtoEnumMember.EnumOption ->
-          builder.append("$indent  option ${member.optionDef.name.toProtoString()} = ${member.optionDef.value.toProtoString()};\n")
+        is ProtoEnumMember.EnumOption -> {
+          generateComments(builder, member.comments, indent)
+          generateOption(builder, member.optionDef, "$indent  ")
+        }
 
         is ProtoEnumMember.EnumValueDef -> {
+          generateComments(builder, member.comments, "$indent  ")
           builder.append(indent)
           builder.append("  ")
           builder.append(member.name)
@@ -533,11 +612,7 @@ class ProtoDefGenerator(val ast: SugarProtoAst.CompilationUnit) {
     }
 
     ast.options.forEach { option ->
-      builder.append("option ")
-      builder.append(option.name.toProtoString())
-      builder.append(" = ")
-      builder.append(option.value.toProtoString())
-      builder.append(";\n")
+      generateOption(builder, option, "")
     }
     if (ast.options.isNotEmpty()) {
       builder.append("\n")
@@ -550,11 +625,17 @@ class ProtoDefGenerator(val ast: SugarProtoAst.CompilationUnit) {
         }
 
         is ProtoServiceDef -> {
+          generateComments(builder, def.comments, "")
           builder.append("service ${def.name} {\n")
           def.members.forEach { member ->
             when (member) {
-              is ServiceMember.ServiceOption -> TODO()
+              is ServiceMember.ServiceOption -> {
+                generateComments(builder, member.comments, "  ")
+                generateOption(builder, member.optionDef, "  ")
+              }
+
               is ServiceMember.ProtoRpcDef -> {
+                generateComments(builder, member.comments, "  ")
                 val rpc = member
                 val inType = if (rpc.isInTypeStream) "stream ${rpc.inType}" else rpc.inType
                 val outType = if (rpc.isOutTypeStream) "stream ${rpc.outType}" else rpc.outType

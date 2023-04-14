@@ -5,9 +5,12 @@ import "dao.proto"
 
 option java_outer_classname = "ServiceProto"
 
+// 댓클럽3 서비스
 service Datclub3 {
+  // 헬로 월드
   rpc helloWorld: HelloWorldReq {1 message: string} -> HelloWorldRes
 
+  // 굿 월드
   rpc signInByFirebaseAuth: {
     1 firebase_id_token: string
   } -> {
@@ -67,8 +70,10 @@ sealed Ast {
   }
   // backtick을 쓰면 키워드도 이름으로 사용 가능
   4 sealed: `sealed` {
-
   }
+  // 이름이 별도로 지정되지 않은 빈 메시지는 google.protobuf.Empty가 됨.
+  // 위의 sealed는 이름이 지정되었기 때문에 google.protobuf.Empty가 되지 않음.
+  5 empty: {}
 }
 
 message MyMessage {
