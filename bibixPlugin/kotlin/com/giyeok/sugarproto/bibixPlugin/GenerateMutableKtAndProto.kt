@@ -38,9 +38,6 @@ class GenerateMutableKtAndProto {
     protoDest.writeText(protoDef)
 
     val ktImports = (imports?.toMutableSet() ?: mutableSetOf())
-    if (gdxMode) {
-      ktImports.add("com.badlogic.gdx.utils.Array as GdxArray")
-    }
     val mutableKt = MutableKtDataClassGenerator(
       packageName,
       traverseResult.options,

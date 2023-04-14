@@ -73,7 +73,7 @@ class MutableKtDataClassGenerator(
 
   fun gdxArrayType(elemType: TypeExpr): String =
     if (elemType.isInt()) {
-      "IntArray"
+      "GdxIntArray"
     } else {
       "GdxArray<${kotlinTypeOf(elemType)}>"
     }
@@ -121,7 +121,13 @@ class MutableKtDataClassGenerator(
       builder.append("package $packageName\n\n")
     }
 
-    imports.forEach {
+    val finalImports = imports.toMutableSet()
+    if (gdxMode) {
+      finalImports.add("com.badlogic.gdx.utils.Array as GdxArray")
+      finalImports.add("com.badlogic.gdx.utils.IntArray as GdxIntArray")
+      finalImports.add("com.badlogic.gdx.utils.IntMap")
+    }
+    finalImports.sorted().forEach {
       builder.append("import $it\n")
     }
     if (imports.isNotEmpty()) {
