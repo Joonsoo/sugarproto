@@ -115,6 +115,92 @@ class MutableKtDataClassGenerator(
     return firstWord.lowercase() + (restWords.joinToString("") { word -> word.replaceFirstChar { it.uppercase() } })
   }
 
+  fun isMessageName(name: String): Boolean =
+    // TODO 이걸로 충분한걸까?
+    defs.any { def ->
+      when (def) {
+        is ProtoEnumDef -> false
+        is ProtoMessageDef -> def.name == name
+        is ProtoSealedDef -> def.name == name
+        is ProtoServiceDef -> false
+      }
+    }
+
+  fun generateProtoField(
+    builder: StringBuilder,
+    postProcessors: MutableList<List<String>>,
+    member: ProtoMessageMember.ProtoFieldDef
+  ) {
+    val memberName = camelCase(member.name)
+    builder.append("        $memberName = ")
+    val processor = when (member.type.type) {
+      is TypeExpr.PrimitiveType ->
+        if (member.type.repeated) {
+          if (gdxMode) {
+            postProcessors.add(
+              listOf(
+                "proto.${memberName}List.forEach { elem ->",
+                "  instance.$memberName.add(elem)",
+                "}",
+              )
+            )
+            "${gdxArrayType(member.type.type)}(proto.${memberName}Count)"
+          } else {
+            "proto.${memberName}List.toMutableList()"
+          }
+        } else {
+          "proto.$memberName"
+        }
+
+      is TypeExpr.MessageOrEnumName ->
+        if (member.type.repeated) {
+          if (gdxMode) {
+            postProcessors.add(
+              listOf(
+                "proto.${memberName}List.forEach { elem ->",
+                "  instance.$memberName.add(${capitalCamelCase(member.type.type.name)}.fromProto(elem))",
+                "}",
+              )
+            )
+            "GdxArray(proto.${memberName}Count)"
+          } else {
+            "proto.${memberName}List.map { ${capitalCamelCase(member.type.type.name)}.fromProto(it) }.toMutableList()"
+          }
+        } else {
+          "${capitalCamelCase(member.type.type.name)}.fromProto(proto.$memberName)"
+        }
+
+      TypeExpr.EmptyMessage -> TODO()
+      is TypeExpr.MapType -> {
+        if (gdxMode) {
+          val valueProcessor = when (val valType = member.type.type.valueType) {
+            TypeExpr.EmptyMessage -> TODO()
+            is TypeExpr.MapType -> TODO()
+            is TypeExpr.MessageOrEnumName -> "${capitalCamelCase(valType.name)}.fromProto(value)"
+            is TypeExpr.PrimitiveType -> "value"
+          }
+          postProcessors.add(
+            listOf(
+              "proto.${memberName}Map.forEach { (key, value) ->",
+              "  instance.$memberName.put(key, $valueProcessor)",
+              "}",
+            )
+          )
+          "${kotlinTypeOf(member.type.type)}()"
+        } else {
+          // proto.tileChunkRowsMap.map { it.key to it.value }.toMap().toMutableMap()
+          TODO()
+        }
+      }
+    }
+    if (member.type.optional) {
+      builder.append("if (!proto.has${capitalCamelCase(member.name)}()) null else $processor")
+    } else {
+      builder.append(processor)
+    }
+    builder.append(",\n")
+  }
+
   fun generate(): String {
     val builder = StringBuilder()
 
@@ -209,79 +295,13 @@ class MutableKtDataClassGenerator(
           def.members.forEach { member ->
             when (member) {
               is ProtoMessageMember.ProtoFieldDef -> {
-                val memberName = camelCase(member.name)
-                builder.append("        $memberName = ")
-                val processor = when (member.type.type) {
-                  is TypeExpr.PrimitiveType ->
-                    if (member.type.repeated) {
-                      if (gdxMode) {
-                        postProcessors.add(
-                          listOf(
-                            "proto.${memberName}List.forEach { elem ->",
-                            "  instance.$memberName.add(elem)",
-                            "}",
-                          )
-                        )
-                        "${gdxArrayType(member.type.type)}(proto.${memberName}Count)"
-                      } else {
-                        "proto.${memberName}List.toMutableList()"
-                      }
-                    } else {
-                      "proto.$memberName"
-                    }
-
-                  is TypeExpr.MessageOrEnumName ->
-                    if (member.type.repeated) {
-                      if (gdxMode) {
-                        postProcessors.add(
-                          listOf(
-                            "proto.${memberName}List.forEach { elem ->",
-                            "  instance.$memberName.add(${capitalCamelCase(member.type.type.name)}.fromProto(elem))",
-                            "}",
-                          )
-                        )
-                        "GdxArray(proto.${memberName}Count)"
-                      } else {
-                        "proto.${memberName}List.map { ${capitalCamelCase(member.type.type.name)}.fromProto(it) }.toMutableList()"
-                      }
-                    } else {
-                      "${capitalCamelCase(member.type.type.name)}.fromProto(proto.$memberName)"
-                    }
-
-                  TypeExpr.EmptyMessage -> TODO()
-                  is TypeExpr.MapType -> {
-                    if (gdxMode) {
-                      val valueProcessor = when (val valType = member.type.type.valueType) {
-                        TypeExpr.EmptyMessage -> TODO()
-                        is TypeExpr.MapType -> TODO()
-                        is TypeExpr.MessageOrEnumName -> "${capitalCamelCase(valType.name)}.fromProto(value)"
-                        is TypeExpr.PrimitiveType -> "value"
-                      }
-                      postProcessors.add(
-                        listOf(
-                          "proto.${memberName}Map.forEach { (key, value) ->",
-                          "  instance.$memberName.put(key, $valueProcessor)",
-                          "}",
-                        )
-                      )
-                      "${kotlinTypeOf(member.type.type)}()"
-                    } else {
-                      // proto.tileChunkRowsMap.map { it.key to it.value }.toMap().toMutableMap()
-                      TODO()
-                    }
-                  }
-                }
-                if (member.type.optional) {
-                  builder.append("if (!proto.has${capitalCamelCase(member.name)}()) null else $processor")
-                } else {
-                  builder.append(processor)
-                }
-                builder.append(",\n")
+                generateProtoField(builder, postProcessors, member)
               }
 
-              is ProtoMessageMember.ProtoMessageOptionDef,
               is ProtoMessageMember.ProtoNestedEnumDef,
-              is ProtoMessageMember.ProtoNestedMessageDef,
+              is ProtoMessageMember.ProtoNestedMessageDef -> TODO()
+
+              is ProtoMessageMember.ProtoMessageOptionDef,
               is ProtoMessageMember.ProtoReservedDef -> {
                 // ignore
               }
@@ -299,6 +319,88 @@ class MutableKtDataClassGenerator(
           builder.append("    }\n")
           builder.append("  }\n")
           builder.append("  fun toProto(builder: ${protoOuterClassName}$className.Builder) {\n")
+          def.members.forEach { member ->
+            when (member) {
+              is ProtoMessageMember.ProtoFieldDef -> {
+                val memberName = camelCase(member.name)
+                val memberNameCapital = capitalCamelCase(member.name)
+
+                if (member.type.repeated) {
+                  builder.append("    this.$memberName.forEach { elem ->\n")
+                  when (member.type.type) {
+                    TypeExpr.EmptyMessage -> TODO()
+                    is TypeExpr.MapType -> TODO()
+                    is TypeExpr.MessageOrEnumName -> {
+                      if (isMessageName(member.type.type.name)) {
+                        builder.append("      elem.toProto(builder.add${memberNameCapital}Builder())\n")
+                      } else {
+                        builder.append("      builder.add$memberNameCapital(elem.toProto())\n")
+                      }
+                    }
+
+                    is TypeExpr.PrimitiveType -> {
+                      builder.append("      builder.add$memberNameCapital(elem)\n")
+                    }
+                  }
+                  builder.append("    }\n")
+                } else {
+                  when (member.type.type) {
+                    is TypeExpr.MapType -> {
+                      //     this.tileChunkRows.forEach { entry ->
+                      //      val valueBuilder = WorldProto.TileChunkRow.newBuilder()
+                      //      entry.value.toProto(valueBuilder)
+                      //      builder.putTileChunkRows(entry.key, valueBuilder.build())
+                      //    }
+                      builder.append("    this.$memberName.forEach { entry ->\n")
+                      when (val valueType = member.type.type.valueType) {
+                        TypeExpr.EmptyMessage -> TODO()
+                        is TypeExpr.MapType -> TODO()
+                        is TypeExpr.MessageOrEnumName -> {
+                          if (isMessageName(valueType.name)) {
+                            val valueTypeStr = "$protoOuterClassName${kotlinTypeOf(valueType)}"
+                            builder.append("      val valueBuilder = $valueTypeStr.newBuilder()\n")
+                            builder.append("      entry.value.toProto(valueBuilder)\n")
+                            builder.append("      builder.put$memberNameCapital(entry.key, valueBuilder.build())\n")
+                          } else {
+                            // TODO enum value
+                          }
+                        }
+
+                        is TypeExpr.PrimitiveType -> {
+                          builder.append("      builder.put$memberNameCapital(entry.key, entry.value)")
+                        }
+                      }
+                      builder.append("    }\n")
+                    }
+
+                    is TypeExpr.MessageOrEnumName -> {
+                      if (isMessageName(member.type.type.name)) {
+                        builder.append("    this.$memberName.toProto(builder.${memberName}Builder)\n")
+                      } else {
+                        builder.append("    builder.$memberName = this.$memberName.toProto()\n")
+                      }
+                    }
+
+                    is TypeExpr.PrimitiveType -> {
+                      builder.append("    builder.$memberName = this.$memberName\n")
+                    }
+
+                    TypeExpr.EmptyMessage -> TODO()
+                  }
+                }
+              }
+
+              is ProtoMessageMember.ProtoNestedEnumDef,
+              is ProtoMessageMember.ProtoNestedMessageDef -> TODO()
+
+              is ProtoMessageMember.ProtoMessageOptionDef,
+              is ProtoMessageMember.ProtoReservedDef -> {
+                // ignore
+              }
+
+              is ProtoMessageMember.ProtoOneOf -> TODO()
+            }
+          }
           builder.append("  }\n")
           builder.append("}\n\n")
         }
@@ -312,6 +414,7 @@ class MutableKtDataClassGenerator(
           builder.append("    }\n")
           builder.append("  }\n")
           builder.append("  fun toProto(builder: ${protoOuterClassName}${def.name}.Builder) {\n")
+          builder.append("    TODO()\n")
           builder.append("  }\n")
           builder.append("}\n\n")
 
