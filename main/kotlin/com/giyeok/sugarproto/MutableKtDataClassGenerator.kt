@@ -213,6 +213,7 @@ class MutableKtDataClassGenerator(
       finalImports.add("com.badlogic.gdx.utils.Array as GdxArray")
       finalImports.add("com.badlogic.gdx.utils.IntArray as GdxIntArray")
       finalImports.add("com.badlogic.gdx.utils.IntMap")
+      finalImports.add("com.giyeok.msspgame.libgdx.forEach")
     }
     finalImports.sorted().forEach {
       builder.append("import $it\n")
@@ -343,6 +344,26 @@ class MutableKtDataClassGenerator(
                     }
                   }
                   builder.append("    }\n")
+                } else if (member.type.optional) {
+                  when (member.type.type) {
+                    TypeExpr.EmptyMessage -> TODO()
+                    is TypeExpr.MapType -> TODO()
+                    is TypeExpr.MessageOrEnumName -> {
+                      if (isMessageName(member.type.type.name)) {
+                        builder.append("    this.$memberName?.toProto(builder.${memberName}Builder)\n")
+                      } else {
+                        builder.append("    this.$memberName?.let { elem ->\n")
+                        builder.append("      builder.$memberName = elem.toProto()\n")
+                        builder.append("    }\n")
+                      }
+                    }
+
+                    is TypeExpr.PrimitiveType -> {
+                      builder.append("    this.$memberName?.let { elem ->\n")
+                      builder.append("      builder.add$memberNameCapital(elem)\n")
+                      builder.append("    }\n")
+                    }
+                  }
                 } else {
                   when (member.type.type) {
                     is TypeExpr.MapType -> {
