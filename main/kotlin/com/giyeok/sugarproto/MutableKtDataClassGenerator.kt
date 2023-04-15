@@ -336,7 +336,7 @@ class MutableKtDataClassGenerator(
                   val varVal = if (memberShouldBeVar(subType)) "var" else "val"
                   builder.append("$varVal ${camelCase(member.field.name)}: ")
                   builder.append(generateFieldType(subType))
-                  builder.append("): $sealedName()\n")
+                  builder.append("): $sealedName\n")
                 }
               }
             }
