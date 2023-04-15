@@ -247,13 +247,11 @@ class MutableKtDataClassGenerator(
             }
           }
           builder.append("  companion object {\n")
-          builder.append("    fun fromProto(proto: $protoOuterClassName${def.name}): ${def.name} {\n")
-          builder.append("      TODO()\n")
-          builder.append("    }\n")
-          builder.append("    fun toProto(): $protoOuterClassName${def.name} {\n")
-          builder.append("      TODO()\n")
-          builder.append("    }\n")
+          builder.append("    fun fromProto(proto: $protoOuterClassName${def.name}): ${def.name} =\n")
+          builder.append("      values().find { it.tag == proto.number }!!\n")
           builder.append("  }\n")
+          builder.append("  fun toProto(): $protoOuterClassName${def.name} =\n")
+          builder.append("    ${protoOuterClassName}${def.name}.forNumber(tag)\n")
           builder.append("}\n\n")
         }
 
