@@ -42,6 +42,7 @@ class GenerateMutableKtAndProto {
       packageName,
       traverseResult.options,
       traverseResult.defs,
+      traverseResult.sealedSupers,
       ktImports.toList().sorted(),
       "$protoOuterClassName.",
       gdxMode,

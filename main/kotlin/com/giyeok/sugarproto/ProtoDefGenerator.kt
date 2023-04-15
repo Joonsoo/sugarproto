@@ -274,7 +274,7 @@ class ProtoDefGenerator(
             builder, ProtoMessageDef(
               def.comments,
               def.name,
-              listOf(ProtoMessageMember.ProtoOneOf(listOf(), def.name, def.oneofMembers))
+              listOf(ProtoMessageMember.ProtoOneOf(listOf(), def.name, def.sealedMembers))
             ),
             ""
           )

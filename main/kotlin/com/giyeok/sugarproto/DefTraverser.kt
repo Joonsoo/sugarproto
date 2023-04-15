@@ -7,6 +7,8 @@ class DefTraverser(val ast: SugarProtoAst.CompilationUnit) {
 
   private val defs = mutableListOf<ProtoDef>()
 
+  private val sealedSupers = mutableMapOf<String, String>()
+
   fun traverse(): TraverseResult {
     ast.defs.forEach { defWS ->
       val comments = defWS.comments.filterNotNull()
@@ -28,7 +30,8 @@ class DefTraverser(val ast: SugarProtoAst.CompilationUnit) {
       packageName,
       requiredImports + ast.imports.map { it.toValue() },
       ast.options,
-      defs
+      defs,
+      sealedSupers,
     )
   }
 
@@ -141,6 +144,7 @@ class DefTraverser(val ast: SugarProtoAst.CompilationUnit) {
     name: String,
     members: List<SugarProtoAst.SealedMemberDefWS>
   ): ProtoSealedDef {
+    val onTheFlyMessages = mutableSetOf<String>()
     val protoMembers: List<ProtoMessageMember.ProtoOneOfMember> = members.map { memberWS ->
       val memberComments = memberWS.comments.filterNotNull()
       when (val member = memberWS.def) {
@@ -152,6 +156,11 @@ class DefTraverser(val ast: SugarProtoAst.CompilationUnit) {
           check(!fieldValueType.optional) { "optional is not allowed for oneof member" }
           check(!fieldValueType.repeated) { "repeated is not allowed for oneof member" }
           check(fieldValueType.kind != FieldKindEnum.MapKind) { "map is not allowed for oneof member" }
+          if (member.typ is SugarProtoAst.OnTheFlyMessageType && fieldValueType.type != TypeExpr.EmptyMessage) {
+            val subName = (fieldValueType.type as TypeExpr.MessageOrEnumName).name
+            sealedSupers[subName] = name
+            onTheFlyMessages.add(subName)
+          }
           ProtoMessageMember.ProtoOneOfMember.OneOfField(
             ProtoMessageMember.ProtoFieldDef(
               memberComments,
@@ -164,7 +173,7 @@ class DefTraverser(val ast: SugarProtoAst.CompilationUnit) {
         }
       }
     }
-    return ProtoSealedDef(comments, name, protoMembers)
+    return ProtoSealedDef(comments, name, protoMembers, onTheFlyMessages)
   }
 
   fun traverseTypeNoStream(

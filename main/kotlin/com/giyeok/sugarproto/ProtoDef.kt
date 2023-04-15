@@ -105,7 +105,8 @@ sealed class ProtoMessageMember {
 data class ProtoSealedDef(
   val comments: List<SugarProtoAst.Comment>,
   val name: String,
-  val oneofMembers: List<ProtoMessageMember.ProtoOneOfMember>
+  val sealedMembers: List<ProtoMessageMember.ProtoOneOfMember>,
+  val onTheFlyMessages: Set<String>,
 ): ProtoDef()
 
 data class ProtoEnumDef(

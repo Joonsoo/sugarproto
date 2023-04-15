@@ -4,6 +4,7 @@ class MutableKtDataClassGenerator(
   val packageName: String?,
   val options: List<SugarProtoAst.OptionDef>,
   val defs: List<ProtoDef>,
+  val sealedSupers: Map<String, String>,
   val imports: List<String>,
   val protoOuterClassName: String,
   val gdxMode: Boolean,
@@ -195,7 +196,12 @@ class MutableKtDataClassGenerator(
               }
             }
           }
-          builder.append(") {\n")
+          val sealedSuper = sealedSupers[def.name]
+          if (sealedSuper == null) {
+            builder.append(") {\n")
+          } else {
+            builder.append("): $sealedSuper {\n")
+          }
           builder.append("  companion object {\n")
           builder.append("    fun fromProto(proto: ${protoOuterClassName}$className): $className {\n")
           builder.append("      val instance = $className(\n")
@@ -299,7 +305,7 @@ class MutableKtDataClassGenerator(
 
         is ProtoSealedDef -> {
           val sealedName = capitalCamelCase(def.name)
-          builder.append("sealed class $sealedName {\n")
+          builder.append("sealed interface $sealedName {\n")
           builder.append("  companion object {\n")
           builder.append("    fun fromProto(proto: $protoOuterClassName${def.name}): $sealedName {\n")
           builder.append("      TODO()\n")
@@ -309,7 +315,7 @@ class MutableKtDataClassGenerator(
           builder.append("  }\n")
           builder.append("}\n\n")
 
-          def.oneofMembers.forEach { member ->
+          def.sealedMembers.forEach { member ->
             when (member) {
               is ProtoMessageMember.ProtoOneOfMember.OneOfOption -> {
                 // ignore
@@ -319,7 +325,12 @@ class MutableKtDataClassGenerator(
                 appendComments(builder, member.field.comments, "")
                 val subType = member.field.type
                 if (subType.type == TypeExpr.EmptyMessage) {
-                  builder.append("object ${capitalCamelCase(member.field.name)}: $sealedName()\n")
+                  builder.append("object ${capitalCamelCase(member.field.name)}: $sealedName\n")
+                } else if (subType.type is TypeExpr.MessageOrEnumName &&
+                  def.onTheFlyMessages.contains(subType.type.name)
+                ) {
+                  // do nothing
+                  // 해당 타입을 위한 클래스가 이미 sealed interface를 extend 하고 있음
                 } else {
                   builder.append("data class ${capitalCamelCase(member.field.name)}(")
                   val varVal = if (memberShouldBeVar(subType)) "var" else "val"
