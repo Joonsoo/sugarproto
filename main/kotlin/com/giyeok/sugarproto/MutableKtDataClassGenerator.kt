@@ -98,18 +98,24 @@ class MutableKtDataClassGenerator(
     return false
   }
 
+  fun String.toWords(): List<String> {
+    return this.split('_')
+      .flatMap { it.split(Regex("(?=\\p{Upper})")) }
+      .filter { it.isNotEmpty() }
+  }
+
   fun capitalSnakeCase(name: String): String {
-    val words = name.split('_')
+    val words = name.toWords()
     return words.joinToString("_") { it.uppercase() }
   }
 
   fun capitalCamelCase(name: String): String {
-    val words = name.split('_')
+    val words = name.toWords()
     return words.joinToString("") { word -> word.replaceFirstChar { it.uppercase() } }
   }
 
   fun camelCase(name: String): String {
-    val words = name.split('_')
+    val words = name.toWords()
     val firstWord = words.first()
     val restWords = words.drop(1)
     return firstWord.lowercase() + (restWords.joinToString("") { word -> word.replaceFirstChar { it.uppercase() } })
@@ -428,14 +434,101 @@ class MutableKtDataClassGenerator(
           val sealedName = capitalCamelCase(def.name)
           builder.append("sealed interface $sealedName {\n")
           builder.append("  companion object {\n")
-          builder.append("    fun fromProto(proto: $protoOuterClassName${def.name}): $sealedName {\n")
-          builder.append("      TODO()\n")
-          builder.append("    }\n")
+          builder.append("    fun fromProto(proto: $protoOuterClassName${def.name}): $sealedName =\n")
+          // when (proto.buildingUniqueStatsCase) {
+          //   WorldProto.BuildingUniqueStats.BuildingUniqueStatsCase.STORAGE_BUILDING ->
+          //     StorageBuildingStats.fromProto(proto.storageBuilding)
+          //   WorldProto.BuildingUniqueStats.BuildingUniqueStatsCase.FACTORY_BUILDING ->
+          //     FactoryBuildingStats.fromProto(proto.factoryBuilding)
+          //   else ->
+          //     throw IllegalStateException("Invalid case: ${proto.buildingUniqueStatsCase}")
+          // }
+
+          builder.append("      when (proto.${camelCase(def.name)}Case) {\n")
+          def.sealedMembers.forEach { member ->
+            when (member) {
+              is ProtoMessageMember.ProtoOneOfMember.OneOfOption -> {
+                // ignore
+              }
+
+              is ProtoMessageMember.ProtoOneOfMember.OneOfField -> {
+                val fieldName = member.field.name
+                val enumName = capitalSnakeCase(fieldName)
+                builder.append("        $protoOuterClassName$sealedName.${sealedName}Case.$enumName ->\n")
+                when (val memberType = member.field.type.type) {
+                  TypeExpr.EmptyMessage ->
+                    builder.append("          $sealedName.${capitalCamelCase(fieldName)}\n")
+
+                  is TypeExpr.MapType -> TODO()
+
+                  is TypeExpr.MessageOrEnumName -> {
+                    val access = "proto.${camelCase(fieldName)}"
+                    val typeName = capitalCamelCase(memberType.name)
+                    if (def.onTheFlyMessages.contains(memberType.name)) {
+                      builder.append("          $typeName.fromProto($access)\n")
+                    } else {
+                      val valuefy = "$typeName.fromProto($access)"
+                      builder.append("          $sealedName.${capitalCamelCase(fieldName)}($valuefy)\n")
+                    }
+                  }
+
+                  is TypeExpr.PrimitiveType -> {
+                    val typeName = capitalCamelCase(fieldName)
+                    builder.append(
+                      "          $sealedName.$typeName(proto.${camelCase(fieldName)})\n"
+                    )
+                  }
+                }
+              }
+            }
+          }
+          builder.append("        else -> throw IllegalStateException(\"Invalid case\")\n")
+          builder.append("      }\n")
           builder.append("  }\n")
           builder.append("  fun toProto(builder: ${protoOuterClassName}${def.name}.Builder) {\n")
-          builder.append("    TODO()\n")
+          builder.append("    when(this) {\n")
+          def.sealedMembers.forEach { member ->
+            when (member) {
+              is ProtoMessageMember.ProtoOneOfMember.OneOfOption -> {
+                // ignore
+              }
+
+              is ProtoMessageMember.ProtoOneOfMember.OneOfField -> {
+                val fieldName = member.field.name
+                val typeName = capitalCamelCase(fieldName)
+                when (val memberType = member.field.type.type) {
+                  TypeExpr.EmptyMessage ->
+                    builder.append("      $typeName -> builder.${camelCase(fieldName)}Builder\n")
+
+                  is TypeExpr.MapType -> TODO()
+
+                  is TypeExpr.MessageOrEnumName -> {
+                    if (def.onTheFlyMessages.contains(memberType.name)) {
+                      builder.append("      is ${capitalCamelCase(memberType.name)} ->\n")
+                      builder.append("        this.toProto(builder.${camelCase(fieldName)}Builder)\n")
+                    } else {
+                      builder.append("      is ${capitalCamelCase(fieldName)} ->\n")
+                      builder.append(
+                        "        this.${camelCase(fieldName)}.toProto(builder.${
+                          camelCase(fieldName)
+                        }Builder)\n"
+                      )
+                    }
+                  }
+
+                  is TypeExpr.PrimitiveType -> {
+                    val camelName = camelCase(fieldName)
+                    builder.append("      is $typeName ->\n")
+                    builder.append(
+                      "        builder.$camelName = this.$camelName\n"
+                    )
+                  }
+                }
+              }
+            }
+          }
+          builder.append("    }\n")
           builder.append("  }\n")
-          builder.append("}\n\n")
 
           def.sealedMembers.forEach { member ->
             when (member) {
@@ -444,17 +537,17 @@ class MutableKtDataClassGenerator(
               }
 
               is ProtoMessageMember.ProtoOneOfMember.OneOfField -> {
-                appendComments(builder, member.field.comments, "")
+                appendComments(builder, member.field.comments, "  ")
                 val subType = member.field.type
                 if (subType.type == TypeExpr.EmptyMessage) {
-                  builder.append("object ${capitalCamelCase(member.field.name)}: $sealedName\n")
+                  builder.append("  object ${capitalCamelCase(member.field.name)}: $sealedName\n")
                 } else if (subType.type is TypeExpr.MessageOrEnumName &&
                   def.onTheFlyMessages.contains(subType.type.name)
                 ) {
                   // do nothing
                   // 해당 타입을 위한 클래스가 이미 sealed interface를 extend 하고 있음
                 } else {
-                  builder.append("data class ${capitalCamelCase(member.field.name)}(")
+                  builder.append("  data class ${capitalCamelCase(member.field.name)}(")
                   val varVal = if (memberShouldBeVar(subType)) "var" else "val"
                   builder.append("$varVal ${camelCase(member.field.name)}: ")
                   builder.append(generateFieldType(subType))
@@ -463,6 +556,7 @@ class MutableKtDataClassGenerator(
               }
             }
           }
+          builder.append("}\n\n")
         }
 
         is ProtoServiceDef -> TODO()
