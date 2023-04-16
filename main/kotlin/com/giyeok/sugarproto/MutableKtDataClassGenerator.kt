@@ -242,7 +242,7 @@ class MutableKtDataClassGenerator(
               is ProtoEnumMember.EnumValueDef -> {
                 val tag =
                   if (member.minusTag) "-${member.tag.toValueString()}" else member.tag.toValueString()
-                builder.append("  ${capitalSnakeCase(member.name)}($tag)")
+                builder.append("  ${member.name}($tag)")
 
                 if (idx + 1 == def.members.size) {
                   builder.append(";\n")
