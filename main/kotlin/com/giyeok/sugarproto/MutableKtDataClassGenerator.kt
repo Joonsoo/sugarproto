@@ -29,7 +29,8 @@ class MutableKtDataClassGenerator(
   }
 
   fun TypeExpr.isInt() =
-    (this is TypeExpr.PrimitiveType) && (this.typ == SugarProtoAst.PrimitiveTypeEnum.INT32)
+    (this is TypeExpr.PrimitiveType) && (this.typ == SugarProtoAst.PrimitiveTypeEnum.INT32 ||
+      this.typ == SugarProtoAst.PrimitiveTypeEnum.SINT32)
 
   fun kotlinTypeOf(typ: TypeExpr): String = when (typ) {
     TypeExpr.EmptyMessage -> "Empty"
@@ -219,6 +220,7 @@ class MutableKtDataClassGenerator(
       finalImports.add("com.badlogic.gdx.utils.Array as GdxArray")
       finalImports.add("com.badlogic.gdx.utils.IntArray as GdxIntArray")
       finalImports.add("com.badlogic.gdx.utils.IntMap")
+      finalImports.add("com.badlogic.gdx.utils.ObjectMap")
       finalImports.add("com.giyeok.msspgame.libgdx.forEach")
     }
     finalImports.sorted().forEach {
