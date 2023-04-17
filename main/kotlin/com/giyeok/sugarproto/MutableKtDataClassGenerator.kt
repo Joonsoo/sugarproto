@@ -62,8 +62,8 @@ class MutableKtDataClassGenerator(
       SugarProtoAst.PrimitiveTypeEnum.INT64 -> "Long"
       SugarProtoAst.PrimitiveTypeEnum.SFIXED32 -> TODO()
       SugarProtoAst.PrimitiveTypeEnum.SFIXED64 -> TODO()
-      SugarProtoAst.PrimitiveTypeEnum.SINT32 -> TODO()
-      SugarProtoAst.PrimitiveTypeEnum.SINT64 -> TODO()
+      SugarProtoAst.PrimitiveTypeEnum.SINT32 -> "Int"
+      SugarProtoAst.PrimitiveTypeEnum.SINT64 -> "Long"
       SugarProtoAst.PrimitiveTypeEnum.STRING -> "String"
       SugarProtoAst.PrimitiveTypeEnum.UINT32 -> TODO()
       SugarProtoAst.PrimitiveTypeEnum.UINT64 -> TODO()
