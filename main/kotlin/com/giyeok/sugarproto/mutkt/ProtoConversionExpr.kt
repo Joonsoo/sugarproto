@@ -146,10 +146,10 @@ class ProtoConversionExprGen(
             ProtoSetterExpr.AddElemDelegate("add" + fieldDef.name.capitalClassFieldName + "Builder")
 
           is AtomicType.PrimitiveType ->
-            ProtoSetterExpr.AddElem("add" + fieldDef.name.classFieldName)
+            ProtoSetterExpr.AddElem("add" + fieldDef.name.capitalClassFieldName)
 
           is AtomicType.EnumRefType ->
-            ProtoSetterExpr.AddToProtoElem("add" + fieldDef.name.classFieldName)
+            ProtoSetterExpr.AddToProtoElem("add" + fieldDef.name.capitalClassFieldName)
         }
 
         ProtoConversionExpr(

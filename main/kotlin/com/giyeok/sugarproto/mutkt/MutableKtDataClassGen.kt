@@ -409,7 +409,7 @@ class MutableKtDataClassGen(
     imports.forEach { import ->
       addLine("import $import")
     }
-    if (imports.isNotEmpty()) {
+    if (gdxMode || imports.isNotEmpty()) {
       addLine()
     }
 
