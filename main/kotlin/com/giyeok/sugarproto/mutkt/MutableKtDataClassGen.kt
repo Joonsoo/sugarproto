@@ -37,9 +37,6 @@ class MutableKtDataClassGen(
     }
   }
 
-  fun indentString(): String =
-    (0 until indentLevel).map { "  " }.joinToString("")
-
   fun indent(body: () -> Unit) {
     indentLevel += 1
     body()

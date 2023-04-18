@@ -149,6 +149,9 @@ class ProtoConversionExprGen(
 
           is AtomicType.PrimitiveType ->
             ProtoSetterExpr.AddElem("add" + fieldDef.name.classFieldName)
+
+          is AtomicType.EnumRefType ->
+            ProtoSetterExpr.AddToProtoElem("add" + fieldDef.name.classFieldName)
         }
 
         ProtoConversionExpr(
@@ -288,6 +291,12 @@ sealed class ProtoSetterExpr {
   data class AddElem(val addFuncName: String): ProtoSetterExpr() {
     override fun expr(gen: MutableKtDataClassGen, inputExpr: String, builderExpr: String) {
       gen.addLine("$builderExpr.$addFuncName($inputExpr)")
+    }
+  }
+
+  data class AddToProtoElem(val addFuncName: String): ProtoSetterExpr() {
+    override fun expr(gen: MutableKtDataClassGen, inputExpr: String, builderExpr: String) {
+      gen.addLine("$builderExpr.$addFuncName($inputExpr.toProto())")
     }
   }
 
