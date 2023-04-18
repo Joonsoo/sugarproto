@@ -329,9 +329,8 @@ class MutableKtDataClassGen(
                   val pc = pcGen.fromField(field)
                   pc.toProtoExpr.expr(this, "this", "builder")
                 }
-                addLine("val subBuilder = builder.${subType.fieldName.classFieldName}Builder")
                 val pc = pcGen.fromField(subType.fieldDef)
-                pc.toProtoExpr.expr(this, "this", "subBuilder")
+                pc.toProtoExpr.expr(this, "this", "builder")
               }
               addLine("}")
             }
