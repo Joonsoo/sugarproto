@@ -275,9 +275,12 @@ class ProtoGen(val builder: StringBuilder = StringBuilder()) {
       addLine()
     }
 
+    if (defs.emptyRequired && defs.imports.all { it.import != "google/protobuf/empty.proto" }) {
+      addLine("import \"google/protobuf/empty.proto\";")
+    }
     defs.imports.forEach { import ->
       addComments(import.comments)
-      addLine("import ${protoString(import.import)}")
+      addLine("import ${protoString(import.import)};")
     }
     if (defs.imports.isNotEmpty()) {
       addLine()
