@@ -102,7 +102,20 @@ data class ProtoConversionExpr(
         }
 
         is ValueType.RepeatedType -> {
-          val elemAdder: ProtoSetterExpr = when (fieldDef.type.elemType) {
+          val getter: ProtoPostProcessorExpr = when (fieldDef.type.elemType) {
+            AtomicType.EmptyType -> TODO()
+
+            is AtomicType.NameRefType ->
+              ProtoPostProcessorExpr.AddFromProto(
+                fieldDef.name.classFieldName,
+                fieldDef.type.elemType.refName
+              )
+
+            is AtomicType.PrimitiveType ->
+              ProtoPostProcessorExpr.Add(fieldDef.name.classFieldName)
+          }
+
+          val setter: ProtoSetterExpr = when (fieldDef.type.elemType) {
             AtomicType.EmptyType -> TODO()
 
             is AtomicType.NameRefType ->
@@ -115,11 +128,11 @@ data class ProtoConversionExpr(
             ProtoGetterExpr.Const(tsGen.fromType(fieldDef.type).defaultValue),
             ProtoPostProcessorExpr.ForEach(
               fieldDef.name.classFieldName + "List",
-              ProtoPostProcessorExpr.Add(fieldDef.name.classFieldName)
+              getter
             ),
             ProtoSetterExpr.ForEach(
               fieldDef.name.classFieldName,
-              elemAdder,
+              setter,
             ),
           )
         }
@@ -194,6 +207,12 @@ sealed class ProtoPostProcessorExpr {
   data class Add(val fieldName: String): ProtoPostProcessorExpr() {
     override fun expr(gen: MutableKtDataClassGen, input: String, instanceExpr: String) {
       gen.addLine("$instanceExpr.$fieldName.add($input)")
+    }
+  }
+
+  data class AddFromProto(val fieldName: String, val typ: String): ProtoPostProcessorExpr() {
+    override fun expr(gen: MutableKtDataClassGen, input: String, instanceExpr: String) {
+      gen.addLine("$instanceExpr.$fieldName.add($typ.fromProto($input))")
     }
   }
 
