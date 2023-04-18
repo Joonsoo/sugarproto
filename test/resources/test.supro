@@ -1,0 +1,5 @@
+enum MyEnum {
+  option hello = true
+  1 HELLO [good = "hello", bad = "bye"]
+  2 GOOD
+}

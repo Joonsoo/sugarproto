@@ -5,20 +5,21 @@ import com.giyeok.sugarproto.name.SemanticName
 
 sealed class ProtoType {
   data class StreamType(val valueType: ValueType): ProtoType()
-  data class NoStreamType(val valueType: ValueType): ProtoType()
 }
 
-sealed class ValueType {
+sealed class ValueType: ProtoType() {
   data class RepeatedType(val elemType: AtomicType): ValueType()
   data class OptionalType(val elemType: AtomicType): ValueType()
   data class MapType(val keyType: AtomicType.PrimitiveType, val valueType: AtomicType): ValueType()
 }
 
-sealed class AtomicType {
+sealed class AtomicType: ValueType() {
   data class PrimitiveType(val type: SugarProtoAst.PrimitiveTypeEnum): AtomicType()
 
   // 이름은 항상 루트 scope에서부터 시작하는 canonical name으로
   data class Name(val name: String): AtomicType()
+
+  object EmptyType: AtomicType()
 
   // generated name은 별도로 처리
   // 역시 항상 루트 scope에서 시작하는 canonical name

@@ -35,7 +35,7 @@ class DefTraverser(val ast: SugarProtoAst.CompilationUnit) {
     )
   }
 
-  fun createMessageName(namingContext: NamingContext): String =
+  fun createMessageName(namingContext: NamingContextDep): String =
     namingContext.names.flatMap { it.split('_') }
       .joinToString("") { it.replaceFirstChar { it.uppercase() } }
 
@@ -43,7 +43,7 @@ class DefTraverser(val ast: SugarProtoAst.CompilationUnit) {
     comments: List<SugarProtoAst.Comment>,
     name: String,
     members: List<SugarProtoAst.MessageMemberDefWS>,
-    namingContext: NamingContext,
+    namingContext: NamingContextDep,
   ): ProtoMessageDef {
     val protoMembers = members.map { memberWS ->
       val currentNamingContext = namingContext + name
@@ -150,7 +150,7 @@ class DefTraverser(val ast: SugarProtoAst.CompilationUnit) {
       when (val member = memberWS.def) {
         is SugarProtoAst.FieldDef -> {
           val fieldType =
-            traverseType(member.typ, NamingContext(listOf(name, member.name.name)), mapOf())
+            traverseType(member.typ, NamingContextDep(listOf(name, member.name.name)), mapOf())
           check(!fieldType.isStream) { "stream is not allowed here" }
           val fieldValueType = fieldType.valueType
           check(!fieldValueType.optional) { "optional is not allowed for oneof member" }
@@ -171,6 +171,8 @@ class DefTraverser(val ast: SugarProtoAst.CompilationUnit) {
             )
           )
         }
+
+        is SugarProtoAst.CommonFieldDef -> TODO()
       }
     }
     return ProtoSealedDef(comments, name, protoMembers, onTheFlyMessages)
@@ -178,7 +180,7 @@ class DefTraverser(val ast: SugarProtoAst.CompilationUnit) {
 
   fun traverseTypeNoStream(
     type: SugarProtoAst.Type,
-    namingContext: NamingContext,
+    namingContext: NamingContextDep,
     localNames: Map<String, ProtoStreamableFieldType>,
   ): ProtoFieldType =
     when (type) {
@@ -206,7 +208,8 @@ class DefTraverser(val ast: SugarProtoAst.CompilationUnit) {
           val messageName = type.name?.name ?: createMessageName(namingContext)
           // top level에 새로 들어가는 메시지이기 때문에 naming context clear
           // TODO comment
-          val protoMessage = convertMessageDef(listOf(), messageName, type.fields, NamingContext())
+          val protoMessage =
+            convertMessageDef(listOf(), messageName, type.fields, NamingContextDep())
           defs.add(protoMessage)
           ProtoFieldType(
             FieldKindEnum.MessageKind,
@@ -292,7 +295,7 @@ class DefTraverser(val ast: SugarProtoAst.CompilationUnit) {
 
   fun traverseType(
     type: SugarProtoAst.Type,
-    namingContext: NamingContext,
+    namingContext: NamingContextDep,
     localNames: Map<String, ProtoStreamableFieldType>,
   ): ProtoStreamableFieldType =
     when (type) {
@@ -321,7 +324,7 @@ class DefTraverser(val ast: SugarProtoAst.CompilationUnit) {
 
         is SugarProtoAst.RpcDef -> {
           val rpc = member
-          val namingContext = NamingContext(serviceDef.name, rpc.name)
+          val namingContext = NamingContextDep(serviceDef.name, rpc.name)
           val localNames = mutableMapOf<String, ProtoStreamableFieldType>()
           rpc.wheres?.let { wheres ->
             wheres.wheres.forEach { where ->
@@ -365,7 +368,14 @@ class DefTraverser(val ast: SugarProtoAst.CompilationUnit) {
     comments: List<SugarProtoAst.Comment>,
     messageDef: SugarProtoAst.MessageDef
   ) {
-    defs.add(convertMessageDef(comments, messageDef.name.name, messageDef.members, NamingContext()))
+    defs.add(
+      convertMessageDef(
+        comments,
+        messageDef.name.name,
+        messageDef.members,
+        NamingContextDep()
+      )
+    )
   }
 
   fun traverseSealedDef(comments: List<SugarProtoAst.Comment>, sealedDef: SugarProtoAst.SealedDef) {

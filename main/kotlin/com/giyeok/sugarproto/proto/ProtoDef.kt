@@ -7,12 +7,13 @@ data class ProtoDefs(
   val comments: List<SugarProtoAst.Comment>,
   val packageName: String?,
   val imports: List<ImportDef>,
+  val emptyRequired: Boolean,
   val options: List<OptionDef>,
-  val defs: ProtoDef,
-  val trailingComments: List<SugarProtoAst.Comment>,
+  val defs: List<ProtoDef>,
   // sealed 내부에서 정의된 on the fly message/sealed가 있을 경우
   // 하위 클래스 -> 상위 클래스 이름의 맵
   val sealedSupers: Map<SemanticName, SemanticName>,
+  val trailingComments: List<SugarProtoAst.Comment>,
 )
 
 data class ImportDef(
@@ -67,18 +68,18 @@ sealed class ProtoMessageMember {
 
 sealed class ProtoOneOfMember {
   data class OneOfOption(val option: OptionDef): ProtoOneOfMember()
-  data class OneOfField(val field: ProtoMessageMember): ProtoOneOfMember()
+  data class OneOfField(val field: ProtoMessageMember.MessageField): ProtoOneOfMember()
 }
 
-sealed class ProtoSealedDef(
+data class ProtoSealedDef(
   val comments: List<SugarProtoAst.Comment>,
   val name: SemanticName,
   val commonFields: List<ProtoMessageMember.MessageField>,
   val sealedFields: List<ProtoMessageMember.MessageField>,
-  val trailingComments: List<SugarProtoAst.Comment>,
   // sealedFields에서 사용되는 타입 중 on the fly로 생성되어서 이 sealed definition에서만 사용될 수 있는 메시지 타입 이름
   // proto 생성 결과물은 동일하지만, kt data class로 생성했을 때 처리가 달라짐
   val exclusiveSealedMessages: Set<SemanticName>,
+  val trailingComments: List<SugarProtoAst.Comment>,
 ): ProtoDef()
 
 data class ProtoEnumDef(
@@ -110,6 +111,7 @@ sealed class ProtoServiceMember {
   data class ServiceOption(val option: OptionDef): ProtoServiceMember()
   data class ServiceRpc(
     val comments: List<SugarProtoAst.Comment>,
+    val name: SemanticName,
     val inType: ProtoType,
     val outType: ProtoType,
     val options: SugarProtoAst.FieldOptions?
