@@ -7,7 +7,7 @@ class ProtoConversionExprGen(
   val tsGen: TypeStringGen,
   val protoOuterClassName: String,
 ) {
-  fun fromField(fieldDef: KtFieldDef): ProtoConversionExpr {
+  fun fromField(fieldDef: KtFieldDef, collectionSizeHint: String? = null): ProtoConversionExpr {
     fun fromProtoPattern(typeName: String, fieldName: String): ProtoConversionExpr =
       ProtoConversionExpr(
         ProtoGetterExpr.FromProto(
@@ -29,7 +29,10 @@ class ProtoConversionExprGen(
 
       is AtomicType.EnumRefType ->
         ProtoConversionExpr(
-          ProtoGetterExpr.FromProto(fieldDef.type.refName, ProtoGetterExpr.SimpleGetterExpr(fieldDef.name.classFieldName)),
+          ProtoGetterExpr.FromProto(
+            fieldDef.type.refName,
+            ProtoGetterExpr.SimpleGetterExpr(fieldDef.name.classFieldName)
+          ),
           null,
           ProtoSetterExpr.ToProtoSimpleSet(fieldDef.name.classFieldName),
         )
@@ -82,7 +85,7 @@ class ProtoConversionExprGen(
         }
 
         ProtoConversionExpr(
-          ProtoGetterExpr.Const(tsGen.fromType(fieldDef.type).defaultValue),
+          ProtoGetterExpr.Const(tsGen.fromType(fieldDef.type, collectionSizeHint).defaultValue),
           ProtoPostProcessorExpr.ForEachMap(
             fieldDef.name.classFieldName + "Map",
             fieldDef.name.classFieldName,
@@ -153,7 +156,7 @@ class ProtoConversionExprGen(
         }
 
         ProtoConversionExpr(
-          ProtoGetterExpr.Const(tsGen.fromType(fieldDef.type).defaultValue),
+          ProtoGetterExpr.Const(tsGen.fromType(fieldDef.type, collectionSizeHint).defaultValue),
           ProtoPostProcessorExpr.ForEachList(
             fieldDef.name.classFieldName + "List",
             getter

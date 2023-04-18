@@ -135,7 +135,7 @@ class MutableKtDataClassGen(
               addLine("${field.name.classFieldName} = ${field.name.classFieldName},")
             }
             def.uniqueFields.forEach { field ->
-              val conversion = pcGen.fromField(field)
+              val conversion = pcGen.fromField(field, "proto.${field.name.classFieldName}Count")
               val initExpr = conversion.initExpr.expr("proto")
               if (initExpr.size == 1) {
                 addLine("${field.name.classFieldName} = ${initExpr.first()},")
