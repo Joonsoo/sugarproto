@@ -90,7 +90,7 @@ class MutableKtDataClassGen(
     if (sealedSuper == null) {
       addLine(") {")
     } else {
-      addLine("): ${sealedSuper.className} {")
+      addLine("): ${sealedSuper.className}() {")
     }
 
     val protoClassName = if (sealedSuper == null) {
