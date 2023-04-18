@@ -114,11 +114,11 @@ data class ProtoConversionExpr(
           ProtoConversionExpr(
             ProtoGetterExpr.Const(tsGen.fromType(fieldDef.type).defaultValue),
             ProtoPostProcessorExpr.ForEach(
-              fieldDef.name.classFieldName + "List",
+              fieldDef.name.classFieldName,
               ProtoPostProcessorExpr.Add(fieldDef.name.classFieldName + "List")
             ),
             ProtoSetterExpr.ForEach(
-              fieldDef.name.classFieldName + "List",
+              fieldDef.name.classFieldName,
               elemAdder,
             ),
           )
@@ -242,7 +242,7 @@ sealed class ProtoSetterExpr {
 
   data class AddElemDelegate(val addBuilderName: String): ProtoSetterExpr() {
     override fun expr(gen: MutableKtDataClassGen, inputExpr: String, builderExpr: String) {
-      gen.addLine("$inputExpr.toProto($builderExpr.$addBuilderName)")
+      gen.addLine("$inputExpr.toProto($builderExpr.$addBuilderName())")
     }
   }
 
