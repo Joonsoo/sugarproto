@@ -99,11 +99,11 @@ class TypeStringGen(val gdxMode: Boolean) {
       is ValueType.RepeatedType -> {
         if (gdxMode) {
           if (typ.elemType.isInt()) {
-            TypeString(false, "IntArray", "IntArray()")
+            TypeString(false, "GdxIntArray", "GdxIntArray()")
           } else if (typ.elemType.isLong()) {
-            TypeString(false, "LongArray", "LongArray()")
+            TypeString(false, "GdxLongArray", "GdxLongArray()")
           } else if (typ.elemType.isFloat()) {
-            TypeString(false, "FloatArray", "FloatArray()")
+            TypeString(false, "GdxFloatArray", "GdxFloatArray()")
           } else {
             val s = fromType(typ.elemType)
             TypeString(false, "GdxArray<${s.typeString}>", "GdxArray()")

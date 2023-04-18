@@ -320,6 +320,21 @@ class MutableKtDataClassGen(
       addLine()
     }
 
+    if (gdxMode) {
+      addLine("import com.badlogic.gdx.utils.Array as GdxArray")
+      addLine("import com.badlogic.gdx.utils.IntArray as GdxIntArray")
+      addLine("import com.badlogic.gdx.utils.LongArray as GdxLongArray")
+      addLine("import com.badlogic.gdx.utils.FloatArray as GdxFloatArray")
+      addLine("import com.badlogic.gdx.utils.IntIntMap")
+      addLine("import com.badlogic.gdx.utils.IntFloatMap")
+      addLine("import com.badlogic.gdx.utils.IntMap")
+      addLine("import com.badlogic.gdx.utils.LongMap")
+      addLine("import com.badlogic.gdx.utils.ObjectIntMap")
+      addLine("import com.badlogic.gdx.utils.ObjectLongMap")
+      addLine("import com.badlogic.gdx.utils.ObjectFloatMap")
+      addLine("import com.badlogic.gdx.utils.ObjectMap")
+      addLine("import com.giyeok.msspgame.libgdx.forEach")
+    }
     imports.forEach { import ->
       addLine("import $import")
     }
