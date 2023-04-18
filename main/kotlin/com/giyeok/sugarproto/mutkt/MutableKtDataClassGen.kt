@@ -107,7 +107,7 @@ class MutableKtDataClassGen(
 
     indent {
       companion {
-        addLine("val defaultValue = $className(")
+        addLine("fun defaultValue() = $className(")
         indent {
           def.allFields.forEach { field ->
             val typeString = tsGen.fromType(field.type)
@@ -203,7 +203,7 @@ class MutableKtDataClassGen(
       val protoTypeName = "$protoOuterClassName$enumName"
       addLine()
       companion {
-        addLine("val defaultValue = $enumName.${def.values.first().name.enumClassFieldName}")
+        addLine("fun defaultValue() = $enumName.${def.values.first().name.enumClassFieldName}")
         addLine()
         addLine("fun fromProto(proto: $protoTypeName): $enumName =")
         addLine("  values().find { it.tag == proto.number }!!")
@@ -272,7 +272,7 @@ class MutableKtDataClassGen(
               addLine("): $className() {")
               indent {
                 companion {
-                  addLine("val defaultValue = ${subType.fieldName.className}(")
+                  addLine("fun defaultValue() = ${subType.fieldName.className}(")
                   indent {
                     def.commonFields.forEach { field ->
                       val ts = tsGen.fromType(field.type)
@@ -311,7 +311,7 @@ class MutableKtDataClassGen(
             addLine("): $className() {")
             indent {
               companion {
-                addLine("val defaultValue = ${subType.fieldName.className}(")
+                addLine("fun defaultValue() = ${subType.fieldName.className}(")
                 indent {
                   def.commonFields.forEach { field ->
                     val ts = tsGen.fromType(field.type)
@@ -340,7 +340,7 @@ class MutableKtDataClassGen(
         }
       }
       companion {
-        addLine("val defaultValue = $defaultValue")
+        addLine("fun defaultValue() = $defaultValue")
         addLine("fun fromProto(proto: $protoTypeName): $className {")
         indent {
           val postProcessors = mutableListOf<ProtoPostProcessorExpr>()
