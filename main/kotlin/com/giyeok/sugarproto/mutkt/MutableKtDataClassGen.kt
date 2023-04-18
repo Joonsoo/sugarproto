@@ -373,7 +373,7 @@ class MutableKtDataClassGen(
             }
             addLine("else -> TODO()")
           }
-          addLine(")")
+          addLine("}")
           postProcessors.forEach { postProcessor ->
             postProcessor.expr(this, "proto", "instance")
           }
