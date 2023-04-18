@@ -106,8 +106,7 @@ class MutableKtDataClassGen(
     }
 
     indent {
-      addLine("companion object {")
-      indent {
+      companion {
         addLine("val defaultValue = $className(")
         indent {
           def.allFields.forEach { field ->
@@ -157,7 +156,6 @@ class MutableKtDataClassGen(
         }
         addLine("}")
       }
-      addLine("}")
       addLine()
       if (sealedSuper != null) {
         addLine("override fun toProto(builder: $toProtoClassName.Builder) {")
@@ -204,14 +202,12 @@ class MutableKtDataClassGen(
 
       val protoTypeName = "$protoOuterClassName$enumName"
       addLine()
-      addLine("companion object {")
-      indent {
+      companion {
         addLine("val defaultValue = $enumName.${def.values.first().name.enumClassFieldName}")
         addLine()
         addLine("fun fromProto(proto: $protoTypeName): $enumName =")
         addLine("  values().find { it.tag == proto.number }!!")
       }
-      addLine("}")
       addLine()
       addLine("fun toProto(): $protoTypeName =")
       addLine("  $protoTypeName.forNumber(tag)")
@@ -253,7 +249,15 @@ class MutableKtDataClassGen(
               if (idx == 0) {
                 defaultValue = subType.fieldName.className
               }
-              addLine("object ${subType.fieldName.className}: $className()")
+              addLine("object ${subType.fieldName.className}: $className() {")
+              indent {
+                addLine("override fun toProto(builder: $protoTypeName.Builder) {")
+                indent {
+                  addLine("builder.${subType.fieldName.capitalClassFieldName}Builder)")
+                }
+                addLine("}")
+              }
+              addLine("}")
               addLine()
             } else {
               if (idx == 0) {
@@ -277,6 +281,16 @@ class MutableKtDataClassGen(
                   }
                   addLine(")")
                 }
+                addLine()
+                addLine("override fun toProto(builder: $protoTypeName.Builder) {")
+                indent {
+                  def.commonFields.forEach { field ->
+                    val pc = pcGen.fromField(field)
+                    pc.toProtoExpr.expr(this, "this", "builder")
+                  }
+                  addLine("builder.${subType.fieldName.classFieldName}Builder")
+                }
+                addLine("}")
               }
               addLine("}")
               addLine()
@@ -314,8 +328,7 @@ class MutableKtDataClassGen(
           }
         }
       }
-      addLine("companion object {")
-      indent {
+      companion {
         addLine("val defaultValue = $defaultValue")
 //        addLine("fun fromProto(proto: $protoTypeName): $className {")
 //        indent {
@@ -368,7 +381,6 @@ class MutableKtDataClassGen(
 //        }
 //        addLine("}")
       }
-      addLine("}")
       addLine()
 //      addLine("fun toProto(builder: ${protoTypeName}.Builder) {")
 //      indent {
