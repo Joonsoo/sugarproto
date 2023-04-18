@@ -240,7 +240,7 @@ class MutableKtDataClassGen(
           is KtSealedSubType.DedicatedMessage -> {
             // do nothing - 알아서 필요한 타입이 생성되어 있음
             if (idx == 0) {
-              defaultValue = "${subType.typeName}.defaultValue"
+              defaultValue = "${subType.typeName}.defaultValue()"
             }
           }
 

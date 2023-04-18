@@ -56,7 +56,7 @@ class TypeStringGen(val gdxMode: Boolean) {
         TypeString(false, typ.name, "TODO()")
 
       is AtomicType.EnumName ->
-        TypeString(true, typ.name, "${typ.name}.defaultValue()")
+        TypeString(true, typ.name, "${typ.name}.defaultValue")
 
       is AtomicType.MessageName ->
         TypeString(false, typ.name, "${typ.name}.defaultValue()")
