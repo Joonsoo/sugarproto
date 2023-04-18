@@ -203,7 +203,7 @@ class MutableKtDataClassGen(
       val protoTypeName = "$protoOuterClassName$enumName"
       addLine()
       companion {
-        addLine("fun defaultValue() = $enumName.${def.values.first().name.enumClassFieldName}")
+        addLine("val defaultValue = $enumName.${def.values.first().name.enumClassFieldName}")
         addLine()
         addLine("fun fromProto(proto: $protoTypeName): $enumName =")
         addLine("  values().find { it.tag == proto.number }!!")
