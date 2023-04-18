@@ -18,38 +18,42 @@ sealed class AtomicType: ValueType() {
 
   data class PrimitiveType(val type: SugarProtoAst.PrimitiveTypeEnum): AtomicType()
 
-  sealed class NameRefType: AtomicType() {
+  sealed class EnumRefType: AtomicType() {
+    abstract val refName: String
+  }
+
+  sealed class MessageRefType: AtomicType() {
     abstract val refName: String
   }
 
   // 이름은 항상 루트 scope에서부터 시작하는 canonical name으로
-  data class UnknownName(val name: String): NameRefType() {
+  data class UnknownName(val name: String): MessageRefType() {
     override val refName: String get() = name
   }
 
-  data class MessageName(val name: String): NameRefType() {
+  data class MessageName(val name: String): MessageRefType() {
     override val refName: String get() = name
   }
 
-  data class EnumName(val name: String): NameRefType() {
+  data class EnumName(val name: String): EnumRefType() {
     override val refName: String get() = name
   }
 
-  data class SealedName(val name: String): NameRefType() {
+  data class SealedName(val name: String): MessageRefType() {
     override val refName: String get() = name
   }
 
   // generated name은 별도로 처리
   // 역시 항상 루트 scope에서 시작하는 canonical name
-  data class GeneratedMessageName(val name: SemanticName): NameRefType() {
+  data class GeneratedMessageName(val name: SemanticName): MessageRefType() {
     override val refName: String get() = name.messageName
   }
 
-  data class GeneratedEnumName(val name: SemanticName): NameRefType() {
+  data class GeneratedEnumName(val name: SemanticName): EnumRefType() {
     override val refName: String get() = name.enumName
   }
 
-  data class GeneratedSealedName(val name: SemanticName): NameRefType() {
+  data class GeneratedSealedName(val name: SemanticName): MessageRefType() {
     override val refName: String get() = name.messageName
   }
 }

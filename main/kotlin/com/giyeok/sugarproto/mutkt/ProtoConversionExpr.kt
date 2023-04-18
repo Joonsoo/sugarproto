@@ -24,8 +24,15 @@ class ProtoConversionExprGen(
       is AtomicType.UnknownName ->
         throw IllegalStateException("Unsupported? maybe? ${fieldDef.type.name}")
 
-      is AtomicType.NameRefType ->
+      is AtomicType.MessageRefType ->
         fromProtoPattern(fieldDef.type.refName, fieldDef.name.classFieldName)
+
+      is AtomicType.EnumRefType ->
+        ProtoConversionExpr(
+          ProtoGetterExpr.SimpleGetterExpr(fieldDef.name.classFieldName),
+          null,
+          ProtoSetterExpr.SimpleSet(fieldDef.name.classFieldName),
+        )
 
       is AtomicType.PrimitiveType ->
         // progress = proto.progress
@@ -42,7 +49,13 @@ class ProtoConversionExprGen(
           is AtomicType.PrimitiveType ->
             ProtoGetterExpr.SimpleGetterExpr(fieldDef.name.classFieldName)
 
-          is AtomicType.NameRefType ->
+          is AtomicType.MessageRefType ->
+            ProtoGetterExpr.FromProto(
+              fieldDef.type.valueType.refName,
+              ProtoGetterExpr.SimpleGetterExpr(fieldDef.name.classFieldName)
+            )
+
+          is AtomicType.EnumRefType ->
             ProtoGetterExpr.FromProto(
               fieldDef.type.valueType.refName,
               ProtoGetterExpr.SimpleGetterExpr(fieldDef.name.classFieldName)
@@ -58,7 +71,13 @@ class ProtoConversionExprGen(
               fieldDef.name.classFieldName
             )
 
-          is AtomicType.NameRefType ->
+          is AtomicType.EnumRefType ->
+            ProtoSetterExpr.PutToProtoElem(
+              "put${fieldDef.name.capitalClassFieldName}",
+              fieldDef.name.classFieldName
+            )
+
+          is AtomicType.MessageRefType ->
             ProtoSetterExpr.PutElemDelegate(
               "put${fieldDef.name.capitalClassFieldName}",
               protoOuterClassName + fieldDef.type.valueType.refName,
@@ -78,7 +97,8 @@ class ProtoConversionExprGen(
       is ValueType.OptionalType -> {
         when (fieldDef.type.elemType) {
           AtomicType.EmptyType -> TODO()
-          is AtomicType.NameRefType ->
+
+          is AtomicType.MessageRefType ->
             // water = if (!proto.hasWater()) null else TileWater.fromProto(proto.water)
             ProtoConversionExpr(
               ProtoGetterExpr.IfHas(
@@ -95,6 +115,8 @@ class ProtoConversionExprGen(
               ),
             )
 
+          is AtomicType.EnumRefType -> TODO()
+
           is AtomicType.PrimitiveType -> TODO()
         }
       }
@@ -103,20 +125,26 @@ class ProtoConversionExprGen(
         val getter: ProtoPostProcessorExpr = when (fieldDef.type.elemType) {
           AtomicType.EmptyType -> TODO()
 
-          is AtomicType.NameRefType ->
+          is AtomicType.PrimitiveType ->
+            ProtoPostProcessorExpr.Add(fieldDef.name.classFieldName)
+
+          is AtomicType.MessageRefType ->
             ProtoPostProcessorExpr.AddFromProto(
               fieldDef.name.classFieldName,
               fieldDef.type.elemType.refName
             )
 
-          is AtomicType.PrimitiveType ->
-            ProtoPostProcessorExpr.Add(fieldDef.name.classFieldName)
+          is AtomicType.EnumRefType ->
+            ProtoPostProcessorExpr.AddFromProto(
+              fieldDef.name.classFieldName,
+              fieldDef.type.elemType.refName,
+            )
         }
 
         val setter: ProtoSetterExpr = when (fieldDef.type.elemType) {
           AtomicType.EmptyType -> TODO()
 
-          is AtomicType.NameRefType ->
+          is AtomicType.MessageRefType ->
             ProtoSetterExpr.AddElemDelegate("add" + fieldDef.name.capitalClassFieldName + "Builder")
 
           is AtomicType.PrimitiveType ->
@@ -240,6 +268,12 @@ sealed class ProtoSetterExpr {
     }
   }
 
+  data class ToProtoSimpleSet(val fieldName: String): ProtoSetterExpr() {
+    override fun expr(gen: MutableKtDataClassGen, inputExpr: String, builderExpr: String) {
+      gen.addLine("$inputExpr.$fieldName = $builderExpr.$fieldName.toProto()")
+    }
+  }
+
   data class Delegate(
     val thisFieldName: String,
     val builderFieldName: String,
@@ -260,6 +294,12 @@ sealed class ProtoSetterExpr {
   data class PutElem(val putFuncName: String, val thisFieldName: String): ProtoSetterExpr() {
     override fun expr(gen: MutableKtDataClassGen, inputExpr: String, builderExpr: String) {
       gen.addLine("$builderExpr.$putFuncName($inputExpr.$thisFieldName)")
+    }
+  }
+
+  data class PutToProtoElem(val putFuncName: String, val thisFieldName: String): ProtoSetterExpr() {
+    override fun expr(gen: MutableKtDataClassGen, inputExpr: String, builderExpr: String) {
+      gen.addLine("$builderExpr.$putFuncName($inputExpr.$thisFieldName.toProto())")
     }
   }
 
