@@ -6,6 +6,12 @@ data class SemanticName constructor(val words: List<String>) {
   private constructor(name: String): this(name.toWords())
   private constructor(ident: SugarProtoAst.Ident): this(ident.name.toWords())
 
+  fun camelCase(): String {
+    val restWords = words.drop(1)
+    return words.first().lowercase() +
+      restWords.joinToString("") { word -> word.replaceFirstChar { it.uppercase() } }
+  }
+
   fun capitalCamelCase(): String =
     words.joinToString("") { word -> word.replaceFirstChar { it.uppercase() } }
 
@@ -21,6 +27,12 @@ data class SemanticName constructor(val words: List<String>) {
   val messageFieldName: String get() = lowerSnakeCase()
   val serviceName: String get() = capitalCamelCase()
   val rpcName: String get() = capitalCamelCase()
+
+  val enumClassName: String get() = capitalCamelCase()
+  val enumClassFieldName: String get() = capitalSnakeCase()
+  val className: String get() = capitalCamelCase()
+  val classFieldName: String get() = camelCase()
+  val capitalClassFieldName: String get() = capitalCamelCase()
 
   companion object {
     fun enumName(name: String) = SemanticName(name)

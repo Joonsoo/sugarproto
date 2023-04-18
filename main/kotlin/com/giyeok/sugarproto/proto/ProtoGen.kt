@@ -139,10 +139,13 @@ class ProtoGen(val builder: StringBuilder = StringBuilder()) {
   }
 
   fun ValueType.toProtoString(): String = when (this) {
+    is AtomicType.EnumName -> this.name
+    is AtomicType.MessageName -> this.name
+    is AtomicType.SealedName -> this.name
+    is AtomicType.UnknownName -> this.name
     is AtomicType.GeneratedEnumName -> this.name.enumName
     is AtomicType.GeneratedMessageName -> this.name.messageName
     is AtomicType.GeneratedSealedName -> this.name.messageName
-    is AtomicType.Name -> this.name
     is AtomicType.PrimitiveType -> when (this.type) {
       SugarProtoAst.PrimitiveTypeEnum.BOOL -> "bool"
       SugarProtoAst.PrimitiveTypeEnum.BYTES -> "bytes"

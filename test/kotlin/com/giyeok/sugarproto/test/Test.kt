@@ -1,7 +1,9 @@
 package com.giyeok.sugarproto.test
 
 import com.giyeok.sugarproto.SugarProtoParser
-import com.giyeok.sugarproto.proto.DefTraverser
+import com.giyeok.sugarproto.mutkt.MutableKotlinDefConverter
+import com.giyeok.sugarproto.mutkt.MutableKtDataClassGen
+import com.giyeok.sugarproto.proto.ProtoDefTraverser
 import com.giyeok.sugarproto.proto.ProtoGen
 import org.junit.jupiter.api.Test
 
@@ -11,8 +13,13 @@ class Test {
     val sourceText = javaClass.getResourceAsStream("/world.supro")!!.bufferedReader().readText()
     val parsed = SugarProtoParser.parse(sourceText)
 
-    val trav = DefTraverser(parsed).traverse()
-    val proto = ProtoGen().generate(trav)
-    println(proto)
+    val defs = ProtoDefTraverser(parsed).traverse()
+
+//    val proto = ProtoGen().generate(defs)
+//    println(proto)
+
+    val ktDefs = MutableKotlinDefConverter(defs).convert()
+    val kt = MutableKtDataClassGen(ktDefs, protoOuterClassName = "WorldProto.").generate()
+    println(kt)
   }
 }

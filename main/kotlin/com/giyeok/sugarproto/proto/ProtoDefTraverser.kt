@@ -8,7 +8,7 @@ import com.giyeok.sugarproto.toValue
 // AST -> ProtoMessageDef
 // on the fly message/enum들은 모두 top level에 정의한다
 // 특별히 nested로 명시한 경우에만 nested message/enum으로 변환
-class DefTraverser(val ast: SugarProtoAst.CompilationUnit) {
+class ProtoDefTraverser(val ast: SugarProtoAst.CompilationUnit) {
   private val packageName = ast.pkgDef?.names?.joinToString(".") { it.name }
 
   private var emptyRequired = false
@@ -16,6 +16,59 @@ class DefTraverser(val ast: SugarProtoAst.CompilationUnit) {
   private val defs = mutableListOf<ProtoDef>()
 
   private val sealedSupers = mutableMapOf<SemanticName, SemanticName>()
+
+  private val nameLookup = mutableMapOf<String, AtomicType>()
+
+  init {
+    fun addEnumName(name: String) {
+      nameLookup[name] = AtomicType.EnumName(name)
+    }
+
+    fun addMessageName(name: String) {
+      nameLookup[name] = AtomicType.MessageName(name)
+    }
+
+    fun addSealedName(name: String) {
+      nameLookup[name] = AtomicType.SealedName(name)
+    }
+
+    fun traverseMessageDef(members: List<SugarProtoAst.MessageMemberDefWS>, name: String) {
+      members.forEach { memberWS ->
+        when (val member = memberWS.def) {
+          is SugarProtoAst.EnumDef -> addEnumName("$name.${member.name.name}")
+          is SugarProtoAst.FieldDef -> {}
+          is SugarProtoAst.MessageDef -> {
+            addMessageName("$name.${member.name.name}")
+            traverseMessageDef(member.members, "$name.${member.name.name}")
+          }
+
+          is SugarProtoAst.OneOfDef -> {}
+          is SugarProtoAst.OptionDef -> {}
+          is SugarProtoAst.ReservedDef -> {}
+        }
+      }
+    }
+
+    ast.defs.forEach { defWS ->
+      when (val def = defWS.def) {
+        is SugarProtoAst.EnumDef ->
+          addEnumName(def.name.name)
+
+        is SugarProtoAst.MessageDef -> {
+          addMessageName(def.name.name)
+          traverseMessageDef(def.members, def.name.name)
+        }
+
+        is SugarProtoAst.SealedDef ->
+          addSealedName(def.name.name)
+
+        is SugarProtoAst.ServiceDef -> TODO()
+      }
+    }
+  }
+
+  fun lookupName(name: String): AtomicType =
+    nameLookup[name] ?: AtomicType.UnknownName(name)
 
   fun traverseEnum(
     comments: List<SugarProtoAst.Comment>,
@@ -137,9 +190,11 @@ class DefTraverser(val ast: SugarProtoAst.CompilationUnit) {
         } else {
           val messageName = type.name?.name?.let { SemanticName.messageName(it) }
             ?: namingContext.messageName()
+          val subDefs = mutableListOf<ProtoDef>()
           val generatedMessage =
-            traverseMessage(listOf(), messageName, type.fields, NamingContext(messageName), defs)
+            traverseMessage(listOf(), messageName, type.fields, NamingContext(messageName), subDefs)
           defs.add(generatedMessage)
+          defs.addAll(subDefs)
           AtomicType.GeneratedMessageName(generatedMessage.name)
         }
       }
@@ -147,8 +202,12 @@ class DefTraverser(val ast: SugarProtoAst.CompilationUnit) {
       is SugarProtoAst.OnTheFlySealedMessageType -> {
         val sealedName = type.name?.name?.let { SemanticName.messageName(it) }
           ?: namingContext.messageName()
-        val generatedSealed = traverseSealed(listOf(), sealedName, type.fields, namingContext, defs)
+        val newNamingContext = if (type.name != null) NamingContext() else namingContext
+        val subDefs = mutableListOf<ProtoDef>()
+        val generatedSealed =
+          traverseSealed(listOf(), sealedName, type.fields, newNamingContext, subDefs)
         defs.add(generatedSealed)
+        defs.addAll(subDefs)
         AtomicType.GeneratedSealedName(generatedSealed.name)
       }
 
@@ -183,10 +242,10 @@ class DefTraverser(val ast: SugarProtoAst.CompilationUnit) {
       }
 
       is SugarProtoAst.MultiName ->
-        AtomicType.Name(type.names.joinToString(".") { it.name })
+        lookupName(type.names.joinToString(".") { it.name })
 
       is SugarProtoAst.SingleName -> {
-        localNames[type.name] ?: AtomicType.Name(type.name)
+        localNames[type.name] ?: lookupName(type.name)
       }
     }
   }
@@ -263,6 +322,8 @@ class DefTraverser(val ast: SugarProtoAst.CompilationUnit) {
     namingContext: NamingContext,
     defs: MutableList<ProtoDef>
   ): ProtoSealedDef {
+    val subDefs = mutableListOf<ProtoDef>()
+
     val commonFields: List<ProtoMessageMember.MessageField> =
       members.mapNotNull { memberWS ->
         when (val member = memberWS.def) {
@@ -271,7 +332,7 @@ class DefTraverser(val ast: SugarProtoAst.CompilationUnit) {
               memberWS.comments.filterNotNull(),
               member.field,
               namingContext + name,
-              defs
+              subDefs
             )
           }
 
@@ -279,29 +340,32 @@ class DefTraverser(val ast: SugarProtoAst.CompilationUnit) {
         }
       }
 
-    val exclusiveSealedMessages = mutableSetOf<SemanticName>()
-
     val sealedFields: List<ProtoMessageMember.MessageField> =
       members.mapNotNull { memberWS ->
         when (val member = memberWS.def) {
           is SugarProtoAst.CommonFieldDef -> null
           is SugarProtoAst.FieldDef -> {
             val field =
-              traverseMessageField(memberWS.comments.filterNotNull(), member, namingContext, defs)
+              traverseMessageField(
+                memberWS.comments.filterNotNull(),
+                member,
+                namingContext + name,
+                subDefs
+              )
             if (field.type is AtomicType.GeneratedMessageName) {
-              exclusiveSealedMessages.add(field.type.name)
+              sealedSupers[field.type.name] = name
             }
             field
           }
         }
       }
 
+    defs.addAll(subDefs)
     return ProtoSealedDef(
       comments,
       name,
       commonFields,
       sealedFields,
-      setOf(),
       listOf(),
     )
   }

@@ -76,9 +76,6 @@ data class ProtoSealedDef(
   val name: SemanticName,
   val commonFields: List<ProtoMessageMember.MessageField>,
   val sealedFields: List<ProtoMessageMember.MessageField>,
-  // sealedFields에서 사용되는 타입 중 on the fly로 생성되어서 이 sealed definition에서만 사용될 수 있는 메시지 타입 이름
-  // proto 생성 결과물은 동일하지만, kt data class로 생성했을 때 처리가 달라짐
-  val exclusiveSealedMessages: Set<SemanticName>,
   val trailingComments: List<SugarProtoAst.Comment>,
 ): ProtoDef()
 
