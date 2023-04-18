@@ -95,7 +95,7 @@ class MutableKtDataClassGen(
     val protoClassName = if (sealedSuper == null) {
       "$protoOuterClassName${def.name.className}"
     } else {
-      "proto: $protoOuterClassName${sealedSuper.className}"
+      "$protoOuterClassName${sealedSuper.className}"
     }
 
     indent {
