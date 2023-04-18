@@ -30,7 +30,7 @@ data class EnumValueDef(
 data class KtDataClassDef(
   val comments: List<SugarProtoAst.Comment>,
   val name: SemanticName,
-  val superClass: SemanticName?,
+  val superClass: SuperName?,
   val inheritedFields: List<KtFieldDef>,
   val uniqueFields: List<KtFieldDef>,
   val nestedDefs: List<KtDef>,

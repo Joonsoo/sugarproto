@@ -32,7 +32,7 @@ class MutableKotlinDefConverter(val defs: ProtoDefs) {
     val sealedSuper = defs.sealedSupers[def.name]
     val inheritedFields: List<KtFieldDef> = if (sealedSuper != null) {
       defs.defs.filterIsInstance<ProtoSealedDef>()
-        .find { it.name == sealedSuper }!!
+        .find { it.name == sealedSuper.superClassName }!!
         .commonFields
         .map { convertField(it) }
     } else {
