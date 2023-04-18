@@ -27,10 +27,10 @@ RpcTypeWheres = RpcTypeWhere (WS ',' WS RpcTypeWhere)* {RpcTypeWheres(wheres=[$0
 RpcTypeWhere = Ident WS '=' WS Type {RpcTypeWhere(name=$0, typ=$4)}
 
 Type: Type = PrimitiveType&Tk {PrimitiveType(typ=$0)}
-  | RepeatedType
-  | OptionalType
-  | MapType
-  | StreamType
+  | "repeated"&Tk WS '<' WS Type WS '>' {RepeatedType(elemType=$4)}
+  | "optional"&Tk WS '<' WS Type WS '>' {OptionalType(elemType=$4)}
+  | "map"&Tk WS '<' WS Type WS ',' WS Type WS '>' {MapType(keyType=$4, valueType=$8)}
+  | "stream"&Tk WS '<' WS Type WS '>' {StreamType(elemType=$4)}
   | OnTheFlyMessageType
   | OnTheFlySealedMessageType
   | OnTheFlyEnumType
@@ -41,11 +41,6 @@ PrimitiveType: %PrimitiveTypeEnum =
   | "uint32" {%UINT32} | "uint64" {%UINT64} | "sint32" {%SINT32} | "sint64" {%SINT64}
   | "fixed32" {%FIXED32} | "fixed64" {%FIXED64} | "sfixed32" {%SFIXED32} | "sfixed64" {%SFIXED64}
   | "bool" {%BOOL} | "string" {%STRING} | "bytes" {%BYTES}
-
-RepeatedType = "repeated"&Tk WS '<' WS Type WS '>' {RepeatedType(elemType=$4)}
-OptionalType = "optional"&Tk WS '<' WS Type WS '>' {OptionalType(elemType=$4)}
-MapType = "map"&Tk WS '<' WS Type WS ',' WS Type WS '>' {MapType(keyType=$4, valueType=$8)}
-StreamType = "stream"&Tk WS '<' WS Type WS '>' {StreamType(elemType=$4)}
 
 OnTheFlyMessageType = (IdentNoSealedEnum WS)? '{' MessageMembersWS? WS '}'
                       {OnTheFlyMessageType(name=$0$0, fields=$2 ?: [])}
@@ -87,7 +82,8 @@ ReservedRangeEnd: ReservedRangeEnd = IntLiteral | "max"&Tk {Max()}
 SealedDef = "sealed"&Tk WS Ident WS '{' SealedMembersWS? WS '}' {SealedDef(name=$2, members=$5 ?: [])}
 SealedMembersWS = WS SealedMemberDef ((WS ',' WS | WSNL) SealedMemberDef {SealedMemberDefWS(comments=$0, def=$1)})*
                   {[SealedMemberDefWS(comments=$0, def=$1)] + $2}
-SealedMemberDef: SealedMemberDef = FieldDef
+SealedMemberDef: SealedMemberDef = FieldDef | CommonFieldDef
+CommonFieldDef = "common"&Tk WS FieldDef {CommonFieldDef(field=$2)}
 
 EnumDef = "enum"&Tk WS Ident WS '{' EnumMembersWS? WS '}' {EnumDef(name=$2, members=$5 ?: [])}
 EnumMembersWS = WS EnumMemberDef ((WS ',' WS | WSNL) EnumMemberDef {EnumMemberDefWS(comments=$0, def=$1)})*
