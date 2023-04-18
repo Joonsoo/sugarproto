@@ -9,7 +9,7 @@ data class ProtoConversionExpr(
   val toProtoExpr: ProtoSetterExpr,
 ) {
   companion object {
-    fun fromField(fieldDef: KtFieldDef): ProtoConversionExpr {
+    fun fromField(fieldDef: KtFieldDef, tsGen: TypeStringGen): ProtoConversionExpr {
       fun fromProtoPattern(typeName: String, fieldName: String): ProtoConversionExpr =
         ProtoConversionExpr(
           ProtoGetterExpr.FromProto(
@@ -17,7 +17,7 @@ data class ProtoConversionExpr(
             ProtoGetterExpr.SimpleGetterExpr(fieldName)
           ),
           null,
-          ProtoSetterExpr.Expr,
+          ProtoSetterExpr.Delegate(fieldName, fieldName + "Builder", false),
         )
 
       return when (fieldDef.type) {
@@ -34,7 +34,7 @@ data class ProtoConversionExpr(
           ProtoConversionExpr(
             ProtoGetterExpr.SimpleGetterExpr(fieldDef.name.classFieldName),
             null,
-            ProtoSetterExpr.Expr
+            ProtoSetterExpr.SimpleSet(fieldDef.name.classFieldName),
           )
 
         is ValueType.MapType -> {
@@ -51,14 +51,29 @@ data class ProtoConversionExpr(
               )
           }
 
-          // TODO gdx
+          val setter: ProtoSetterExpr = when (fieldDef.type.valueType) {
+            AtomicType.EmptyType -> TODO()
+
+            is AtomicType.PrimitiveType ->
+              ProtoSetterExpr.PutElem(
+                "put${fieldDef.name.capitalClassFieldName}",
+                fieldDef.name.classFieldName
+              )
+
+            is AtomicType.NameRefType ->
+              ProtoSetterExpr.PutElemDelegate(
+                "put${fieldDef.name.capitalClassFieldName}",
+                fieldDef.type.valueType.refName,
+              )
+          }
+
           ProtoConversionExpr(
-            ProtoGetterExpr.Const("mutableMapOf()"),
+            ProtoGetterExpr.Const(tsGen.fromType(fieldDef.type).defaultValue),
             ProtoPostProcessorExpr.ForEach(
               fieldDef.name.classFieldName + "Map",
               ProtoPostProcessorExpr.Put(fieldDef.name.classFieldName + "Map", valueBody)
             ),
-            ProtoSetterExpr.Expr,
+            ProtoSetterExpr.ForEach(fieldDef.name.classFieldName, setter),
           )
         }
 
@@ -75,7 +90,11 @@ data class ProtoConversionExpr(
                   )
                 ),
                 null,
-                ProtoSetterExpr.Expr,
+                ProtoSetterExpr.Delegate(
+                  fieldDef.name.classFieldName,
+                  fieldDef.name.classFieldName + "Builder",
+                  true
+                ),
               )
 
             is AtomicType.PrimitiveType -> TODO()
@@ -83,13 +102,25 @@ data class ProtoConversionExpr(
         }
 
         is ValueType.RepeatedType -> {
+          val elemAdder: ProtoSetterExpr = when (fieldDef.type.elemType) {
+            AtomicType.EmptyType -> TODO()
+
+            is AtomicType.NameRefType ->
+              ProtoSetterExpr.AddElemDelegate("add" + fieldDef.name.capitalClassFieldName + "Builder")
+
+            is AtomicType.PrimitiveType -> ProtoSetterExpr.AddElem(fieldDef.name.classFieldName)
+          }
+
           ProtoConversionExpr(
-            ProtoGetterExpr.Const("mutableListOf()"),
+            ProtoGetterExpr.Const(tsGen.fromType(fieldDef.type).defaultValue),
             ProtoPostProcessorExpr.ForEach(
               fieldDef.name.classFieldName + "List",
               ProtoPostProcessorExpr.Add(fieldDef.name.classFieldName + "List")
             ),
-            ProtoSetterExpr.Expr,
+            ProtoSetterExpr.ForEach(
+              fieldDef.name.classFieldName + "List",
+              elemAdder,
+            ),
           )
         }
       }
@@ -146,14 +177,6 @@ sealed class ProtoGetterExpr {
   }
 }
 
-sealed class ProtoSetterExpr {
-  abstract fun expr(expr: String): String
-
-  object Expr: ProtoSetterExpr() {
-    override fun expr(expr: String): String = expr
-  }
-}
-
 sealed class ProtoPostProcessorExpr {
   abstract fun expr(gen: MutableKtDataClassGen, input: String, instanceExpr: String)
 
@@ -181,6 +204,70 @@ sealed class ProtoPostProcessorExpr {
       check(valueBodyLines.size == 1)
 
       gen.addLine("$instanceExpr.$fieldName.put($input.key, ${valueBodyLines.first()})")
+    }
+  }
+}
+
+sealed class ProtoSetterExpr {
+  abstract fun expr(gen: MutableKtDataClassGen, inputExpr: String, builderExpr: String)
+
+  data class SimpleSet(val fieldName: String): ProtoSetterExpr() {
+    override fun expr(gen: MutableKtDataClassGen, inputExpr: String, builderExpr: String) {
+      gen.addLine("$inputExpr.$fieldName = $builderExpr.$fieldName")
+    }
+  }
+
+  data class Delegate(
+    val thisFieldName: String,
+    val builderFieldName: String,
+    val optional: Boolean
+  ): ProtoSetterExpr() {
+    override fun expr(gen: MutableKtDataClassGen, inputExpr: String, builderExpr: String) {
+      val opt = if (optional) "?" else ""
+      gen.addLine("$inputExpr.$thisFieldName$opt.toProto($builderExpr.$builderFieldName)")
+    }
+  }
+
+  data class AddElem(val addFuncName: String): ProtoSetterExpr() {
+    override fun expr(gen: MutableKtDataClassGen, inputExpr: String, builderExpr: String) {
+      gen.addLine("$builderExpr.$addFuncName($inputExpr)")
+    }
+  }
+
+  data class PutElem(val putFuncName: String, val thisFieldName: String): ProtoSetterExpr() {
+    override fun expr(gen: MutableKtDataClassGen, inputExpr: String, builderExpr: String) {
+      gen.addLine("$builderExpr.$putFuncName($inputExpr.$thisFieldName)")
+    }
+  }
+
+  data class AddElemDelegate(val addBuilderName: String): ProtoSetterExpr() {
+    override fun expr(gen: MutableKtDataClassGen, inputExpr: String, builderExpr: String) {
+      gen.addLine("$inputExpr.toProto($builderExpr.$addBuilderName)")
+    }
+  }
+
+  data class PutElemDelegate(val putFuncName: String, val protoTypeName: String):
+    ProtoSetterExpr() {
+    override fun expr(gen: MutableKtDataClassGen, inputExpr: String, builderExpr: String) {
+      // val valueBuilder = WorldProto.WaterMass.newBuilder()
+      // entry.value.toProto(valueBuilder)
+      // builder.putWaterMasses(entry.key, valueBuilder.build())
+      gen.addLine("val valueBuilder = $protoTypeName.newBuilder()")
+      gen.addLine("$inputExpr.value.toProto(valuBuilder)")
+      gen.addLine("$builderExpr.$putFuncName($inputExpr.key, valueBuilder.build())")
+    }
+  }
+
+  data class ForEach(
+    val thisFieldName: String,
+    val body: ProtoSetterExpr,
+  ): ProtoSetterExpr() {
+    override fun expr(gen: MutableKtDataClassGen, inputExpr: String, builderExpr: String) {
+      gen.addLine("$inputExpr.$thisFieldName.forEach { elem ->")
+      gen.indent {
+        body.expr(gen, "elem", builderExpr)
+      }
+      gen.addLine("}")
     }
   }
 }

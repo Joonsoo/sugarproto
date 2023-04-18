@@ -92,7 +92,12 @@ class MutableKtDataClassGen(
       addLine("): ${sealedSuper.className} {")
     }
 
-    val protoClassName = "$protoOuterClassName${def.name.className}"
+    val protoClassName = if (sealedSuper == null) {
+      "$protoOuterClassName${def.name.className}"
+    } else {
+      "proto: $protoOuterClassName${sealedSuper.className}"
+    }
+
     indent {
       addLine("companion object {")
       indent {
@@ -108,12 +113,7 @@ class MutableKtDataClassGen(
         val params = def.inheritedFields.map { field ->
           val type = tsGen.fromType(field.type)
           "${field.name.classFieldName}: ${type.typeString}"
-        }.toMutableList()
-        if (sealedSuper == null) {
-          params.add("proto: $protoClassName")
-        } else {
-          params.add("proto: $protoOuterClassName${sealedSuper.className}")
-        }
+        } + "proto: $protoClassName"
         addLine("fun fromProto(${params.joinToString(", ")}): $className {")
         val postProcessors = mutableListOf<ProtoPostProcessorExpr>()
         indent {
@@ -123,7 +123,7 @@ class MutableKtDataClassGen(
               addLine("${field.name.classFieldName} = ${field.name.classFieldName},")
             }
             def.uniqueFields.forEach { field ->
-              val conversion = ProtoConversionExpr.fromField(field)
+              val conversion = ProtoConversionExpr.fromField(field, tsGen)
               val initExpr = conversion.initExpr.expr("proto")
               if (initExpr.size == 1) {
                 addLine("${field.name.classFieldName} = ${initExpr.first()},")
@@ -149,6 +149,16 @@ class MutableKtDataClassGen(
           addLine("return instance")
         }
         addLine("}")
+      }
+      addLine("}")
+      addLine()
+      addLine("fun toProto(builder: $protoClassName.Builder) {")
+      indent {
+        // inheritedFields는 이미 밖에서 셋팅돼서 들어옴
+        def.uniqueFields.forEach { field ->
+          val conversionExpr = ProtoConversionExpr.fromField(field, tsGen)
+          conversionExpr.toProtoExpr.expr(this, "this", "builder")
+        }
       }
       addLine("}")
     }
@@ -240,7 +250,7 @@ class MutableKtDataClassGen(
         indent {
           val postProcessors = mutableListOf<ProtoPostProcessorExpr>()
           def.commonFields.forEach { field ->
-            val expr = ProtoConversionExpr.fromField(field)
+            val expr = ProtoConversionExpr.fromField(field, tsGen)
             val initExpr = expr.initExpr.expr("proto")
             check(initExpr.size == 1)
             addLine("val ${field.name.classFieldName} = ${initExpr.first()}")
@@ -266,7 +276,7 @@ class MutableKtDataClassGen(
                   }
 
                   is KtSealedSubType.SingleSub -> {
-                    val conversionExpr = ProtoConversionExpr.fromField(subType.fieldDef)
+                    val conversionExpr = ProtoConversionExpr.fromField(subType.fieldDef, tsGen)
                     val initExpr = conversionExpr.initExpr.expr("proto")
                     check(initExpr.size == 1)
                     // post process?
@@ -290,6 +300,12 @@ class MutableKtDataClassGen(
       addLine("}")
       addLine()
       addLine("fun toProto(builder: ${protoTypeName}.Builder) {")
+      indent {
+        def.commonFields.forEach { field ->
+          val conversionExpr = ProtoConversionExpr.fromField(field, tsGen)
+          conversionExpr.toProtoExpr.expr(this, "this", "builder")
+        }
+      }
       addLine("}")
       addComments(def.trailingComments)
     }

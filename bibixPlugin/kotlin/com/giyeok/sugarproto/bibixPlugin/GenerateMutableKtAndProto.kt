@@ -1,10 +1,11 @@
 package com.giyeok.sugarproto.bibixPlugin
 
 import com.giyeok.bibix.base.*
-import com.giyeok.sugarproto.DefTraverser
-import com.giyeok.sugarproto.MutableKtDataClassGenerator
-import com.giyeok.sugarproto.ProtoDefGenerator
 import com.giyeok.sugarproto.SugarProtoParser
+import com.giyeok.sugarproto.mutkt.MutableKotlinDefConverter
+import com.giyeok.sugarproto.mutkt.MutableKtDataClassGen
+import com.giyeok.sugarproto.proto.ProtoDefTraverser
+import com.giyeok.sugarproto.proto.ProtoGen
 import kotlin.io.path.createDirectories
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
@@ -24,25 +25,19 @@ class GenerateMutableKtAndProto {
     val gdxMode = (context.arguments.getValue("gdxMode") as BooleanValue).value
 
     val parsed = SugarProtoParser.parse(source.readText())
-    val traverseResult = DefTraverser(parsed).traverse()
+    val defs = ProtoDefTraverser(parsed).traverse()
 
     val srcsRoot = context.destDirectory.resolve("srcs")
     val protoDest = context.destDirectory.resolve(protoFileName)
 
-    val protoDef = ProtoDefGenerator(
-      traverseResult.packageName,
-      traverseResult.imports,
-      traverseResult.options,
-      traverseResult.defs
-    ).generate()
+    val protoDef = ProtoGen().generate(defs)
     protoDest.writeText(protoDef)
 
     val ktImports = (imports?.toMutableSet() ?: mutableSetOf())
-    val mutableKt = MutableKtDataClassGenerator(
+    val ktDefs = MutableKotlinDefConverter(defs).convert()
+    val mutableKt = MutableKtDataClassGen(
+      ktDefs,
       packageName,
-      traverseResult.options,
-      traverseResult.defs,
-      traverseResult.sealedSupers,
       ktImports.toList().sorted(),
       "$protoOuterClassName.",
       gdxMode,

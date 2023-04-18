@@ -15,8 +15,8 @@ class Test {
 
     val defs = ProtoDefTraverser(parsed).traverse()
 
-//    val proto = ProtoGen().generate(defs)
-//    println(proto)
+    val proto = ProtoGen().generate(defs)
+    println(proto)
 
     val ktDefs = MutableKotlinDefConverter(defs).convert()
     val kt = MutableKtDataClassGen(ktDefs, protoOuterClassName = "WorldProto.").generate()

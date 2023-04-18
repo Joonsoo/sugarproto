@@ -4,9 +4,9 @@ import com.giyeok.bibix.base.BibixValue
 import com.giyeok.bibix.base.BuildContext
 import com.giyeok.bibix.base.FileValue
 import com.giyeok.bibix.base.StringValue
-import com.giyeok.sugarproto.DefTraverser
-import com.giyeok.sugarproto.ProtoDefGenerator
 import com.giyeok.sugarproto.SugarProtoParser
+import com.giyeok.sugarproto.proto.ProtoDefTraverser
+import com.giyeok.sugarproto.proto.ProtoGen
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
@@ -18,13 +18,8 @@ class GenerateProto {
     val destPath = context.destDirectory.resolve(filename)
 
     val parsed = SugarProtoParser.parse(source.readText())
-    val traverseResult = DefTraverser(parsed).traverse()
-    val protoDef = ProtoDefGenerator(
-      traverseResult.packageName,
-      traverseResult.imports,
-      traverseResult.options,
-      traverseResult.defs
-    ).generate()
+    val defs = ProtoDefTraverser(parsed).traverse()
+    val protoDef = ProtoGen().generate(defs)
     destPath.writeText(protoDef)
     return FileValue(destPath)
   }
