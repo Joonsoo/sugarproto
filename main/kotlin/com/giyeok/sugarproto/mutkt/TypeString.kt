@@ -142,7 +142,6 @@ class TypeStringGen(val gdxMode: Boolean) {
               TypeString(false, "ObjectMap<${key.typeString}, ${v.typeString}>", "ObjectMap()")
             }
           }
-          TODO()
         } else {
           val key = fromType(typ.keyType)
           val value = fromType(typ.valueType)
