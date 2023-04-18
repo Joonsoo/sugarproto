@@ -11,9 +11,14 @@ data class ProtoDefs(
   val options: List<OptionDef>,
   val defs: List<ProtoDef>,
   // sealed 내부에서 정의된 on the fly message/sealed가 있을 경우
-  // 하위 클래스 -> 상위 클래스 이름의 맵
-  val sealedSupers: Map<SemanticName, SemanticName>,
+  // 하위 클래스 -> (상위 클래스 이름, 해당 필드 이름)의 맵
+  val sealedSupers: Map<SemanticName, SuperName>,
   val trailingComments: List<SugarProtoAst.Comment>,
+)
+
+data class SuperName(
+  val superClassName: SemanticName,
+  val fieldName: SemanticName,
 )
 
 data class ImportDef(

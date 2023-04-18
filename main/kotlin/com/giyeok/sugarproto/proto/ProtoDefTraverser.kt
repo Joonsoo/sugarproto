@@ -15,7 +15,7 @@ class ProtoDefTraverser(val ast: SugarProtoAst.CompilationUnit) {
 
   private val defs = mutableListOf<ProtoDef>()
 
-  private val sealedSupers = mutableMapOf<SemanticName, SemanticName>()
+  private val sealedSupers = mutableMapOf<SemanticName, SuperName>()
 
   private val nameLookup = mutableMapOf<String, AtomicType>()
 
@@ -353,7 +353,7 @@ class ProtoDefTraverser(val ast: SugarProtoAst.CompilationUnit) {
                 subDefs
               )
             if (field.type is AtomicType.GeneratedMessageName) {
-              sealedSupers[field.type.name] = name
+              sealedSupers[field.type.name] = SuperName(name, field.name)
             }
             field
           }

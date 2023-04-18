@@ -2,12 +2,13 @@ package com.giyeok.sugarproto.mutkt
 
 import com.giyeok.sugarproto.SugarProtoAst
 import com.giyeok.sugarproto.name.SemanticName
+import com.giyeok.sugarproto.proto.SuperName
 import com.giyeok.sugarproto.proto.ValueType
 
 data class KtDefs(
   val comments: List<SugarProtoAst.Comment>,
   val defs: List<KtDef>,
-  val sealedSupers: Map<SemanticName, SemanticName>,
+  val sealedSupers: Map<SemanticName, SuperName>,
   val trailingComments: List<SugarProtoAst.Comment>,
 )
 

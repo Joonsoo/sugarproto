@@ -98,14 +98,14 @@ class MutableKtDataClassGen(
     if (sealedSuper == null) {
       addLine(") {")
     } else {
-      addLine("): ${sealedSuper.className}() {")
+      addLine("): ${sealedSuper.superClassName.className}() {")
     }
 
     val fromProtoClassName = "$protoOuterClassName${def.name.className}"
     val toProtoClassName = if (sealedSuper == null) {
       fromProtoClassName
     } else {
-      "$protoOuterClassName${sealedSuper.className}"
+      "$protoOuterClassName${sealedSuper.superClassName.className}"
     }
 
     indent {
@@ -169,7 +169,7 @@ class MutableKtDataClassGen(
             val conversionExpr = pcGen.fromField(field)
             conversionExpr.toProtoExpr.expr(this, "this", "builder")
           }
-          addLine("val subBuilder = builder.${def.name.classFieldName}Builder")
+          addLine("val subBuilder = builder.${sealedSuper.fieldName.classFieldName}Builder")
           def.uniqueFields.forEach { field ->
             val conversionExpr = pcGen.fromField(field)
             conversionExpr.toProtoExpr.expr(this, "this", "subBuilder")
