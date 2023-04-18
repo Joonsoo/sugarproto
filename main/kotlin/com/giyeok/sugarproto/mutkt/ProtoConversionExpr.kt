@@ -70,7 +70,7 @@ data class ProtoConversionExpr(
           ProtoConversionExpr(
             ProtoGetterExpr.Const(tsGen.fromType(fieldDef.type).defaultValue),
             ProtoPostProcessorExpr.ForEach(
-              fieldDef.name.classFieldName,
+              fieldDef.name.classFieldName + "Map",
               ProtoPostProcessorExpr.Put(fieldDef.name.classFieldName, valueBody)
             ),
             ProtoSetterExpr.ForEach(fieldDef.name.classFieldName, setter),
@@ -114,8 +114,8 @@ data class ProtoConversionExpr(
           ProtoConversionExpr(
             ProtoGetterExpr.Const(tsGen.fromType(fieldDef.type).defaultValue),
             ProtoPostProcessorExpr.ForEach(
-              fieldDef.name.classFieldName,
-              ProtoPostProcessorExpr.Add(fieldDef.name.classFieldName + "List")
+              fieldDef.name.classFieldName + "List",
+              ProtoPostProcessorExpr.Add(fieldDef.name.classFieldName)
             ),
             ProtoSetterExpr.ForEach(
               fieldDef.name.classFieldName,
