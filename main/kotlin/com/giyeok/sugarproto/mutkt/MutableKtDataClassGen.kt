@@ -46,6 +46,14 @@ class MutableKtDataClassGen(
     indentLevel -= 1
   }
 
+  fun companion(body: () -> Unit) {
+    addLine("companion object {")
+    indent {
+      body()
+    }
+    addLine("}")
+  }
+
   fun addComments(comments: List<SugarProtoAst.Comment>) {
     comments.forEach { comment ->
       when (comment) {
@@ -93,8 +101,9 @@ class MutableKtDataClassGen(
       addLine("): ${sealedSuper.className}() {")
     }
 
-    val protoClassName = if (sealedSuper == null) {
-      "$protoOuterClassName${def.name.className}"
+    val fromProtoClassName = "$protoOuterClassName${def.name.className}"
+    val toProtoClassName = if (sealedSuper == null) {
+      fromProtoClassName
     } else {
       "$protoOuterClassName${sealedSuper.className}"
     }
@@ -114,54 +123,69 @@ class MutableKtDataClassGen(
         val params = def.inheritedFields.map { field ->
           val type = tsGen.fromType(field.type)
           "${field.name.classFieldName}: ${type.typeString}"
-        } + "proto: $protoClassName"
-//        addLine("fun fromProto(${params.joinToString(", ")}): $className {")
-//        val postProcessors = mutableListOf<ProtoPostProcessorExpr>()
-//        indent {
-//          addLine("val instance = $className(")
-//          indent {
-//            def.inheritedFields.forEach { field ->
-//              addLine("${field.name.classFieldName} = ${field.name.classFieldName},")
-//            }
-//            def.uniqueFields.forEach { field ->
-//              val conversion = pcGen.fromField(field)
-//              val initExpr = conversion.initExpr.expr("proto")
-//              if (initExpr.size == 1) {
-//                addLine("${field.name.classFieldName} = ${initExpr.first()},")
-//              } else {
-//                addLine("${field.name.classFieldName} = ${initExpr.first()}")
-//                indent {
-//                  initExpr.drop(1).forEachIndexed { idx, line ->
-//                    if (idx + 1 == initExpr.size - 1) {
-//                      addLine("$line,")
-//                    } else {
-//                      addLine(line)
-//                    }
-//                  }
-//                }
-//              }
-//              conversion.initPostProcessorExpr?.let { postProcessors.add(it) }
-//            }
-//          }
-//          addLine(")")
-//          postProcessors.forEach { postProcessor ->
-//            postProcessor.expr(this, "proto", "instance")
-//          }
-//          addLine("return instance")
-//        }
-//        addLine("}")
+        } + "proto: $fromProtoClassName"
+        addLine("fun fromProto(${params.joinToString(", ")}): $className {")
+        val postProcessors = mutableListOf<ProtoPostProcessorExpr>()
+        indent {
+          addLine("val instance = $className(")
+          indent {
+            def.inheritedFields.forEach { field ->
+              addLine("${field.name.classFieldName} = ${field.name.classFieldName},")
+            }
+            def.uniqueFields.forEach { field ->
+              val conversion = pcGen.fromField(field)
+              val initExpr = conversion.initExpr.expr("proto")
+              if (initExpr.size == 1) {
+                addLine("${field.name.classFieldName} = ${initExpr.first()},")
+              } else {
+                addLine("${field.name.classFieldName} = ${initExpr.first()}")
+                indent {
+                  initExpr.drop(1).forEachIndexed { idx, line ->
+                    if (idx + 1 == initExpr.size - 1) {
+                      addLine("$line,")
+                    } else {
+                      addLine(line)
+                    }
+                  }
+                }
+              }
+              conversion.initPostProcessorExpr?.let { postProcessors.add(it) }
+            }
+          }
+          addLine(")")
+          postProcessors.forEach { postProcessor ->
+            postProcessor.expr(this, "proto", "instance")
+          }
+          addLine("return instance")
+        }
+        addLine("}")
       }
       addLine("}")
       addLine()
-//      addLine("fun toProto(builder: $protoClassName.Builder) {")
-//      indent {
-//        // inheritedFields는 이미 밖에서 셋팅돼서 들어옴
-//        def.uniqueFields.forEach { field ->
-//          val conversionExpr = pcGen.fromField(field)
-//          conversionExpr.toProtoExpr.expr(this, "this", "builder")
-//        }
-//      }
-//      addLine("}")
+      if (sealedSuper != null) {
+        addLine("override fun toProto(builder: $toProtoClassName.Builder) {")
+        indent {
+          def.inheritedFields.forEach { field ->
+            val conversionExpr = pcGen.fromField(field)
+            conversionExpr.toProtoExpr.expr(this, "this", "builder")
+          }
+          addLine("val subBuilder = builder.${def.name.classFieldName}Builder")
+          def.uniqueFields.forEach { field ->
+            val conversionExpr = pcGen.fromField(field)
+            conversionExpr.toProtoExpr.expr(this, "this", "subBuilder")
+          }
+        }
+      } else {
+        addLine("fun toProto(builder: $toProtoClassName.Builder) {")
+        check(def.inheritedFields.isEmpty())
+        indent {
+          def.uniqueFields.forEach { field ->
+            val conversionExpr = pcGen.fromField(field)
+            conversionExpr.toProtoExpr.expr(this, "this", "builder")
+          }
+        }
+      }
+      addLine("}")
     }
     addLine("}")
   }
@@ -203,35 +227,69 @@ class MutableKtDataClassGen(
   fun addSealedClassDef(def: KtSealedClassDef) {
     addComments(def.comments)
     val className = def.name.className
+    val protoTypeName = "$protoOuterClassName$className"
     addLine("sealed class $className {")
     indent {
       def.commonFields.forEach { field ->
         addAbstractField(field)
       }
+      if (def.commonFields.isNotEmpty()) {
+        addLine()
+      }
+
+      addLine("abstract fun toProto(builder: $protoTypeName.Builder)")
       addLine()
-      def.subTypes.forEach { subType ->
+
+      var defaultValue = ""
+
+      def.subTypes.forEachIndexed { idx, subType ->
         when (subType) {
           is KtSealedSubType.DedicatedMessage -> {
             // do nothing - 알아서 필요한 타입이 생성되어 있음
+            if (idx == 0) {
+              defaultValue = "${subType.typeName}.defaultValue"
+            }
           }
 
           is KtSealedSubType.EmptySub -> {
             if (def.commonFields.isEmpty()) {
+              if (idx == 0) {
+                defaultValue = subType.fieldName.className
+              }
               addLine("object ${subType.fieldName.className}: $className()")
               addLine()
             } else {
+              if (idx == 0) {
+                defaultValue = "${subType.fieldName.className}.defaultValue"
+              }
               addLine("data class ${subType.fieldName.className}(")
               indent {
                 def.commonFields.forEach { field ->
                   addField(field, true)
                 }
               }
-              addLine("): $className()")
+              addLine("): $className() {")
+              indent {
+                companion {
+                  addLine("val defaultValue = ${subType.fieldName.className}(")
+                  indent {
+                    def.commonFields.forEach { field ->
+                      val ts = tsGen.fromType(field.type)
+                      addLine("${field.name.classFieldName} = ${ts.defaultValue},")
+                    }
+                  }
+                  addLine(")")
+                }
+              }
+              addLine("}")
               addLine()
             }
           }
 
           is KtSealedSubType.SingleSub -> {
+            if (idx == 0) {
+              defaultValue = "${subType.fieldName.className}.defaultValue"
+            }
             addLine("data class ${subType.fieldName.className}(")
             indent {
               def.commonFields.forEach { field ->
@@ -239,14 +297,29 @@ class MutableKtDataClassGen(
               }
               addField(subType.fieldDef, false)
             }
-            addLine("): $className()")
+            addLine("): $className() {")
+            indent {
+              companion {
+                addLine("val defaultValue = ${subType.fieldName.className}(")
+                indent {
+                  def.commonFields.forEach { field ->
+                    val ts = tsGen.fromType(field.type)
+                    addLine("${field.name.classFieldName} = ${ts.defaultValue},")
+                  }
+                  val ts = tsGen.fromType(subType.fieldDef.type)
+                  addLine("${subType.fieldDef.name.classFieldName} = ${ts.defaultValue},")
+                }
+                addLine(")")
+              }
+            }
+            addLine("}")
             addLine()
           }
         }
       }
       addLine("companion object {")
-//      val protoTypeName = "$protoOuterClassName$className"
-//      indent {
+      indent {
+        addLine("val defaultValue = $defaultValue")
 //        addLine("fun fromProto(proto: $protoTypeName): $className {")
 //        indent {
 //          val postProcessors = mutableListOf<ProtoPostProcessorExpr>()
@@ -297,7 +370,7 @@ class MutableKtDataClassGen(
 //          addLine("return instance")
 //        }
 //        addLine("}")
-//      }
+      }
       addLine("}")
       addLine()
 //      addLine("fun toProto(builder: ${protoTypeName}.Builder) {")
