@@ -3,143 +3,146 @@ package com.giyeok.sugarproto.mutkt
 import com.giyeok.sugarproto.proto.AtomicType
 import com.giyeok.sugarproto.proto.ValueType
 
-data class ProtoConversionExpr(
-  val initExpr: ProtoGetterExpr,
-  val initPostProcessorExpr: ProtoPostProcessorExpr?,
-  val toProtoExpr: ProtoSetterExpr,
+class ProtoConversionExprGen(
+  val tsGen: TypeStringGen,
+  val protoOuterClassName: String,
 ) {
-  companion object {
-    fun fromField(fieldDef: KtFieldDef, tsGen: TypeStringGen): ProtoConversionExpr {
-      fun fromProtoPattern(typeName: String, fieldName: String): ProtoConversionExpr =
+  fun fromField(fieldDef: KtFieldDef): ProtoConversionExpr {
+    fun fromProtoPattern(typeName: String, fieldName: String): ProtoConversionExpr =
+      ProtoConversionExpr(
+        ProtoGetterExpr.FromProto(
+          typeName,
+          ProtoGetterExpr.SimpleGetterExpr(fieldName)
+        ),
+        null,
+        ProtoSetterExpr.Delegate(fieldName, fieldName + "Builder", false),
+      )
+
+    return when (fieldDef.type) {
+      AtomicType.EmptyType -> throw IllegalStateException("Unsupported? maybe?")
+
+      is AtomicType.UnknownName ->
+        throw IllegalStateException("Unsupported? maybe? ${fieldDef.type.name}")
+
+      is AtomicType.NameRefType ->
+        fromProtoPattern(fieldDef.type.refName, fieldDef.name.classFieldName)
+
+      is AtomicType.PrimitiveType ->
+        // progress = proto.progress
         ProtoConversionExpr(
-          ProtoGetterExpr.FromProto(
-            typeName,
-            ProtoGetterExpr.SimpleGetterExpr(fieldName)
-          ),
+          ProtoGetterExpr.SimpleGetterExpr(fieldDef.name.classFieldName),
           null,
-          ProtoSetterExpr.Delegate(fieldName, fieldName + "Builder", false),
+          ProtoSetterExpr.SimpleSet(fieldDef.name.classFieldName),
         )
 
-      return when (fieldDef.type) {
-        AtomicType.EmptyType -> throw IllegalStateException("Unsupported? maybe?")
+      is ValueType.MapType -> {
+        val valueBody = when (fieldDef.type.valueType) {
+          AtomicType.EmptyType -> TODO()
 
-        is AtomicType.UnknownName ->
-          throw IllegalStateException("Unsupported? maybe? ${fieldDef.type.name}")
+          is AtomicType.PrimitiveType ->
+            ProtoGetterExpr.SimpleGetterExpr(fieldDef.name.classFieldName)
 
-        is AtomicType.NameRefType ->
-          fromProtoPattern(fieldDef.type.refName, fieldDef.name.classFieldName)
-
-        is AtomicType.PrimitiveType ->
-          // progress = proto.progress
-          ProtoConversionExpr(
-            ProtoGetterExpr.SimpleGetterExpr(fieldDef.name.classFieldName),
-            null,
-            ProtoSetterExpr.SimpleSet(fieldDef.name.classFieldName),
-          )
-
-        is ValueType.MapType -> {
-          val valueBody = when (fieldDef.type.valueType) {
-            AtomicType.EmptyType -> TODO()
-
-            is AtomicType.PrimitiveType ->
+          is AtomicType.NameRefType ->
+            ProtoGetterExpr.FromProto(
+              fieldDef.type.valueType.refName,
               ProtoGetterExpr.SimpleGetterExpr(fieldDef.name.classFieldName)
-
-            is AtomicType.NameRefType ->
-              ProtoGetterExpr.FromProto(
-                fieldDef.type.valueType.refName,
-                ProtoGetterExpr.SimpleGetterExpr(fieldDef.name.classFieldName)
-              )
-          }
-
-          val setter: ProtoSetterExpr = when (fieldDef.type.valueType) {
-            AtomicType.EmptyType -> TODO()
-
-            is AtomicType.PrimitiveType ->
-              ProtoSetterExpr.PutElem(
-                "put${fieldDef.name.capitalClassFieldName}",
-                fieldDef.name.classFieldName
-              )
-
-            is AtomicType.NameRefType ->
-              ProtoSetterExpr.PutElemDelegate(
-                "put${fieldDef.name.capitalClassFieldName}",
-                fieldDef.type.valueType.refName,
-              )
-          }
-
-          ProtoConversionExpr(
-            ProtoGetterExpr.Const(tsGen.fromType(fieldDef.type).defaultValue),
-            ProtoPostProcessorExpr.ForEach(
-              fieldDef.name.classFieldName + "Map",
-              ProtoPostProcessorExpr.Put(fieldDef.name.classFieldName, valueBody)
-            ),
-            ProtoSetterExpr.ForEach(fieldDef.name.classFieldName, setter),
-          )
+            )
         }
 
-        is ValueType.OptionalType -> {
-          when (fieldDef.type.elemType) {
-            AtomicType.EmptyType -> TODO()
-            is AtomicType.NameRefType ->
-              // water = if (!proto.hasWater()) null else TileWater.fromProto(proto.water)
-              ProtoConversionExpr(
-                ProtoGetterExpr.IfHas(
-                  "has${fieldDef.name.capitalClassFieldName}", ProtoGetterExpr.FromProto(
-                    fieldDef.type.elemType.refName,
-                    ProtoGetterExpr.SimpleGetterExpr(fieldDef.name.classFieldName)
-                  )
-                ),
-                null,
-                ProtoSetterExpr.Delegate(
-                  fieldDef.name.classFieldName,
-                  fieldDef.name.classFieldName + "Builder",
-                  true
-                ),
-              )
+        val setter: ProtoSetterExpr = when (fieldDef.type.valueType) {
+          AtomicType.EmptyType -> TODO()
 
-            is AtomicType.PrimitiveType -> TODO()
-          }
+          is AtomicType.PrimitiveType ->
+            ProtoSetterExpr.PutElem(
+              "put${fieldDef.name.capitalClassFieldName}",
+              fieldDef.name.classFieldName
+            )
+
+          is AtomicType.NameRefType ->
+            ProtoSetterExpr.PutElemDelegate(
+              "put${fieldDef.name.capitalClassFieldName}",
+              protoOuterClassName + fieldDef.type.valueType.refName,
+            )
         }
 
-        is ValueType.RepeatedType -> {
-          val getter: ProtoPostProcessorExpr = when (fieldDef.type.elemType) {
-            AtomicType.EmptyType -> TODO()
+        ProtoConversionExpr(
+          ProtoGetterExpr.Const(tsGen.fromType(fieldDef.type).defaultValue),
+          ProtoPostProcessorExpr.ForEach(
+            fieldDef.name.classFieldName + "Map",
+            ProtoPostProcessorExpr.Put(fieldDef.name.classFieldName, valueBody)
+          ),
+          ProtoSetterExpr.ForEach(fieldDef.name.classFieldName, setter),
+        )
+      }
 
-            is AtomicType.NameRefType ->
-              ProtoPostProcessorExpr.AddFromProto(
+      is ValueType.OptionalType -> {
+        when (fieldDef.type.elemType) {
+          AtomicType.EmptyType -> TODO()
+          is AtomicType.NameRefType ->
+            // water = if (!proto.hasWater()) null else TileWater.fromProto(proto.water)
+            ProtoConversionExpr(
+              ProtoGetterExpr.IfHas(
+                "has${fieldDef.name.capitalClassFieldName}", ProtoGetterExpr.FromProto(
+                  fieldDef.type.elemType.refName,
+                  ProtoGetterExpr.SimpleGetterExpr(fieldDef.name.classFieldName)
+                )
+              ),
+              null,
+              ProtoSetterExpr.Delegate(
                 fieldDef.name.classFieldName,
-                fieldDef.type.elemType.refName
-              )
+                fieldDef.name.classFieldName + "Builder",
+                true
+              ),
+            )
 
-            is AtomicType.PrimitiveType ->
-              ProtoPostProcessorExpr.Add(fieldDef.name.classFieldName)
-          }
-
-          val setter: ProtoSetterExpr = when (fieldDef.type.elemType) {
-            AtomicType.EmptyType -> TODO()
-
-            is AtomicType.NameRefType ->
-              ProtoSetterExpr.AddElemDelegate("add" + fieldDef.name.capitalClassFieldName + "Builder")
-
-            is AtomicType.PrimitiveType -> ProtoSetterExpr.AddElem(fieldDef.name.classFieldName)
-          }
-
-          ProtoConversionExpr(
-            ProtoGetterExpr.Const(tsGen.fromType(fieldDef.type).defaultValue),
-            ProtoPostProcessorExpr.ForEach(
-              fieldDef.name.classFieldName + "List",
-              getter
-            ),
-            ProtoSetterExpr.ForEach(
-              fieldDef.name.classFieldName,
-              setter,
-            ),
-          )
+          is AtomicType.PrimitiveType -> TODO()
         }
+      }
+
+      is ValueType.RepeatedType -> {
+        val getter: ProtoPostProcessorExpr = when (fieldDef.type.elemType) {
+          AtomicType.EmptyType -> TODO()
+
+          is AtomicType.NameRefType ->
+            ProtoPostProcessorExpr.AddFromProto(
+              fieldDef.name.classFieldName,
+              fieldDef.type.elemType.refName
+            )
+
+          is AtomicType.PrimitiveType ->
+            ProtoPostProcessorExpr.Add(fieldDef.name.classFieldName)
+        }
+
+        val setter: ProtoSetterExpr = when (fieldDef.type.elemType) {
+          AtomicType.EmptyType -> TODO()
+
+          is AtomicType.NameRefType ->
+            ProtoSetterExpr.AddElemDelegate("add" + fieldDef.name.capitalClassFieldName + "Builder")
+
+          is AtomicType.PrimitiveType -> ProtoSetterExpr.AddElem(fieldDef.name.classFieldName)
+        }
+
+        ProtoConversionExpr(
+          ProtoGetterExpr.Const(tsGen.fromType(fieldDef.type).defaultValue),
+          ProtoPostProcessorExpr.ForEach(
+            fieldDef.name.classFieldName + "List",
+            getter
+          ),
+          ProtoSetterExpr.ForEach(
+            fieldDef.name.classFieldName,
+            setter,
+          ),
+        )
       }
     }
   }
 }
+
+data class ProtoConversionExpr(
+  val initExpr: ProtoGetterExpr,
+  val initPostProcessorExpr: ProtoPostProcessorExpr?,
+  val toProtoExpr: ProtoSetterExpr,
+)
 
 sealed class ProtoGetterExpr {
   abstract fun expr(expr: String): List<String>
@@ -272,7 +275,7 @@ sealed class ProtoSetterExpr {
       // entry.value.toProto(valueBuilder)
       // builder.putWaterMasses(entry.key, valueBuilder.build())
       gen.addLine("val valueBuilder = $protoTypeName.newBuilder()")
-      gen.addLine("$inputExpr.value.toProto(valuBuilder)")
+      gen.addLine("$inputExpr.value.toProto(valueBuilder)")
       gen.addLine("$builderExpr.$putFuncName($inputExpr.key, valueBuilder.build())")
     }
   }
