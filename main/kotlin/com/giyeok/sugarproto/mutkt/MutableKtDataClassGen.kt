@@ -253,7 +253,7 @@ class MutableKtDataClassGen(
               indent {
                 addLine("override fun toProto(builder: $protoTypeName.Builder) {")
                 indent {
-                  addLine("builder.${subType.fieldName.capitalClassFieldName}Builder)")
+                  addLine("builder.${subType.fieldName.classFieldName}Builder")
                 }
                 addLine("}")
               }
@@ -330,66 +330,58 @@ class MutableKtDataClassGen(
       }
       companion {
         addLine("val defaultValue = $defaultValue")
-//        addLine("fun fromProto(proto: $protoTypeName): $className {")
-//        indent {
-//          val postProcessors = mutableListOf<ProtoPostProcessorExpr>()
-//          def.commonFields.forEach { field ->
-//            val expr = pcGen.fromField(field)
-//            val initExpr = expr.initExpr.expr("proto")
-//            check(initExpr.size == 1)
-//            addLine("val ${field.name.classFieldName} = ${initExpr.first()}")
-//            expr.initPostProcessorExpr?.let { postProcessors.add(it) }
-//          }
-//          addLine("val instance = when(proto.${def.name.classFieldName}Case) {")
-//          indent {
-//            val commonFields = def.commonFields.map { it.name.classFieldName }
-//            def.subTypes.forEach { subType ->
-//              addLine("${subType.fieldName.capitalSnakeCase()} ->")
-//              indent {
-//                when (subType) {
-//                  is KtSealedSubType.DedicatedMessage -> {
-//                    addLine("${subType.typeName}.fromProto(${(commonFields + "proto").joinToString(", ")})")
-//                  }
-//
-//                  is KtSealedSubType.EmptySub -> {
-//                    if (def.commonFields.isEmpty()) {
-//                      addLine(subType.fieldName.className)
-//                    } else {
-//                      addLine("${subType.fieldName.className}(${commonFields.joinToString(", ")})")
-//                    }
-//                  }
-//
-//                  is KtSealedSubType.SingleSub -> {
-//                    val conversionExpr = pcGen.fromField(subType.fieldDef)
-//                    val initExpr = conversionExpr.initExpr.expr("proto")
-//                    check(initExpr.size == 1)
-//                    // post process?
-//                    check(conversionExpr.initPostProcessorExpr == null)
-//                    val params = commonFields + initExpr.first()
-//                    addLine("${subType.fieldName.className}(${params.joinToString(", ")})")
-//                  }
-//                }
-//              }
-//            }
-//            addLine("else -> TODO()")
-//          }
-//          addLine(")")
-//          postProcessors.forEach { postProcessor ->
-//            postProcessor.expr(this, "proto", "instance")
-//          }
-//          addLine("return instance")
-//        }
-//        addLine("}")
+        addLine("fun fromProto(proto: $protoTypeName): $className {")
+        indent {
+          val postProcessors = mutableListOf<ProtoPostProcessorExpr>()
+          def.commonFields.forEach { field ->
+            val expr = pcGen.fromField(field)
+            val initExpr = expr.initExpr.expr("proto")
+            check(initExpr.size == 1)
+            addLine("val ${field.name.classFieldName} = ${initExpr.first()}")
+            expr.initPostProcessorExpr?.let { postProcessors.add(it) }
+          }
+          addLine("val instance = when(proto.${def.name.classFieldName}Case) {")
+          indent {
+            val commonFields = def.commonFields.map { it.name.classFieldName }
+            def.subTypes.forEach { subType ->
+              addLine("${subType.fieldName.capitalSnakeCase()} ->")
+              indent {
+                when (subType) {
+                  is KtSealedSubType.DedicatedMessage -> {
+                    addLine("${subType.typeName}.fromProto(${(commonFields + "proto").joinToString(", ")})")
+                  }
+
+                  is KtSealedSubType.EmptySub -> {
+                    if (def.commonFields.isEmpty()) {
+                      addLine(subType.fieldName.className)
+                    } else {
+                      addLine("${subType.fieldName.className}(${commonFields.joinToString(", ")})")
+                    }
+                  }
+
+                  is KtSealedSubType.SingleSub -> {
+                    val conversionExpr = pcGen.fromField(subType.fieldDef)
+                    val initExpr = conversionExpr.initExpr.expr("proto")
+                    check(initExpr.size == 1)
+                    // post process?
+                    check(conversionExpr.initPostProcessorExpr == null)
+                    val params = commonFields + initExpr.first()
+                    addLine("${subType.fieldName.className}(${params.joinToString(", ")})")
+                  }
+                }
+              }
+            }
+            addLine("else -> TODO()")
+          }
+          addLine(")")
+          postProcessors.forEach { postProcessor ->
+            postProcessor.expr(this, "proto", "instance")
+          }
+          addLine("return instance")
+        }
+        addLine("}")
       }
       addLine()
-//      addLine("fun toProto(builder: ${protoTypeName}.Builder) {")
-//      indent {
-//        def.commonFields.forEach { field ->
-//          val conversionExpr = pcGen.fromField(field)
-//          conversionExpr.toProtoExpr.expr(this, "this", "builder")
-//        }
-//      }
-//      addLine("}")
       addComments(def.trailingComments)
     }
     addLine("}")
