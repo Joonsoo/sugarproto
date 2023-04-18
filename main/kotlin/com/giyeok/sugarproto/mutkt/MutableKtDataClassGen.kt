@@ -346,12 +346,11 @@ class MutableKtDataClassGen(
             def.subTypes.forEach { subType ->
               addLine("$protoTypeName.${def.name.className}Case.${subType.fieldName.capitalSnakeCase()} ->")
               indent {
-                val subProto = "proto.${subType.fieldName.classFieldName}"
                 when (subType) {
                   is KtSealedSubType.DedicatedMessage -> {
                     addLine(
                       "${subType.typeName}.fromProto(${
-                        (commonFields + subProto).joinToString(", ")
+                        (commonFields + "proto.${subType.fieldName.classFieldName}").joinToString(", ")
                       })"
                     )
                   }
@@ -366,7 +365,7 @@ class MutableKtDataClassGen(
 
                   is KtSealedSubType.SingleSub -> {
                     val conversionExpr = pcGen.fromField(subType.fieldDef)
-                    val initExpr = conversionExpr.initExpr.expr(subProto)
+                    val initExpr = conversionExpr.initExpr.expr("proto")
                     check(initExpr.size == 1)
                     // post process?
                     check(conversionExpr.initPostProcessorExpr == null)
