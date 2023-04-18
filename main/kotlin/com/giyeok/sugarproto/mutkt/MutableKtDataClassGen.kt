@@ -322,6 +322,18 @@ class MutableKtDataClassGen(
                 }
                 addLine(")")
               }
+              addLine()
+              addLine("override fun toProto(builder: $protoTypeName.Builder) {")
+              indent {
+                def.commonFields.forEach { field ->
+                  val pc = pcGen.fromField(field)
+                  pc.toProtoExpr.expr(this, "this", "builder")
+                }
+                addLine("val subBuilder = builder.${subType.fieldName.classFieldName}Builder")
+                val pc = pcGen.fromField(subType.fieldDef)
+                pc.toProtoExpr.expr(this, "this", "subBuilder")
+              }
+              addLine("}")
             }
             addLine("}")
             addLine()
