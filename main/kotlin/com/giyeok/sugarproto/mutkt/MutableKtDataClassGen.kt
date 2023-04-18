@@ -344,7 +344,7 @@ class MutableKtDataClassGen(
           indent {
             val commonFields = def.commonFields.map { it.name.classFieldName }
             def.subTypes.forEach { subType ->
-              addLine("${subType.fieldName.capitalSnakeCase()} ->")
+              addLine("$protoTypeName.${def.name.className}Case.${subType.fieldName.capitalSnakeCase()} ->")
               indent {
                 when (subType) {
                   is KtSealedSubType.DedicatedMessage -> {
