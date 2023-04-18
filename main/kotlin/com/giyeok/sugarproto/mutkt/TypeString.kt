@@ -59,19 +59,19 @@ class TypeStringGen(val gdxMode: Boolean) {
         TypeString(true, typ.name, "${typ.name}.defaultValue")
 
       is AtomicType.MessageName ->
-        TypeString(false, typ.name, "${typ.name}.defaultValue()")
+        TypeString(false, typ.name, "${typ.name}.create()")
 
       is AtomicType.SealedName ->
-        TypeString(false, typ.name, "${typ.name}.defaultValue()")
+        TypeString(false, typ.name, "${typ.name}.create()")
 
       is AtomicType.GeneratedEnumName ->
         TypeString(false, typ.name.className, "${typ.name.className}.defaultValue")
 
       is AtomicType.GeneratedMessageName ->
-        TypeString(false, typ.name.className, "${typ.name.className}.defaultValue()")
+        TypeString(false, typ.name.className, "${typ.name.className}.create()")
 
       is AtomicType.GeneratedSealedName ->
-        TypeString(false, typ.name.className, "${typ.name.className}.defaultValue()")
+        TypeString(false, typ.name.className, "${typ.name.className}.create()")
 
       is AtomicType.PrimitiveType -> when (typ.type) {
         SugarProtoAst.PrimitiveTypeEnum.BOOL -> TypeString(true, "Boolean", "false")

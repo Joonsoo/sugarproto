@@ -107,11 +107,17 @@ class MutableKtDataClassGen(
 
     indent {
       companion {
-        addLine("fun defaultValue() = $className(")
+        addLine("fun create(")
         indent {
           def.allFields.forEach { field ->
             val typeString = tsGen.fromType(field.type)
-            addLine("${field.name.classFieldName} = ${typeString.defaultValue},")
+            addLine("${field.name.classFieldName}: ${typeString.typeString} = ${typeString.defaultValue},")
+          }
+        }
+        addLine(") = $className(")
+        indent {
+          def.allFields.forEach { field ->
+            addLine("${field.name.classFieldName},")
           }
         }
         addLine(")")
@@ -240,7 +246,7 @@ class MutableKtDataClassGen(
           is KtSealedSubType.DedicatedMessage -> {
             // do nothing - 알아서 필요한 타입이 생성되어 있음
             if (idx == 0) {
-              defaultValue = "${subType.typeName}.defaultValue()"
+              defaultValue = "${subType.typeName}.create()"
             }
           }
 
@@ -272,7 +278,7 @@ class MutableKtDataClassGen(
               addLine("): $className() {")
               indent {
                 companion {
-                  addLine("fun defaultValue() = ${subType.fieldName.className}(")
+                  addLine("fun create() = ${subType.fieldName.className}(")
                   indent {
                     def.commonFields.forEach { field ->
                       val ts = tsGen.fromType(field.type)
@@ -311,7 +317,7 @@ class MutableKtDataClassGen(
             addLine("): $className() {")
             indent {
               companion {
-                addLine("fun defaultValue() = ${subType.fieldName.className}(")
+                addLine("fun create() = ${subType.fieldName.className}(")
                 indent {
                   def.commonFields.forEach { field ->
                     val ts = tsGen.fromType(field.type)
@@ -340,7 +346,8 @@ class MutableKtDataClassGen(
         }
       }
       companion {
-        addLine("fun defaultValue() = $defaultValue")
+        addLine("fun create() = $defaultValue")
+        addLine()
         addLine("fun fromProto(proto: $protoTypeName): $className {")
         indent {
           val postProcessors = mutableListOf<ProtoPostProcessorExpr>()
