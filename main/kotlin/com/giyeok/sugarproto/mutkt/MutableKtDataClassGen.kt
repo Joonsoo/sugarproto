@@ -267,7 +267,7 @@ class MutableKtDataClassGen(
               addLine()
             } else {
               if (idx == 0) {
-                defaultValue = "${subType.fieldName.className}.defaultValue"
+                defaultValue = "${subType.fieldName.className}.create()"
               }
               addLine("data class ${subType.fieldName.className}(")
               indent {
@@ -278,11 +278,17 @@ class MutableKtDataClassGen(
               addLine("): $className() {")
               indent {
                 companion {
-                  addLine("fun create() = ${subType.fieldName.className}(")
+                  addLine("fun create(")
                   indent {
                     def.commonFields.forEach { field ->
                       val ts = tsGen.fromType(field.type)
-                      addLine("${field.name.classFieldName} = ${ts.defaultValue},")
+                      addLine("${field.name.classFieldName}: ${ts.typeString} = ${ts.defaultValue},")
+                    }
+                  }
+                  addLine(") = ${subType.fieldName.className}(")
+                  indent {
+                    def.commonFields.forEach { field ->
+                      addLine("${field.name.classFieldName},")
                     }
                   }
                   addLine(")")
@@ -305,7 +311,7 @@ class MutableKtDataClassGen(
 
           is KtSealedSubType.SingleSub -> {
             if (idx == 0) {
-              defaultValue = "${subType.fieldName.className}.defaultValue"
+              defaultValue = "${subType.fieldName.className}.create()"
             }
             addLine("data class ${subType.fieldName.className}(")
             indent {
