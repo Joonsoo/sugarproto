@@ -233,7 +233,7 @@ class MutableKtDataClassGen(
           is KtSealedSubType.DedicatedMessage -> {
             // do nothing - 알아서 필요한 타입이 생성되어 있음
             if (idx == 0) {
-              defaultValue = "${subType.typeName}.create()"
+              defaultValue = "${subType.typeName.className}.create()"
             }
           }
 
@@ -359,7 +359,7 @@ class MutableKtDataClassGen(
                 when (subType) {
                   is KtSealedSubType.DedicatedMessage -> {
                     addLine(
-                      "${subType.typeName}.fromProto(${
+                      "${subType.typeName.className}.fromProto(${
                         (commonFields + "proto.${subType.fieldName.classFieldName}").joinToString(", ")
                       })"
                     )
