@@ -351,19 +351,19 @@ sealed class ToProtoExpr {
     val messageProtoClassName: String
   ): ToProtoExpr() {
     override fun generate(gen: MutableKtDataClassGen, thisExpr: String, builderExpr: String) {
-      gen.addLine("$thisExpr.${fieldName.classFieldName}.forEach { (key, value) ->")
+      gen.addLine("$thisExpr.${fieldName.classFieldName}.forEach { entry ->")
       gen.indent {
         when (elemType) {
           ElemType.PRIM ->
-            gen.addLine("$builderExpr.put${fieldName.capitalClassFieldName}(key, value)")
+            gen.addLine("$builderExpr.put${fieldName.capitalClassFieldName}(entry.key, entry.value)")
 
           ElemType.ENUM ->
-            gen.addLine("$builderExpr.put${fieldName.capitalClassFieldName}(key, value.toProto())")
+            gen.addLine("$builderExpr.put${fieldName.capitalClassFieldName}(entry.key, entry.value.toProto())")
 
           ElemType.MESSAGE -> {
             gen.addLine("val valueBuilder = $messageProtoClassName.newBuilder()")
-            gen.addLine("value.toProto(valueBuilder)")
-            gen.addLine("$builderExpr.put${fieldName.capitalClassFieldName}(key, valueBuilder.build())")
+            gen.addLine("entry.value.toProto(valueBuilder)")
+            gen.addLine("$builderExpr.put${fieldName.capitalClassFieldName}(entry.key, valueBuilder.build())")
           }
         }
       }
