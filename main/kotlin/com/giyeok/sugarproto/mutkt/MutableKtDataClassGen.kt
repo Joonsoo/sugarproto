@@ -127,7 +127,7 @@ class MutableKtDataClassGen(
           "${field.name.classFieldName}: ${type.typeString}"
         } + "proto: $fromProtoClassName"
         addLine("fun fromProto(${params.joinToString(", ")}): $className {")
-        val postProcessors = mutableListOf<ProtoPostProcessorExpr>()
+        val postProcessors = mutableListOf<FromProtoPostProcessExpr>()
         indent {
           addLine("val instance = $className(")
           indent {
@@ -136,7 +136,7 @@ class MutableKtDataClassGen(
             }
             def.uniqueFields.forEach { field ->
               val conversion = pcGen.fromField(field, "proto.${field.name.classFieldName}Count")
-              val initExpr = conversion.initExpr.expr("proto")
+              val initExpr = conversion.fromProtoExpr.expr("proto")
               if (initExpr.size == 1) {
                 addLine("${field.name.classFieldName} = ${initExpr.first()},")
               } else {
@@ -151,12 +151,12 @@ class MutableKtDataClassGen(
                   }
                 }
               }
-              conversion.initPostProcessorExpr?.let { postProcessors.add(it) }
+              conversion.fromProtoPostProcessExpr?.let { postProcessors.add(it) }
             }
           }
           addLine(")")
           postProcessors.forEach { postProcessor ->
-            postProcessor.expr(this, "proto", "instance")
+            postProcessor.generate(this, "proto", "instance")
           }
           addLine("return instance")
         }
@@ -356,13 +356,13 @@ class MutableKtDataClassGen(
         addLine()
         addLine("fun fromProto(proto: $protoTypeName): $className {")
         indent {
-          val postProcessors = mutableListOf<ProtoPostProcessorExpr>()
+          val postProcessors = mutableListOf<FromProtoPostProcessExpr>()
           def.commonFields.forEach { field ->
             val expr = pcGen.fromField(field)
-            val initExpr = expr.initExpr.expr("proto")
+            val initExpr = expr.fromProtoExpr.expr("proto")
             check(initExpr.size == 1)
             addLine("val ${field.name.classFieldName} = ${initExpr.first()}")
-            expr.initPostProcessorExpr?.let { postProcessors.add(it) }
+            expr.fromProtoPostProcessExpr?.let { postProcessors.add(it) }
           }
           addLine("val instance = when(proto.${def.name.classFieldName}Case) {")
           indent {
@@ -389,10 +389,10 @@ class MutableKtDataClassGen(
 
                   is KtSealedSubType.SingleSub -> {
                     val conversionExpr = pcGen.fromField(subType.fieldDef)
-                    val initExpr = conversionExpr.initExpr.expr("proto")
+                    val initExpr = conversionExpr.fromProtoExpr.expr("proto")
                     check(initExpr.size == 1)
                     // post process?
-                    check(conversionExpr.initPostProcessorExpr == null)
+                    check(conversionExpr.fromProtoPostProcessExpr == null)
                     val params = commonFields + initExpr.first()
                     addLine("${subType.fieldName.className}(${params.joinToString(", ")})")
                   }
@@ -403,7 +403,7 @@ class MutableKtDataClassGen(
           }
           addLine("}")
           postProcessors.forEach { postProcessor ->
-            postProcessor.expr(this, "proto", "instance")
+            postProcessor.generate(this, "proto", "instance")
           }
           addLine("return instance")
         }
