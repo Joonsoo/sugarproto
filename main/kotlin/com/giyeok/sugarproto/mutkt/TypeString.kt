@@ -101,7 +101,11 @@ class TypeStringGen(val gdxMode: Boolean) {
           }
         } else {
           val s = fromType(typ.elemType)
-          TypeString(false, "MutableList<${s.typeString}>", "mutableListOf()")
+          TypeString(
+            false,
+            "MutableList<${s.typeString}>",
+            "mutableListOf(${if (collectionSizeHint != null) "/* $collectionSizeHint */" else ""})"
+          )
         }
       }
 
@@ -155,7 +159,7 @@ class TypeStringGen(val gdxMode: Boolean) {
           TypeString(
             false,
             "MutableMap<${key.typeString}, ${value.typeString}>",
-            "mutableMapOf(${collectionSizeHint ?: ""})"
+            "mutableMapOf(${if (collectionSizeHint != null) "/* $collectionSizeHint */" else ""})"
           )
         }
       }

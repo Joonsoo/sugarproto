@@ -6,7 +6,6 @@ import maven
 from bibix.plugins import scala
 from bibix.plugins import ktjvm
 from bibix.plugins import java
-from bibix.plugins import protobuf
 import git("https://github.com/Joonsoo/jparser.git") as jparser
 
 var ktjvm.outVersion = "19"
@@ -65,17 +64,42 @@ bibixPlugin {
     srcs = glob("bibixPlugin/kotlin/**/*.kt"),
     deps = [bibix.base, main]
   )
+
+  test {
+    from bibix.plugins import protobuf
+
+    service = generateProto(
+      source = "test/resources/service.supro",
+      filename = "service.proto",
+    )
+
+    typeConversions {
+      gen = generateMutableKtAndProto(
+        source = "test/resources/type_conversions.supro",
+        protoFileName = "test.proto",
+        protoOuterClassName = "TypeConversionsProto",
+        packageName = "com.giyeok.sugarproto.test",
+        kotlinFileName = "TypeConversionsModel.kt",
+        imports = [
+          "com.giyeok.sugarproto.test.TypeConversionsProto",
+        ],
+      )
+      protoSchema = protobuf.schema([gen.protoFile])
+      protoJava = protobuf.java(protoSchema)
+
+      action generate {
+        file.copyFile(gen.protoFile, "test/generated/proto")
+        file.copyDirectory(protoJava.rootDir, "test/generated/java")
+        file.copyDirectory(gen.srcsRoot, "test/generated/kotlin")
+      }
+    }
+  }
 }
 
 def generateProto(
   source: file,
   filename: string,
 ): file = bibixPlugin.impl:com.giyeok.sugarproto.bibixPlugin.GenerateProto
-
-bibixTest = generateProto(
-  source = "test/resources/service.supro",
-  filename = "service.proto",
-)
 
 class Generated(
   srcsRoot: directory,

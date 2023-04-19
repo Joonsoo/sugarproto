@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+option java_package = "com.giyeok.sugarproto.test";
+option java_outer_classname = "TypeConversionsProto";
+
+message TypeTest {
+  repeated string a = 1;
+  repeated MyEnum b = 2;
+  repeated MyMessage c = 3;
+  optional string d = 4;
+  optional MyEnum e = 5;
+  optional MyMessage f = 6;
+  map<int32, string> g = 7;
+  map<int32, MyEnum> h = 8;
+  map<int32, MyMessage> i = 9;
+  string j = 10;
+  MyEnum k = 11;
+  MyMessage l = 12;
+}
+
+enum MyEnum {
+  HELLO = 0;
+  GOOD = 1;
+}
+
+message MyMessage {
+  string message = 1;
+}
+

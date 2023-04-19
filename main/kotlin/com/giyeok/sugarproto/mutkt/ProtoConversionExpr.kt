@@ -306,13 +306,13 @@ sealed class ToProtoExpr {
 
   data class PrimOptionalToProto(val fieldName: SemanticName): ToProtoExpr() {
     override fun generate(gen: MutableKtDataClassGen, thisExpr: String, builderExpr: String) {
-      gen.addLine("$thisExpr.${fieldName.classFieldName}?.let { value -> $builderExpr.${fieldName.classFieldName} } ?: $builderExpr.clear${fieldName.capitalClassFieldName}()")
+      gen.addLine("$thisExpr.${fieldName.classFieldName}?.let { value -> $builderExpr.${fieldName.classFieldName} = value } ?: $builderExpr.clear${fieldName.capitalClassFieldName}()")
     }
   }
 
   data class EnumOptionalToProto(val fieldName: SemanticName): ToProtoExpr() {
     override fun generate(gen: MutableKtDataClassGen, thisExpr: String, builderExpr: String) {
-      gen.addLine("$thisExpr.${fieldName.classFieldName}?.let { value -> $builderExpr.${fieldName.classFieldName}.toProto() } ?: $builderExpr.clear${fieldName.capitalClassFieldName}()")
+      gen.addLine("$thisExpr.${fieldName.classFieldName}?.let { value -> $builderExpr.${fieldName.classFieldName} = value.toProto() } ?: $builderExpr.clear${fieldName.capitalClassFieldName}()")
     }
   }
 
@@ -328,7 +328,7 @@ sealed class ToProtoExpr {
     val messageProtoName: String
   ): ToProtoExpr() {
     override fun generate(gen: MutableKtDataClassGen, thisExpr: String, builderExpr: String) {
-      gen.addLine("$thisExpr.${fieldName.classFieldName}List.forEach { elem ->")
+      gen.addLine("$thisExpr.${fieldName.classFieldName}.forEach { elem ->")
       gen.indent {
         when (elemType) {
           ElemType.PRIM ->
@@ -351,7 +351,7 @@ sealed class ToProtoExpr {
     val messageProtoClassName: String
   ): ToProtoExpr() {
     override fun generate(gen: MutableKtDataClassGen, thisExpr: String, builderExpr: String) {
-      gen.addLine("$thisExpr.${fieldName.classFieldName}Map.forEach { (key, value) ->")
+      gen.addLine("$thisExpr.${fieldName.classFieldName}.forEach { (key, value) ->")
       gen.indent {
         when (elemType) {
           ElemType.PRIM ->

@@ -1,3 +1,6 @@
+option java_package = "com.giyeok.sugarproto.test"
+option java_outer_classname = "TypeConversionsProto"
+
 message TypeTest {
   1 a: repeated<string>
   2 b: repeated<MyEnum>
@@ -17,9 +20,8 @@ message TypeTest {
 }
 
 enum MyEnum {
-  option hello = true
-  1 HELLO [good = "hello", bad = "bye"]
-  2 GOOD
+  0 HELLO
+  1 GOOD
 }
 
 message MyMessage {
