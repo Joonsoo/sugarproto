@@ -62,7 +62,9 @@ class ProtoDefTraverser(val ast: SugarProtoAst.CompilationUnit) {
         is SugarProtoAst.SealedDef ->
           addSealedName(def.name.name)
 
-        is SugarProtoAst.ServiceDef -> TODO()
+        is SugarProtoAst.ServiceDef -> {
+          // do nothing
+        }
       }
     }
   }
