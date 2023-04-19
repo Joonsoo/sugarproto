@@ -1,5 +1,27 @@
+message TypeTest {
+  1 a: repeated<string>
+  2 b: repeated<MyEnum>
+  3 c: repeated<MyMessage>
+
+  4 d: optional<string>
+  5 e: optional<MyEnum>
+  6 f: optional<MyMessage>
+
+  7 g: map<int32, string>
+  8 h: map<int32, MyEnum>
+  9 i: map<int32, MyMessage>
+
+  10 j: string
+  11 k: MyEnum
+  12 l: MyMessage
+}
+
 enum MyEnum {
   option hello = true
   1 HELLO [good = "hello", bad = "bye"]
   2 GOOD
+}
+
+message MyMessage {
+  1 message: string
 }

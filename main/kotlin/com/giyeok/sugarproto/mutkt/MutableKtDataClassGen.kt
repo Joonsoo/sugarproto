@@ -137,20 +137,7 @@ class MutableKtDataClassGen(
             def.uniqueFields.forEach { field ->
               val conversion = pcGen.fromField(field, "proto.${field.name.classFieldName}Count")
               val initExpr = conversion.fromProtoExpr.expr("proto")
-              if (initExpr.size == 1) {
-                addLine("${field.name.classFieldName} = ${initExpr.first()},")
-              } else {
-                addLine("${field.name.classFieldName} = ${initExpr.first()}")
-                indent {
-                  initExpr.drop(1).forEachIndexed { idx, line ->
-                    if (idx + 1 == initExpr.size - 1) {
-                      addLine("$line,")
-                    } else {
-                      addLine(line)
-                    }
-                  }
-                }
-              }
+              addLine("${field.name.classFieldName} = $initExpr,")
               conversion.fromProtoPostProcessExpr?.let { postProcessors.add(it) }
             }
           }
@@ -168,12 +155,12 @@ class MutableKtDataClassGen(
         indent {
           def.inheritedFields.forEach { field ->
             val conversionExpr = pcGen.fromField(field)
-            conversionExpr.toProtoExpr.expr(this, "this", "builder")
+            conversionExpr.toProtoExpr.generate(this, "this", "builder")
           }
           addLine("val subBuilder = builder.${sealedSuper.fieldName.classFieldName}Builder")
           def.uniqueFields.forEach { field ->
             val conversionExpr = pcGen.fromField(field)
-            conversionExpr.toProtoExpr.expr(this, "this", "subBuilder")
+            conversionExpr.toProtoExpr.generate(this, "this", "subBuilder")
           }
         }
       } else {
@@ -182,7 +169,7 @@ class MutableKtDataClassGen(
         indent {
           def.uniqueFields.forEach { field ->
             val conversionExpr = pcGen.fromField(field)
-            conversionExpr.toProtoExpr.expr(this, "this", "builder")
+            conversionExpr.toProtoExpr.generate(this, "this", "builder")
           }
         }
       }
@@ -298,7 +285,7 @@ class MutableKtDataClassGen(
                 indent {
                   def.commonFields.forEach { field ->
                     val pc = pcGen.fromField(field)
-                    pc.toProtoExpr.expr(this, "this", "builder")
+                    pc.toProtoExpr.generate(this, "this", "builder")
                   }
                   addLine("builder.${subType.fieldName.classFieldName}Builder")
                 }
@@ -339,10 +326,10 @@ class MutableKtDataClassGen(
               indent {
                 def.commonFields.forEach { field ->
                   val pc = pcGen.fromField(field)
-                  pc.toProtoExpr.expr(this, "this", "builder")
+                  pc.toProtoExpr.generate(this, "this", "builder")
                 }
                 val pc = pcGen.fromField(subType.fieldDef)
-                pc.toProtoExpr.expr(this, "this", "builder")
+                pc.toProtoExpr.generate(this, "this", "builder")
               }
               addLine("}")
             }
@@ -360,8 +347,7 @@ class MutableKtDataClassGen(
           def.commonFields.forEach { field ->
             val expr = pcGen.fromField(field)
             val initExpr = expr.fromProtoExpr.expr("proto")
-            check(initExpr.size == 1)
-            addLine("val ${field.name.classFieldName} = ${initExpr.first()}")
+            addLine("val ${field.name.classFieldName} = $initExpr")
             expr.fromProtoPostProcessExpr?.let { postProcessors.add(it) }
           }
           addLine("val instance = when(proto.${def.name.classFieldName}Case) {")
@@ -390,10 +376,9 @@ class MutableKtDataClassGen(
                   is KtSealedSubType.SingleSub -> {
                     val conversionExpr = pcGen.fromField(subType.fieldDef)
                     val initExpr = conversionExpr.fromProtoExpr.expr("proto")
-                    check(initExpr.size == 1)
                     // post process?
                     check(conversionExpr.fromProtoPostProcessExpr == null)
-                    val params = commonFields + initExpr.first()
+                    val params = commonFields + initExpr
                     addLine("${subType.fieldName.className}(${params.joinToString(", ")})")
                   }
                 }

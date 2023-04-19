@@ -1,5 +1,6 @@
 package com.giyeok.sugarproto.mutkt
 
+import com.giyeok.sugarproto.name.SemanticName
 import com.giyeok.sugarproto.proto.AtomicType
 import com.giyeok.sugarproto.proto.ValueType
 
@@ -7,6 +8,25 @@ class ProtoConversionExprGen(
   val tsGen: TypeStringGen,
   val protoOuterClassName: String,
 ) {
+  // atomic = prim, enum, message/sealed, empty
+  // prim:
+  // fromProto(proto): <fieldName> = proto.<fieldName>
+  // toProto(builder): builder.<fieldName> = this.<fieldName>
+  // enum:
+  // fromProto(proto): <fieldName> = <TypeName>.fromProto(proto.<fieldName>)
+  // toProto(builder): builder.<fieldName> = this.<fieldName>.toProto()
+  // message/sealed:
+  // fromProto(proto): <fieldName> = <TypeName>.fromProto(proto.<fieldName>)
+  // toProto(builder): this.<fieldName>.toProto(builder.<fieldName>Builder)
+  // empty: unsupported
+
+  // optional<atomic>:
+  // fromProto(proto): <fieldName> = if (!proto.has<FieldName>()) null else <<fromProto(elem)>>
+  // toProto(builder):
+  // prim: this.<fieldName>?.let { value -> builder.<fieldName> = value } ?: builder.clear<FieldName>()
+  // enum: this.<fieldName>?.let { value -> builder.<fieldName> = value.toProto() } ?: builder.clear<FieldName>()
+  // msgs: this.<fieldName>?.toProto(builder.<fieldName>Builder) ?: builder.clear<FieldName>()
+
   // repeated<atomic>:
   // fromProto(proto): <fieldName> = GdxArray(proto.<fieldName>Count)
   // post: proto.<fieldName>List.forEach { elem ->
@@ -17,15 +37,8 @@ class ProtoConversionExprGen(
   // toProto(builder): this.<fieldName>List.forEach { elem ->
   // prim:               builder.add<FieldName>(elem)
   // enum:               builder.add<FieldName>(elem.toProto())
-  // msgs:               <TypeName>.toProto(builder.add<FieldName>Builder)
+  // msgs:               elem.toProto(builder.add<FieldName>Builder())
   //                   }
-
-  // optional<atomic>:
-  // fromProto(proto): <fieldName> = if (!proto.has<FieldName>()) null else <<fromProto(elem)>>
-  // toProto(builder):
-  // prim: this.<fieldName>?.let { value -> builder.<fieldName> = value } ?: builder.clear<FieldName>()
-  // enum: this.<fieldName>?.let { value -> builder.<fieldName> = value.toProto() } ?: builder.clear<FieldName>()
-  // msgs: this.<fieldName>?.toProto(builder.<fieldName>Builder) ?: builder.clear<FieldName>()
 
   // map<prim, atomic>:
   // fromProto(proto): <fieldName> = GdxIntMap(proto.<fieldName>Count)
@@ -42,177 +55,144 @@ class ProtoConversionExprGen(
   //                     builder.put<FieldName>(entry.key, valueBuilder.build())
   //                   }
 
-  // atomic = prim, enum, message/sealed, empty
-  // prim:
-  // fromProto(proto): <fieldName> = proto.<fieldName>
-  // toProto(builder): builder.<fieldName> = this.<fieldName>
-  // enum:
-  // fromProto(proto): <fieldName> = <TypeName>.fromProto(proto.<fieldName>)
-  // toProto(builder): builder.<fieldName> = this.<fieldName>.toProto()
-  // message/sealed:
-  // fromProto(proto): <fieldName> = <TypeName>.fromProto(proto.<fieldName>)
-  // toProto(builder): this.<fieldName>.toProto(builder.<fieldName>Builder)
-  // empty: unsupported
-
   fun fromField(fieldDef: KtFieldDef, collectionSizeHint: String? = null): ProtoConversionExpr {
-    fun fromProtoPattern(typeName: String, fieldName: String): ProtoConversionExpr =
-      ProtoConversionExpr(
-        FromProtoExpr.FromProto(
-          typeName,
-          FromProtoExpr.SimpleGetterExpr(fieldName)
-        ),
-        null,
-        ToProtoExpr.Delegate(fieldName, fieldName + "Builder", false),
-      )
-
     return when (fieldDef.type) {
-      AtomicType.EmptyType -> throw IllegalStateException("Unsupported? maybe?")
+      AtomicType.EmptyType, is AtomicType.UnknownName ->
+        throw IllegalStateException("Unsupported? maybe? ${fieldDef.type}")
 
-      is AtomicType.UnknownName ->
-        throw IllegalStateException("Unsupported? maybe? ${fieldDef.type.name}")
-
-      is AtomicType.MessageRefType ->
-        fromProtoPattern(fieldDef.type.refName, fieldDef.name.classFieldName)
+      is AtomicType.PrimitiveType ->
+        ProtoConversionExpr(
+          FromProtoExpr.PrimFromProto(fieldDef.name),
+          null,
+          ToProtoExpr.PrimToProto(fieldDef.name),
+        )
 
       is AtomicType.EnumRefType ->
         ProtoConversionExpr(
-          FromProtoExpr.FromProto(
-            fieldDef.type.refName,
-            FromProtoExpr.SimpleGetterExpr(fieldDef.name.classFieldName)
-          ),
+          FromProtoExpr.EnumFromProto(fieldDef.name, fieldDef.type.refName),
           null,
-          ToProtoExpr.ToProtoSimpleSet(fieldDef.name.classFieldName),
+          ToProtoExpr.EnumToProto(fieldDef.name),
         )
 
-      is AtomicType.PrimitiveType ->
-        // progress = proto.progress
+      is AtomicType.MessageRefType ->
         ProtoConversionExpr(
-          FromProtoExpr.SimpleGetterExpr(fieldDef.name.classFieldName),
+          FromProtoExpr.MessageFromProto(fieldDef.name, fieldDef.type.refName),
           null,
-          ToProtoExpr.SimpleSet(fieldDef.name.classFieldName),
+          ToProtoExpr.MessageToProto(fieldDef.name),
         )
-
-      is ValueType.MapType -> {
-        val valueBody = when (fieldDef.type.valueType) {
-          AtomicType.EmptyType -> TODO()
-
-          is AtomicType.PrimitiveType ->
-            FromProtoExpr.SimpleGetterExpr(fieldDef.name.classFieldName)
-
-          is AtomicType.MessageRefType ->
-            FromProtoExpr.FromProto(fieldDef.type.valueType.refName, FromProtoExpr.Expr)
-
-          is AtomicType.EnumRefType ->
-            FromProtoExpr.FromProto(
-              fieldDef.type.valueType.refName,
-              FromProtoExpr.SimpleGetterExpr(fieldDef.name.classFieldName)
-            )
-        }
-
-        val setter: ToProtoExpr = when (fieldDef.type.valueType) {
-          AtomicType.EmptyType -> TODO()
-
-          is AtomicType.PrimitiveType ->
-            ToProtoExpr.PutElem(
-              "put${fieldDef.name.capitalClassFieldName}",
-              fieldDef.name.classFieldName
-            )
-
-          is AtomicType.EnumRefType ->
-            ToProtoExpr.PutToProtoElem(
-              "put${fieldDef.name.capitalClassFieldName}",
-              fieldDef.name.classFieldName
-            )
-
-          is AtomicType.MessageRefType ->
-            ToProtoExpr.PutElemDelegate(
-              "put${fieldDef.name.capitalClassFieldName}",
-              protoOuterClassName + fieldDef.type.valueType.refName,
-            )
-        }
-
-        ProtoConversionExpr(
-          FromProtoExpr.Const(tsGen.fromType(fieldDef.type, collectionSizeHint).defaultValue),
-          FromProtoPostProcessExpr.ForEachMap(
-            fieldDef.name.classFieldName + "Map",
-            fieldDef.name.classFieldName,
-            valueBody,
-          ),
-          ToProtoExpr.ForEach(fieldDef.name.classFieldName, setter),
-        )
-      }
 
       is ValueType.OptionalType -> {
-        when (fieldDef.type.elemType) {
-          AtomicType.EmptyType -> TODO()
+        when (val elemType = fieldDef.type.elemType) {
+          AtomicType.EmptyType, is AtomicType.UnknownName -> TODO()
 
-          is AtomicType.MessageRefType ->
-            // water = if (!proto.hasWater()) null else TileWater.fromProto(proto.water)
+          is AtomicType.PrimitiveType ->
             ProtoConversionExpr(
-              FromProtoExpr.IfHas(
-                "has${fieldDef.name.capitalClassFieldName}", FromProtoExpr.FromProto(
-                  fieldDef.type.elemType.refName,
-                  FromProtoExpr.SimpleGetterExpr(fieldDef.name.classFieldName)
-                )
+              FromProtoExpr.OptionalFromProto(
+                fieldDef.name,
+                FromProtoExpr.PrimFromProto(fieldDef.name)
               ),
               null,
-              ToProtoExpr.Delegate(
-                fieldDef.name.classFieldName,
-                fieldDef.name.classFieldName + "Builder",
-                true
-              ),
+              ToProtoExpr.PrimOptionalToProto(fieldDef.name),
             )
 
-          is AtomicType.EnumRefType -> TODO()
+          is AtomicType.EnumRefType ->
+            ProtoConversionExpr(
+              FromProtoExpr.OptionalFromProto(
+                fieldDef.name,
+                FromProtoExpr.EnumFromProto(fieldDef.name, elemType.refName)
+              ),
+              null,
+              ToProtoExpr.EnumOptionalToProto(fieldDef.name),
+            )
 
-          is AtomicType.PrimitiveType -> TODO()
+          is AtomicType.MessageRefType ->
+            ProtoConversionExpr(
+              FromProtoExpr.OptionalFromProto(
+                fieldDef.name,
+                FromProtoExpr.MessageFromProto(fieldDef.name, elemType.refName)
+              ),
+              null,
+              ToProtoExpr.MessageOptionalToProto(fieldDef.name)
+            )
         }
       }
 
       is ValueType.RepeatedType -> {
-        val getter: FromProtoPostProcessExpr = when (fieldDef.type.elemType) {
-          AtomicType.EmptyType -> TODO()
+        val ts = tsGen.fromType(fieldDef.type, collectionSizeHint)
+        when (val elemType = fieldDef.type.elemType) {
+          AtomicType.EmptyType, is AtomicType.UnknownName -> TODO()
 
           is AtomicType.PrimitiveType ->
-            FromProtoPostProcessExpr.Add(fieldDef.name.classFieldName)
-
-          is AtomicType.MessageRefType ->
-            FromProtoPostProcessExpr.AddFromProto(
-              fieldDef.name.classFieldName,
-              fieldDef.type.elemType.refName
+            ProtoConversionExpr(
+              FromProtoExpr.Const(ts.defaultValue),
+              FromProtoPostProcessExpr.ForEachRepeated(
+                fieldDef.name,
+                FromProtoPostProcessExpr.PrimValueGetterExpr
+              ),
+              ToProtoExpr.ForEachRepeated(fieldDef.name, ElemType.PRIM, "")
             )
 
           is AtomicType.EnumRefType ->
-            FromProtoPostProcessExpr.AddFromProto(
-              fieldDef.name.classFieldName,
-              fieldDef.type.elemType.refName,
+            ProtoConversionExpr(
+              FromProtoExpr.Const(ts.defaultValue),
+              FromProtoPostProcessExpr.ForEachRepeated(
+                fieldDef.name,
+                FromProtoPostProcessExpr.EnumValueGetterExpr(elemType.refName)
+              ),
+              ToProtoExpr.ForEachRepeated(fieldDef.name, ElemType.ENUM, "")
             )
+
+          is AtomicType.MessageRefType -> {
+            val protoTypeName = "$protoOuterClassName${elemType.refName.className}"
+            ProtoConversionExpr(
+              FromProtoExpr.Const(ts.defaultValue),
+              FromProtoPostProcessExpr.ForEachRepeated(
+                fieldDef.name,
+                FromProtoPostProcessExpr.MessageValueGetterExpr(elemType.refName)
+              ),
+              ToProtoExpr.ForEachRepeated(fieldDef.name, ElemType.MESSAGE, protoTypeName)
+            )
+          }
         }
+      }
 
-        val setter: ToProtoExpr = when (fieldDef.type.elemType) {
-          AtomicType.EmptyType -> TODO()
-
-          is AtomicType.MessageRefType ->
-            ToProtoExpr.AddElemDelegate("add" + fieldDef.name.capitalClassFieldName + "Builder")
+      is ValueType.MapType -> {
+        val ts = tsGen.fromType(fieldDef.type, collectionSizeHint)
+        when (val elemType = fieldDef.type.valueType) {
+          AtomicType.EmptyType, is AtomicType.UnknownName -> TODO()
 
           is AtomicType.PrimitiveType ->
-            ToProtoExpr.AddElem("add" + fieldDef.name.capitalClassFieldName)
+            ProtoConversionExpr(
+              FromProtoExpr.Const(ts.defaultValue),
+              FromProtoPostProcessExpr.ForEachMap(
+                fieldDef.name,
+                FromProtoPostProcessExpr.PrimValueGetterExpr,
+              ),
+              ToProtoExpr.ForEachMap(fieldDef.name, ElemType.PRIM, "")
+            )
 
           is AtomicType.EnumRefType ->
-            ToProtoExpr.AddToProtoElem("add" + fieldDef.name.capitalClassFieldName)
-        }
+            ProtoConversionExpr(
+              FromProtoExpr.Const(ts.defaultValue),
+              FromProtoPostProcessExpr.ForEachMap(
+                fieldDef.name,
+                FromProtoPostProcessExpr.EnumValueGetterExpr(elemType.refName),
+              ),
+              ToProtoExpr.ForEachMap(fieldDef.name, ElemType.ENUM, "")
+            )
 
-        ProtoConversionExpr(
-          FromProtoExpr.Const(tsGen.fromType(fieldDef.type, collectionSizeHint).defaultValue),
-          FromProtoPostProcessExpr.ForEachList(
-            fieldDef.name.classFieldName + "List",
-            getter
-          ),
-          ToProtoExpr.ForEach(
-            fieldDef.name.classFieldName,
-            setter,
-          ),
-        )
+          is AtomicType.MessageRefType -> {
+            val protoTypeName = "$protoOuterClassName${elemType.refName.className}"
+            ProtoConversionExpr(
+              FromProtoExpr.Const(ts.defaultValue),
+              FromProtoPostProcessExpr.ForEachMap(
+                fieldDef.name,
+                FromProtoPostProcessExpr.MessageValueGetterExpr(elemType.refName),
+              ),
+              ToProtoExpr.ForEachMap(fieldDef.name, ElemType.MESSAGE, protoTypeName)
+            )
+          }
+        }
       }
     }
   }
@@ -227,154 +207,171 @@ data class ProtoConversionExpr(
 sealed class FromProtoExpr {
   abstract fun expr(protoExpr: String): String
 
+  sealed class AtomicFromProtoExpr: FromProtoExpr()
+
+  data class PrimFromProto(val fieldName: SemanticName): AtomicFromProtoExpr() {
+    override fun expr(protoExpr: String): String =
+      "$protoExpr.${fieldName.classFieldName}"
+  }
+
+  data class EnumFromProto(val fieldName: SemanticName, val enumTypeName: SemanticName):
+    AtomicFromProtoExpr() {
+    override fun expr(protoExpr: String): String =
+      "${enumTypeName.enumClassName}.fromProto($protoExpr.${fieldName.classFieldName})"
+  }
+
+  data class MessageFromProto(val fieldName: SemanticName, val messageTypeName: SemanticName):
+    AtomicFromProtoExpr() {
+    override fun expr(protoExpr: String): String =
+      "${messageTypeName.className}.fromProto($protoExpr.${fieldName.classFieldName})"
+  }
+
+  data class OptionalFromProto(val fieldName: SemanticName, val fromProtoExpr: AtomicFromProtoExpr):
+    FromProtoExpr() {
+    override fun expr(protoExpr: String): String {
+      val fromProto = fromProtoExpr.expr(protoExpr)
+      return "if (!$protoExpr.has${fieldName.capitalClassFieldName}()) null else $fromProto"
+    }
+  }
+
   data class Const(val const: String): FromProtoExpr() {
     override fun expr(protoExpr: String): String = const
-  }
-
-  object Expr: FromProtoExpr() {
-    override fun expr(protoExpr: String): String = protoExpr
-  }
-
-  data class SimpleGetterExpr(val fieldName: String): FromProtoExpr() {
-    override fun expr(protoExpr: String): String =
-      "$protoExpr.$fieldName"
-  }
-
-  data class FromProto(val typeName: String, val src: FromProtoExpr): FromProtoExpr() {
-    override fun expr(protoExpr: String): String {
-      val targetExpr = src.expr(protoExpr)
-      return "$typeName.fromProto($targetExpr)"
-    }
-  }
-
-  data class IfHas(val hasFieldFuncName: String, val body: FromProtoExpr): FromProtoExpr() {
-    override fun expr(protoExpr: String): String {
-      val targetExpr = body.expr(protoExpr)
-      return "if (!$protoExpr.$hasFieldFuncName()) null else $targetExpr"
-    }
   }
 }
 
 sealed class FromProtoPostProcessExpr {
   abstract fun generate(gen: MutableKtDataClassGen, protoExpr: String, instanceExpr: String)
 
-  data class ForEachList(val inputFieldName: String, val body: FromProtoPostProcessExpr):
+  sealed class AtomicValueGetterExpr {
+    abstract fun expr(elemExpr: String): String
+  }
+
+  object PrimValueGetterExpr: AtomicValueGetterExpr() {
+    override fun expr(elemExpr: String): String = elemExpr
+  }
+
+  data class EnumValueGetterExpr(val typeName: SemanticName): AtomicValueGetterExpr() {
+    override fun expr(elemExpr: String): String = "${typeName.enumClassName}.fromProto($elemExpr)"
+  }
+
+  data class MessageValueGetterExpr(val typeName: SemanticName): AtomicValueGetterExpr() {
+    override fun expr(elemExpr: String): String = "${typeName.className}.fromProto($elemExpr)"
+  }
+
+  data class ForEachRepeated(val fieldName: SemanticName, val valueGetter: AtomicValueGetterExpr):
     FromProtoPostProcessExpr() {
     override fun generate(gen: MutableKtDataClassGen, protoExpr: String, instanceExpr: String) {
-      gen.addLine("$protoExpr.$inputFieldName.forEach { elem ->")
+      gen.addLine("$protoExpr.${fieldName.classFieldName}List.forEach { elem ->")
       gen.indent {
-        body.generate(gen, "elem", instanceExpr)
+        val getter = valueGetter.expr("elem")
+        gen.addLine("$instanceExpr.${fieldName.classFieldName}.add($getter)")
+      }
+      gen.addLine("}")
+    }
+  }
+
+  data class ForEachMap(val fieldName: SemanticName, val valueGetter: AtomicValueGetterExpr):
+    FromProtoPostProcessExpr() {
+    override fun generate(gen: MutableKtDataClassGen, protoExpr: String, instanceExpr: String) {
+      gen.addLine("$protoExpr.${fieldName.classFieldName}Map.forEach { entry ->")
+      gen.indent {
+        val getter = valueGetter.expr("entry.value")
+        gen.addLine("$instanceExpr.${fieldName.classFieldName}.put(entry.key, $getter)")
+      }
+      gen.addLine("}")
+    }
+  }
+}
+
+sealed class ToProtoExpr {
+  abstract fun generate(gen: MutableKtDataClassGen, thisExpr: String, builderExpr: String)
+
+  data class PrimToProto(val fieldName: SemanticName): ToProtoExpr() {
+    override fun generate(gen: MutableKtDataClassGen, thisExpr: String, builderExpr: String) {
+      gen.addLine("$builderExpr.${fieldName.classFieldName} = $thisExpr.${fieldName.classFieldName}")
+    }
+  }
+
+  data class EnumToProto(val fieldName: SemanticName): ToProtoExpr() {
+    override fun generate(gen: MutableKtDataClassGen, thisExpr: String, builderExpr: String) {
+      gen.addLine("$builderExpr.${fieldName.classFieldName} = $thisExpr.${fieldName.classFieldName}.toProto()")
+    }
+  }
+
+  data class MessageToProto(val fieldName: SemanticName): ToProtoExpr() {
+    override fun generate(gen: MutableKtDataClassGen, thisExpr: String, builderExpr: String) {
+      gen.addLine("$thisExpr.${fieldName.classFieldName}.toProto($builderExpr.${fieldName.classFieldName}Builder)")
+    }
+  }
+
+  data class PrimOptionalToProto(val fieldName: SemanticName): ToProtoExpr() {
+    override fun generate(gen: MutableKtDataClassGen, thisExpr: String, builderExpr: String) {
+      gen.addLine("$thisExpr.${fieldName.classFieldName}?.let { value -> $builderExpr.${fieldName.classFieldName} } ?: $builderExpr.clear${fieldName.capitalClassFieldName}()")
+    }
+  }
+
+  data class EnumOptionalToProto(val fieldName: SemanticName): ToProtoExpr() {
+    override fun generate(gen: MutableKtDataClassGen, thisExpr: String, builderExpr: String) {
+      gen.addLine("$thisExpr.${fieldName.classFieldName}?.let { value -> $builderExpr.${fieldName.classFieldName}.toProto() } ?: $builderExpr.clear${fieldName.capitalClassFieldName}()")
+    }
+  }
+
+  data class MessageOptionalToProto(val fieldName: SemanticName): ToProtoExpr() {
+    override fun generate(gen: MutableKtDataClassGen, thisExpr: String, builderExpr: String) {
+      gen.addLine("$thisExpr.${fieldName.classFieldName}?.toProto($builderExpr.${fieldName.classFieldName}Builder) ?: $builderExpr.clear${fieldName.capitalClassFieldName}()")
+    }
+  }
+
+  data class ForEachRepeated(
+    val fieldName: SemanticName,
+    val elemType: ElemType,
+    val messageProtoName: String
+  ): ToProtoExpr() {
+    override fun generate(gen: MutableKtDataClassGen, thisExpr: String, builderExpr: String) {
+      gen.addLine("$thisExpr.${fieldName.classFieldName}List.forEach { elem ->")
+      gen.indent {
+        when (elemType) {
+          ElemType.PRIM ->
+            gen.addLine("$builderExpr.add${fieldName.capitalClassFieldName}(elem)")
+
+          ElemType.ENUM ->
+            gen.addLine("$builderExpr.add${fieldName.capitalClassFieldName}(elem.toProto())")
+
+          ElemType.MESSAGE ->
+            gen.addLine("elem.toProto($builderExpr.add${fieldName.capitalClassFieldName}Builder())")
+        }
       }
       gen.addLine("}")
     }
   }
 
   data class ForEachMap(
-    val inputFieldName: String,
-    val fieldName: String,
-    val valueBody: FromProtoExpr
-  ): FromProtoPostProcessExpr() {
-    override fun generate(gen: MutableKtDataClassGen, protoExpr: String, instanceExpr: String) {
-      gen.addLine("$protoExpr.$inputFieldName.forEach { entry ->")
-      val valueBodyLines = valueBody.expr("entry.value")
+    val fieldName: SemanticName,
+    val elemType: ElemType,
+    val messageProtoClassName: String
+  ): ToProtoExpr() {
+    override fun generate(gen: MutableKtDataClassGen, thisExpr: String, builderExpr: String) {
+      gen.addLine("$thisExpr.${fieldName.classFieldName}Map.forEach { (key, value) ->")
       gen.indent {
-        gen.addLine("$instanceExpr.$fieldName.put(entry.key, ${valueBodyLines.first()})")
+        when (elemType) {
+          ElemType.PRIM ->
+            gen.addLine("$builderExpr.put${fieldName.capitalClassFieldName}(key, value)")
+
+          ElemType.ENUM ->
+            gen.addLine("$builderExpr.put${fieldName.capitalClassFieldName}(key, value.toProto())")
+
+          ElemType.MESSAGE -> {
+            gen.addLine("val valueBuilder = $messageProtoClassName.newBuilder()")
+            gen.addLine("value.toProto(valueBuilder)")
+            gen.addLine("$builderExpr.put${fieldName.capitalClassFieldName}(key, valueBuilder.build())")
+          }
+        }
       }
       gen.addLine("}")
-    }
-  }
-
-  data class Add(val fieldName: String): FromProtoPostProcessExpr() {
-    override fun generate(gen: MutableKtDataClassGen, protoExpr: String, instanceExpr: String) {
-      gen.addLine("$instanceExpr.$fieldName.add($protoExpr)")
-    }
-  }
-
-  data class AddFromProto(val fieldName: String, val typ: String): FromProtoPostProcessExpr() {
-    override fun generate(gen: MutableKtDataClassGen, protoExpr: String, instanceExpr: String) {
-      gen.addLine("$instanceExpr.$fieldName.add($typ.fromProto($protoExpr))")
     }
   }
 }
 
-sealed class ToProtoExpr {
-  abstract fun expr(gen: MutableKtDataClassGen, thisExpr: String, builderExpr: String)
-
-  data class SimpleSet(val fieldName: String): ToProtoExpr() {
-    override fun expr(gen: MutableKtDataClassGen, thisExpr: String, builderExpr: String) {
-      gen.addLine("$builderExpr.$fieldName = $thisExpr.$fieldName")
-    }
-  }
-
-  data class ToProtoSimpleSet(val fieldName: String): ToProtoExpr() {
-    override fun expr(gen: MutableKtDataClassGen, thisExpr: String, builderExpr: String) {
-      gen.addLine("$builderExpr.$fieldName = $thisExpr.$fieldName.toProto()")
-    }
-  }
-
-  data class Delegate(
-    val thisFieldName: String,
-    val builderFieldName: String,
-    val optional: Boolean
-  ): ToProtoExpr() {
-    override fun expr(gen: MutableKtDataClassGen, thisExpr: String, builderExpr: String) {
-      val opt = if (optional) "?" else ""
-      gen.addLine("$thisExpr.$thisFieldName$opt.toProto($builderExpr.$builderFieldName)")
-    }
-  }
-
-  data class AddElem(val addFuncName: String): ToProtoExpr() {
-    override fun expr(gen: MutableKtDataClassGen, thisExpr: String, builderExpr: String) {
-      gen.addLine("$builderExpr.$addFuncName($thisExpr)")
-    }
-  }
-
-  data class AddToProtoElem(val addFuncName: String): ToProtoExpr() {
-    override fun expr(gen: MutableKtDataClassGen, thisExpr: String, builderExpr: String) {
-      gen.addLine("$builderExpr.$addFuncName($thisExpr.toProto())")
-    }
-  }
-
-  data class PutElem(val putFuncName: String, val thisFieldName: String): ToProtoExpr() {
-    override fun expr(gen: MutableKtDataClassGen, thisExpr: String, builderExpr: String) {
-      gen.addLine("$builderExpr.$putFuncName($thisExpr.$thisFieldName)")
-    }
-  }
-
-  data class PutToProtoElem(val putFuncName: String, val thisFieldName: String): ToProtoExpr() {
-    override fun expr(gen: MutableKtDataClassGen, thisExpr: String, builderExpr: String) {
-      gen.addLine("$builderExpr.$putFuncName($thisExpr.$thisFieldName.toProto())")
-    }
-  }
-
-  data class AddElemDelegate(val addBuilderName: String): ToProtoExpr() {
-    override fun expr(gen: MutableKtDataClassGen, thisExpr: String, builderExpr: String) {
-      gen.addLine("$thisExpr.toProto($builderExpr.$addBuilderName())")
-    }
-  }
-
-  data class PutElemDelegate(val putFuncName: String, val protoTypeName: String):
-    ToProtoExpr() {
-    override fun expr(gen: MutableKtDataClassGen, thisExpr: String, builderExpr: String) {
-      // val valueBuilder = WorldProto.WaterMass.newBuilder()
-      // entry.value.toProto(valueBuilder)
-      // builder.putWaterMasses(entry.key, valueBuilder.build())
-      gen.addLine("val valueBuilder = $protoTypeName.newBuilder()")
-      gen.addLine("$thisExpr.value.toProto(valueBuilder)")
-      gen.addLine("$builderExpr.$putFuncName($thisExpr.key, valueBuilder.build())")
-    }
-  }
-
-  data class ForEach(
-    val thisFieldName: String,
-    val body: ToProtoExpr,
-  ): ToProtoExpr() {
-    override fun expr(gen: MutableKtDataClassGen, thisExpr: String, builderExpr: String) {
-      gen.addLine("$thisExpr.$thisFieldName.forEach { elem ->")
-      gen.indent {
-        body.expr(gen, "elem", builderExpr)
-      }
-      gen.addLine("}")
-    }
-  }
+enum class ElemType {
+  PRIM, ENUM, MESSAGE
 }

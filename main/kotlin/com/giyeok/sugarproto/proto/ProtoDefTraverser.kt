@@ -21,15 +21,15 @@ class ProtoDefTraverser(val ast: SugarProtoAst.CompilationUnit) {
 
   init {
     fun addEnumName(name: String) {
-      nameLookup[name] = AtomicType.EnumName(name)
+      nameLookup[name] = AtomicType.EnumName(SemanticName.enumName(name))
     }
 
     fun addMessageName(name: String) {
-      nameLookup[name] = AtomicType.MessageName(name)
+      nameLookup[name] = AtomicType.MessageName(SemanticName.messageName(name))
     }
 
     fun addSealedName(name: String) {
-      nameLookup[name] = AtomicType.SealedName(name)
+      nameLookup[name] = AtomicType.SealedName(SemanticName.messageName(name))
     }
 
     fun traverseMessageDef(members: List<SugarProtoAst.MessageMemberDefWS>, name: String) {

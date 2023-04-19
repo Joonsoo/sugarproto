@@ -66,6 +66,6 @@ sealed class KtSealedSubType {
 
   data class DedicatedMessage(
     override val fieldName: SemanticName,
-    val typeName: String
+    val typeName: SemanticName
   ): KtSealedSubType()
 }

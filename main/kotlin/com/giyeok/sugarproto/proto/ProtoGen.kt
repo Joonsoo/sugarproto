@@ -139,9 +139,9 @@ class ProtoGen(val builder: StringBuilder = StringBuilder()) {
   }
 
   fun ValueType.toProtoString(): String = when (this) {
-    is AtomicType.EnumName -> this.name
-    is AtomicType.MessageName -> this.name
-    is AtomicType.SealedName -> this.name
+    is AtomicType.EnumName -> this.name.enumName
+    is AtomicType.MessageName -> this.name.messageName
+    is AtomicType.SealedName -> this.name.messageName
     is AtomicType.UnknownName -> this.name
     is AtomicType.GeneratedEnumName -> this.name.enumName
     is AtomicType.GeneratedMessageName -> this.name.messageName

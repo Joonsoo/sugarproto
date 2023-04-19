@@ -52,26 +52,17 @@ class TypeStringGen(val gdxMode: Boolean) {
   fun fromType(typ: ValueType, collectionSizeHint: String? = null): TypeString =
     when (typ) {
       AtomicType.EmptyType -> TODO()
-      is AtomicType.UnknownName ->
-        TypeString(false, typ.name, "TODO()")
+      is AtomicType.UnknownName -> TODO()
 
-      is AtomicType.EnumName ->
-        TypeString(true, typ.name, "${typ.name}.defaultValue")
+      is AtomicType.EnumRefType -> {
+        val enumName = typ.refName.enumName
+        TypeString(true, enumName, "$enumName.defaultValue")
+      }
 
-      is AtomicType.MessageName ->
-        TypeString(false, typ.name, "${typ.name}.create()")
-
-      is AtomicType.SealedName ->
-        TypeString(false, typ.name, "${typ.name}.create()")
-
-      is AtomicType.GeneratedEnumName ->
-        TypeString(false, typ.name.className, "${typ.name.className}.defaultValue")
-
-      is AtomicType.GeneratedMessageName ->
-        TypeString(false, typ.name.className, "${typ.name.className}.create()")
-
-      is AtomicType.GeneratedSealedName ->
-        TypeString(false, typ.name.className, "${typ.name.className}.create()")
+      is AtomicType.MessageRefType -> {
+        val className = typ.refName.className
+        TypeString(false, className, "$className.create()")
+      }
 
       is AtomicType.PrimitiveType -> when (typ.type) {
         SugarProtoAst.PrimitiveTypeEnum.BOOL -> TypeString(true, "Boolean", "false")
