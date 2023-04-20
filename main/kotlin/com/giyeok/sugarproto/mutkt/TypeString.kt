@@ -64,6 +64,11 @@ class TypeStringGen(val gdxMode: Boolean) {
         TypeString(false, className, "$className.create()")
       }
 
+      is AtomicType.SealedRefType -> {
+        val className = typ.refName.className
+        TypeString(true, className, "$className.create()")
+      }
+
       is AtomicType.PrimitiveType -> when (typ.type) {
         SugarProtoAst.PrimitiveTypeEnum.BOOL -> TypeString(true, "Boolean", "false")
         SugarProtoAst.PrimitiveTypeEnum.BYTES -> TODO()

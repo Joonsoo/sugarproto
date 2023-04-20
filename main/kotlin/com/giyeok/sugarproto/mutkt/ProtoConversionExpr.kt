@@ -74,7 +74,7 @@ class ProtoConversionExprGen(
           ToProtoExpr.EnumToProto(fieldDef.name),
         )
 
-      is AtomicType.MessageRefType ->
+      is AtomicType.MessageOrSealedRefType ->
         ProtoConversionExpr(
           FromProtoExpr.MessageFromProto(fieldDef.name, fieldDef.type.refName),
           null,
@@ -105,7 +105,7 @@ class ProtoConversionExprGen(
               ToProtoExpr.EnumOptionalToProto(fieldDef.name),
             )
 
-          is AtomicType.MessageRefType ->
+          is AtomicType.MessageOrSealedRefType ->
             ProtoConversionExpr(
               FromProtoExpr.OptionalFromProto(
                 fieldDef.name,
@@ -142,7 +142,7 @@ class ProtoConversionExprGen(
               ToProtoExpr.ForEachRepeated(fieldDef.name, ElemType.ENUM, "")
             )
 
-          is AtomicType.MessageRefType -> {
+          is AtomicType.MessageOrSealedRefType -> {
             val protoTypeName = "$protoOuterClassName${elemType.refName.className}"
             ProtoConversionExpr(
               FromProtoExpr.Const(ts.defaultValue),
@@ -181,7 +181,7 @@ class ProtoConversionExprGen(
               ToProtoExpr.ForEachMap(fieldDef.name, ElemType.ENUM, "")
             )
 
-          is AtomicType.MessageRefType -> {
+          is AtomicType.MessageOrSealedRefType -> {
             val protoTypeName = "$protoOuterClassName${elemType.refName.className}"
             ProtoConversionExpr(
               FromProtoExpr.Const(ts.defaultValue),

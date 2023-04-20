@@ -22,9 +22,13 @@ sealed class AtomicType: ValueType() {
     abstract val refName: SemanticName
   }
 
-  sealed class MessageRefType: AtomicType() {
+  sealed class MessageOrSealedRefType: AtomicType() {
     abstract val refName: SemanticName
   }
+
+  sealed class MessageRefType: MessageOrSealedRefType()
+
+  sealed class SealedRefType: MessageOrSealedRefType()
 
   // 이름은 항상 루트 scope에서부터 시작하는 canonical name으로
   data class UnknownName(val name: String): AtomicType()
@@ -37,7 +41,7 @@ sealed class AtomicType: ValueType() {
     override val refName get() = name
   }
 
-  data class SealedName(val name: SemanticName): MessageRefType() {
+  data class SealedName(val name: SemanticName): SealedRefType() {
     override val refName get() = name
   }
 
@@ -51,7 +55,7 @@ sealed class AtomicType: ValueType() {
     override val refName get() = name
   }
 
-  data class GeneratedSealedName(val name: SemanticName): MessageRefType() {
+  data class GeneratedSealedName(val name: SemanticName): SealedRefType() {
     override val refName get() = name
   }
 }
