@@ -14,9 +14,6 @@ class GenerateMutableKtAndProto {
   fun build(context: BuildContext): BibixValue {
     val source = (context.arguments.getValue("source") as FileValue).file
     val protoFileName = (context.arguments.getValue("protoFileName") as StringValue).value
-    val protoOuterClassName =
-      (context.arguments.getValue("protoOuterClassName") as StringValue).value
-    val packageName = (context.arguments.getValue("packageName") as StringValue).value
     val kotlinFileName = (context.arguments.getValue("kotlinFileName") as StringValue).value
     val imports =
       (context.arguments.getValue("imports").nullOr<ListValue>())?.values?.map { value ->
@@ -37,12 +34,11 @@ class GenerateMutableKtAndProto {
     val ktDefs = MutableKotlinDefConverter(defs).convert()
     val mutableKt = MutableKtDataClassGen(
       ktDefs,
-      packageName,
       ktImports.toList().sorted(),
-      "$protoOuterClassName.",
       gdxMode,
     ).generate()
-    val ktSrcDir = packageName.split('.').fold(srcsRoot) { a, b -> a.resolve(b) }
+    val ktSrcDir =
+      (ktDefs.kotlinPackageName ?: "").split('.').fold(srcsRoot) { a, b -> a.resolve(b) }
     ktSrcDir.createDirectories()
     val ktSrcFile = ktSrcDir.resolve(kotlinFileName)
     ktSrcFile.writeText(mutableKt)

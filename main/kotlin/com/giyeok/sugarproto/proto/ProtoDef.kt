@@ -14,6 +14,8 @@ data class ProtoDefs(
   // 하위 클래스 -> (상위 클래스 이름, 해당 필드 이름)의 맵
   val sealedSupers: Map<SemanticName, SuperName>,
   val trailingComments: List<SugarProtoAst.Comment>,
+  val kotlinPackageName: String?,
+  val kotlinImports: Set<String>,
 )
 
 data class SuperName(

@@ -1,5 +1,5 @@
-CompilationUnit = (WS PackageDef)? (WS ImportDef)* (WS OptionDef)* TopLevelDefWS* WS
-                  {CompilationUnit(pkgDef=$0, imports=$1, options=$2, defs=$3)}
+CompilationUnit = (WS PackageDef)? (WS ImportDef)* (WS OptionDef)* (WS KotlinOptions)? TopLevelDefWS* WS
+                  {CompilationUnit(pkgDef=$0, imports=$1, options=$2, kotlinOptions=$3, defs=$4)}
 
 PackageDef = "package"&Tk WS FullIdent
 ImportDef = "import"&Tk WS StringLiteral
@@ -7,6 +7,11 @@ ImportDef = "import"&Tk WS StringLiteral
 OptionDef = "option"&Tk WS OptionName WS '=' WS Constant {OptionDef(name=$2, value=$6)}
 OptionName = (Ident {FullIdent([$0])} | '(' WS FullIdent WS ')' $2) (WS '.' WS Ident)*
              {OptionName(name=$0, trailings=$1)}
+
+KotlinOptions = "kotlin"&Tk WS '{' (WS KotlinOption)* WS '}' {KotlinOptions(options=$3)}
+KotlinOption: KotlinOption = "package"&Tk WS FullIdent {KotlinPackage(name=$2)}
+  | "assume"&Tk WS ("message" {%MESSAGE} | "sealed" {%SEALED} | "enum" {%ENUM}) WS FullIdent WS "in"&Tk WS FullIdent
+    {KotlinAssume(kind:%AssumeKind=$2, name=$4, packageName=$8)}
 
 Constant: Constant = Ident-("true" | "false") {FullIdent(names=[$0])}
   | Ident (WS '.' WS Ident)+ {FullIdent(names=[$0] + $1)}

@@ -1,6 +1,8 @@
 package com.giyeok.sugarproto.mutkt
 
+import com.giyeok.sugarproto.SugarProtoAst
 import com.giyeok.sugarproto.proto.*
+import com.giyeok.sugarproto.toValue
 
 // Proto Defs -> Kotlin mutable data class defs
 class MutableKotlinDefConverter(val defs: ProtoDefs) {
@@ -99,6 +101,13 @@ class MutableKotlinDefConverter(val defs: ProtoDefs) {
     )
   }
 
+  private fun javaOuterClassnameOption(): String {
+    val javaOuterClassname = defs.options.find { option ->
+      option.optionDef.name.name.names.map { it.name } == listOf("java_outer_classname")
+    }?.optionDef?.value ?: throw IllegalStateException("java_outer_classname is needed")
+    return (javaOuterClassname as SugarProtoAst.StringLiteral).toValue()
+  }
+
   fun convert(): KtDefs {
     val ktDefs = defs.defs.mapNotNull { def ->
       when (def) {
@@ -111,6 +120,14 @@ class MutableKotlinDefConverter(val defs: ProtoDefs) {
         }
       }
     }
-    return KtDefs(defs.comments, ktDefs, defs.sealedSupers, defs.trailingComments)
+    return KtDefs(
+      defs.comments,
+      ktDefs,
+      defs.sealedSupers,
+      defs.trailingComments,
+      javaOuterClassnameOption(),
+      defs.kotlinPackageName,
+      defs.kotlinImports
+    )
   }
 }

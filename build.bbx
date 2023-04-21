@@ -77,8 +77,6 @@ bibixPlugin {
       gen = generateMutableKtAndProto(
         source = "test/resources/type_conversions.supro",
         protoFileName = "test.proto",
-        protoOuterClassName = "TypeConversionsProto",
-        packageName = "com.giyeok.sugarproto.test",
         kotlinFileName = "TypeConversionsModel.kt",
         imports = [
           "com.giyeok.sugarproto.test.TypeConversionsProto",
@@ -109,8 +107,6 @@ class Generated(
 def generateMutableKtAndProto(
   source: file,
   protoFileName: string,
-  protoOuterClassName: string,
-  packageName: string,
   kotlinFileName: string,
   imports?: list<string>,
   gdxMode: boolean = false,

@@ -6,12 +6,12 @@ import com.giyeok.sugarproto.toValueString
 // Kotlin mutable data class defs -> kotlin mutable data class definition source codes
 class MutableKtDataClassGen(
   val defs: KtDefs,
-  val packageName: String? = null,
   val imports: List<String> = listOf(),
-  val protoOuterClassName: String = "",
   val gdxMode: Boolean = false,
   val builder: StringBuilder = StringBuilder(),
 ) {
+  val protoOuterClassName = defs.protoJavaOuterClassName + "."
+
   val tsGen = TypeStringGen(gdxMode)
   val pcGen = ProtoConversionExprGen(tsGen, protoOuterClassName)
 
@@ -403,8 +403,8 @@ class MutableKtDataClassGen(
   fun generate(): String {
     addComments(defs.comments)
 
-    if (packageName != null) {
-      addLine("package $packageName")
+    if (defs.kotlinPackageName != null) {
+      addLine("package ${defs.kotlinPackageName}")
       addLine()
     }
 
@@ -425,10 +425,10 @@ class MutableKtDataClassGen(
       addLine("import com.badlogic.gdx.utils.ObjectSet")
       addLine("import com.giyeok.msspgame.libgdx.forEach")
     }
-    imports.forEach { import ->
+    (imports + defs.kotlinImports).toList().sorted().forEach { import ->
       addLine("import $import")
     }
-    if (gdxMode || imports.isNotEmpty()) {
+    if (gdxMode || (imports + defs.kotlinImports).isNotEmpty()) {
       addLine()
     }
 

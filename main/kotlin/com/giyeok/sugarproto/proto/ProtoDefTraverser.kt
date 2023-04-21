@@ -19,6 +19,9 @@ class ProtoDefTraverser(val ast: SugarProtoAst.CompilationUnit) {
 
   private val nameLookup = mutableMapOf<String, AtomicType>()
 
+  private val kotlinImports = mutableSetOf<String>()
+  private var kotlinPackageName: String? = null
+
   init {
     fun addEnumName(name: String) {
       nameLookup[name] = AtomicType.EnumName(SemanticName.enumName(name))
@@ -45,6 +48,29 @@ class ProtoDefTraverser(val ast: SugarProtoAst.CompilationUnit) {
           is SugarProtoAst.OneOfDef -> {}
           is SugarProtoAst.OptionDef -> {}
           is SugarProtoAst.ReservedDef -> {}
+        }
+      }
+    }
+
+    ast.kotlinOptions?.let { kotlinOptions ->
+      kotlinOptions.options.forEach { option ->
+        when (option) {
+          is SugarProtoAst.KotlinAssume -> {
+            val typeName = option.name.names.joinToString(".") { it.name }
+            when (option.kind) {
+              SugarProtoAst.AssumeKind.MESSAGE -> addMessageName(typeName)
+              SugarProtoAst.AssumeKind.SEALED -> addSealedName(typeName)
+              SugarProtoAst.AssumeKind.ENUM -> addEnumName(typeName)
+            }
+            kotlinImports.add((option.packageName.names + option.name.names).joinToString(".") { it.name })
+          }
+
+          is SugarProtoAst.KotlinPackage -> {
+            if (kotlinPackageName != null) {
+              throw IllegalStateException("duplicate definition of kotlin package name")
+            }
+            kotlinPackageName = option.name.names.joinToString(".") { it.name }
+          }
         }
       }
     }
@@ -454,6 +480,8 @@ class ProtoDefTraverser(val ast: SugarProtoAst.CompilationUnit) {
       defs,
       sealedSupers,
       listOf(),
+      kotlinPackageName,
+      kotlinImports
     )
   }
 }

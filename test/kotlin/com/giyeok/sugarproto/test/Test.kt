@@ -19,8 +19,7 @@ class Test {
     println(proto)
 
     val ktDefs = MutableKotlinDefConverter(defs).convert()
-    val kt =
-      MutableKtDataClassGen(ktDefs, protoOuterClassName = "WorldProto.", gdxMode = true).generate()
+    val kt = MutableKtDataClassGen(ktDefs, gdxMode = true).generate()
     println(kt)
   }
 }

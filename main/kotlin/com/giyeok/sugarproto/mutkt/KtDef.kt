@@ -10,6 +10,9 @@ data class KtDefs(
   val defs: List<KtDef>,
   val sealedSupers: Map<SemanticName, SuperName>,
   val trailingComments: List<SugarProtoAst.Comment>,
+  val protoJavaOuterClassName: String,
+  val kotlinPackageName: String?,
+  val kotlinImports: Set<String>,
 )
 
 sealed class KtDef
