@@ -19,44 +19,27 @@ sealed class AtomicType: ValueType() {
 
   data class PrimitiveType(val type: SugarProtoAst.PrimitiveTypeEnum): AtomicType()
 
-  sealed class EnumRefType: AtomicType() {
-    abstract val refName: SemanticName
-  }
-
-  sealed class MessageOrSealedRefType: AtomicType() {
-    abstract val refName: SemanticName
-  }
-
-  sealed class MessageRefType: MessageOrSealedRefType()
-
-  sealed class SealedRefType: MessageOrSealedRefType()
-
   // 이름은 항상 루트 scope에서부터 시작하는 canonical name으로
   data class UnknownName(val name: String): AtomicType()
 
-  data class MessageName(val name: SemanticName): MessageRefType() {
-    override val refName get() = name
+  sealed class MessageOrSealedType: AtomicType() {
+    abstract val name: SemanticName
+    abstract val source: TypeSource
   }
 
-  data class EnumName(val name: SemanticName): EnumRefType() {
-    override val refName get() = name
-  }
+  data class MessageType(override val name: SemanticName, override val source: TypeSource):
+    MessageOrSealedType()
 
-  data class SealedName(val name: SemanticName): SealedRefType() {
-    override val refName get() = name
-  }
+  data class SealedType(override val name: SemanticName, override val source: TypeSource):
+    MessageOrSealedType()
 
-  // generated name은 별도로 처리
-  // 역시 항상 루트 scope에서 시작하는 canonical name
-  data class GeneratedMessageName(val name: SemanticName): MessageRefType() {
-    override val refName get() = name
-  }
+  data class EnumType(val name: SemanticName, val source: TypeSource): AtomicType()
 
-  data class GeneratedEnumName(val name: SemanticName): EnumRefType() {
-    override val refName get() = name
-  }
+  sealed class TypeSource {
+    object UserDefined: TypeSource()
 
-  data class GeneratedSealedName(val name: SemanticName): SealedRefType() {
-    override val refName get() = name
+    object Generated: TypeSource()
+
+    data class External(val protoPkg: List<String>): TypeSource()
   }
 }

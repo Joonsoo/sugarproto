@@ -55,18 +55,18 @@ class TypeStringGen(val gdxMode: Boolean) {
       is AtomicType.UnknownName ->
         throw IllegalStateException("Unknown name: ${typ.name}")
 
-      is AtomicType.EnumRefType -> {
-        val enumName = typ.refName.enumName
+      is AtomicType.EnumType -> {
+        val enumName = typ.name.enumName
         TypeString(true, enumName, "$enumName.defaultValue")
       }
 
-      is AtomicType.MessageRefType -> {
-        val className = typ.refName.className
+      is AtomicType.MessageType -> {
+        val className = typ.name.className
         TypeString(false, className, "$className.create()")
       }
 
-      is AtomicType.SealedRefType -> {
-        val className = typ.refName.className
+      is AtomicType.SealedType -> {
+        val className = typ.name.className
         TypeString(true, className, "$className.create()")
       }
 

@@ -67,16 +67,16 @@ class ProtoConversionExprGen(
           ToProtoExpr.PrimToProto(fieldDef.name),
         )
 
-      is AtomicType.EnumRefType ->
+      is AtomicType.EnumType ->
         ProtoConversionExpr(
-          FromProtoExpr.EnumFromProto(fieldDef.name, fieldDef.type.refName),
+          FromProtoExpr.EnumFromProto(fieldDef.name, fieldDef.type.name),
           null,
           ToProtoExpr.EnumToProto(fieldDef.name),
         )
 
-      is AtomicType.MessageOrSealedRefType ->
+      is AtomicType.MessageOrSealedType ->
         ProtoConversionExpr(
-          FromProtoExpr.MessageFromProto(fieldDef.name, fieldDef.type.refName),
+          FromProtoExpr.MessageFromProto(fieldDef.name, fieldDef.type.name),
           null,
           ToProtoExpr.MessageToProto(fieldDef.name),
         )
@@ -95,21 +95,21 @@ class ProtoConversionExprGen(
               ToProtoExpr.PrimOptionalToProto(fieldDef.name),
             )
 
-          is AtomicType.EnumRefType ->
+          is AtomicType.EnumType ->
             ProtoConversionExpr(
               FromProtoExpr.OptionalFromProto(
                 fieldDef.name,
-                FromProtoExpr.EnumFromProto(fieldDef.name, elemType.refName)
+                FromProtoExpr.EnumFromProto(fieldDef.name, elemType.name)
               ),
               null,
               ToProtoExpr.EnumOptionalToProto(fieldDef.name),
             )
 
-          is AtomicType.MessageOrSealedRefType ->
+          is AtomicType.MessageOrSealedType ->
             ProtoConversionExpr(
               FromProtoExpr.OptionalFromProto(
                 fieldDef.name,
-                FromProtoExpr.MessageFromProto(fieldDef.name, elemType.refName)
+                FromProtoExpr.MessageFromProto(fieldDef.name, elemType.name)
               ),
               null,
               ToProtoExpr.MessageOptionalToProto(fieldDef.name)
@@ -137,23 +137,23 @@ class ProtoConversionExprGen(
               ToProtoExpr.ForEachRepeated(fieldDef.name, ElemType.PRIM, "")
             )
 
-          is AtomicType.EnumRefType ->
+          is AtomicType.EnumType ->
             ProtoConversionExpr(
               FromProtoExpr.Const(ts.defaultValue),
               FromProtoPostProcessExpr.ForEachRepeated(
                 fieldDef.name,
-                FromProtoPostProcessExpr.EnumValueGetterExpr(elemType.refName)
+                FromProtoPostProcessExpr.EnumValueGetterExpr(elemType.name)
               ),
               ToProtoExpr.ForEachRepeated(fieldDef.name, ElemType.ENUM, "")
             )
 
-          is AtomicType.MessageOrSealedRefType -> {
-            val protoTypeName = "$protoOuterClassName${elemType.refName.className}"
+          is AtomicType.MessageOrSealedType -> {
+            val protoTypeName = "$protoOuterClassName${elemType.name.className}"
             ProtoConversionExpr(
               FromProtoExpr.Const(ts.defaultValue),
               FromProtoPostProcessExpr.ForEachRepeated(
                 fieldDef.name,
-                FromProtoPostProcessExpr.MessageValueGetterExpr(elemType.refName)
+                FromProtoPostProcessExpr.MessageValueGetterExpr(elemType.name)
               ),
               ToProtoExpr.ForEachRepeated(fieldDef.name, ElemType.MESSAGE, protoTypeName)
             )
@@ -176,23 +176,23 @@ class ProtoConversionExprGen(
               ToProtoExpr.ForEachMap(fieldDef.name, ElemType.PRIM, "")
             )
 
-          is AtomicType.EnumRefType ->
+          is AtomicType.EnumType ->
             ProtoConversionExpr(
               FromProtoExpr.Const(ts.defaultValue),
               FromProtoPostProcessExpr.ForEachMap(
                 fieldDef.name,
-                FromProtoPostProcessExpr.EnumValueGetterExpr(elemType.refName),
+                FromProtoPostProcessExpr.EnumValueGetterExpr(elemType.name),
               ),
               ToProtoExpr.ForEachMap(fieldDef.name, ElemType.ENUM, "")
             )
 
-          is AtomicType.MessageOrSealedRefType -> {
-            val protoTypeName = "$protoOuterClassName${elemType.refName.className}"
+          is AtomicType.MessageOrSealedType -> {
+            val protoTypeName = "$protoOuterClassName${elemType.name.className}"
             ProtoConversionExpr(
               FromProtoExpr.Const(ts.defaultValue),
               FromProtoPostProcessExpr.ForEachMap(
                 fieldDef.name,
-                FromProtoPostProcessExpr.MessageValueGetterExpr(elemType.refName),
+                FromProtoPostProcessExpr.MessageValueGetterExpr(elemType.name),
               ),
               ToProtoExpr.ForEachMap(fieldDef.name, ElemType.MESSAGE, protoTypeName)
             )

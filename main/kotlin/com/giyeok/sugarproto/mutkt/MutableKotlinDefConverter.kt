@@ -82,8 +82,12 @@ class MutableKotlinDefConverter(val defs: ProtoDefs) {
   fun convertSealed(def: ProtoSealedDef): KtSealedClassDef {
     val sealedSubs: List<KtSealedSubType> = def.sealedFields.map { sealed ->
       when (sealed.type) {
-        is AtomicType.GeneratedMessageName ->
-          KtSealedSubType.DedicatedMessage(sealed.name, sealed.type.refName)
+        is AtomicType.MessageType ->
+          if (sealed.type.source == AtomicType.TypeSource.Generated) {
+            KtSealedSubType.DedicatedMessage(sealed.name, sealed.type.name)
+          } else {
+            KtSealedSubType.SingleSub(sealed.name, convertField(sealed))
+          }
 
         AtomicType.EmptyType ->
           KtSealedSubType.EmptySub(sealed.name)

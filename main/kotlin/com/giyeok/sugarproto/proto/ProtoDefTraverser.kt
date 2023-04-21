@@ -24,15 +24,18 @@ class ProtoDefTraverser(val ast: SugarProtoAst.CompilationUnit) {
 
   init {
     fun addEnumName(name: String) {
-      nameLookup[name] = AtomicType.EnumName(SemanticName.enumName(name))
+      nameLookup[name] =
+        AtomicType.EnumType(SemanticName.enumName(name), AtomicType.TypeSource.UserDefined)
     }
 
     fun addMessageName(name: String) {
-      nameLookup[name] = AtomicType.MessageName(SemanticName.messageName(name))
+      nameLookup[name] =
+        AtomicType.MessageType(SemanticName.messageName(name), AtomicType.TypeSource.UserDefined)
     }
 
     fun addSealedName(name: String) {
-      nameLookup[name] = AtomicType.SealedName(SemanticName.messageName(name))
+      nameLookup[name] =
+        AtomicType.SealedType(SemanticName.messageName(name), AtomicType.TypeSource.UserDefined)
     }
 
     fun traverseMessageDef(members: List<SugarProtoAst.MessageMemberDefWS>, name: String) {
@@ -55,21 +58,40 @@ class ProtoDefTraverser(val ast: SugarProtoAst.CompilationUnit) {
     ast.kotlinOptions?.let { kotlinOptions ->
       kotlinOptions.options.forEach { option ->
         when (option) {
-          is SugarProtoAst.KotlinAssume -> {
-            val typeName = option.name.names.joinToString(".") { it.name }
-            when (option.kind) {
-              SugarProtoAst.AssumeKind.MESSAGE -> addMessageName(typeName)
-              SugarProtoAst.AssumeKind.SEALED -> addSealedName(typeName)
-              SugarProtoAst.AssumeKind.ENUM -> addEnumName(typeName)
-            }
-            kotlinImports.add((option.packageName.names + option.name.names).joinToString(".") { it.name })
-          }
-
           is SugarProtoAst.KotlinPackage -> {
             if (kotlinPackageName != null) {
               throw IllegalStateException("duplicate definition of kotlin package name")
             }
             kotlinPackageName = option.name.names.joinToString(".") { it.name }
+          }
+
+          is SugarProtoAst.KotlinFromOtherPackage -> {
+            val protoPkg = option.protoPkg.names.map { it.name }
+            val kotlinPkg = option.kotlinPkg?.names?.map { it.name } ?: protoPkg
+            option.uses.forEach { use ->
+              val useNames = use.name.names.map { it.name }
+              check(useNames.size == 1)
+              kotlinImports.add((kotlinPkg + useNames).joinToString("."))
+              when (use.kind) {
+                SugarProtoAst.TypeKind.MESSAGE ->
+                  nameLookup[useNames.joinToString(".")] = AtomicType.MessageType(
+                    SemanticName.messageName(useNames.last()),
+                    AtomicType.TypeSource.External(protoPkg)
+                  )
+
+                SugarProtoAst.TypeKind.SEALED ->
+                  nameLookup[useNames.joinToString(".")] = AtomicType.MessageType(
+                    SemanticName.messageName(useNames.last()),
+                    AtomicType.TypeSource.External(protoPkg)
+                  )
+
+                SugarProtoAst.TypeKind.ENUM -> nameLookup[useNames.joinToString(".")] =
+                  AtomicType.MessageType(
+                    SemanticName.messageName(useNames.last()),
+                    AtomicType.TypeSource.External(protoPkg)
+                  )
+              }
+            }
           }
         }
       }
@@ -208,7 +230,7 @@ class ProtoDefTraverser(val ast: SugarProtoAst.CompilationUnit) {
           ?: namingContext.enumName()
         val generatedEnum = traverseEnum(listOf(), enumName, type.fields)
         defs.add(generatedEnum)
-        AtomicType.GeneratedEnumName(generatedEnum.name)
+        AtomicType.EnumType(generatedEnum.name, AtomicType.TypeSource.Generated)
       }
 
       is SugarProtoAst.OnTheFlyMessageType -> {
@@ -223,7 +245,7 @@ class ProtoDefTraverser(val ast: SugarProtoAst.CompilationUnit) {
             traverseMessage(listOf(), messageName, type.fields, NamingContext(messageName), subDefs)
           defs.add(generatedMessage)
           defs.addAll(subDefs)
-          AtomicType.GeneratedMessageName(generatedMessage.name)
+          AtomicType.MessageType(generatedMessage.name, AtomicType.TypeSource.Generated)
         }
       }
 
@@ -236,7 +258,7 @@ class ProtoDefTraverser(val ast: SugarProtoAst.CompilationUnit) {
           traverseSealed(listOf(), sealedName, type.fields, newNamingContext, subDefs)
         defs.add(generatedSealed)
         defs.addAll(subDefs)
-        AtomicType.GeneratedSealedName(generatedSealed.name)
+        AtomicType.SealedType(generatedSealed.name, AtomicType.TypeSource.Generated)
       }
 
       is SugarProtoAst.OptionalType -> {
@@ -389,7 +411,7 @@ class ProtoDefTraverser(val ast: SugarProtoAst.CompilationUnit) {
                 namingContext + name,
                 subDefs
               )
-            if (field.type is AtomicType.GeneratedMessageName) {
+            if (field.type is AtomicType.MessageType && field.type.source == AtomicType.TypeSource.Generated) {
               sealedSupers[field.type.name] = SuperName(name, field.name)
             }
             field

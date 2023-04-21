@@ -10,8 +10,12 @@ OptionName = (Ident {FullIdent([$0])} | '(' WS FullIdent WS ')' $2) (WS '.' WS I
 
 KotlinOptions = "kotlin"&Tk WS '{' (WS KotlinOption)* WS '}' {KotlinOptions(options=$3)}
 KotlinOption: KotlinOption = "package"&Tk WS FullIdent {KotlinPackage(name=$2)}
-  | "assume"&Tk WS ("message" {%MESSAGE} | "sealed" {%SEALED} | "enum" {%ENUM}) WS FullIdent WS "in"&Tk WS FullIdent
-    {KotlinAssume(kind:%AssumeKind=$2, name=$4, packageName=$8)}
+  | KotlinFromOtherPackage
+KotlinFromOtherPackage =
+    "from"&Tk WS "package"&Tk WS FullIdent (WS '(' WS "kotlin"&Tk WS '=' WS FullIdent WS ')')? WS '{' (WS KotlinUse)* WS '}'
+    {KotlinFromOtherPackage(protoPkg=$4, kotlinPkg=$5$7, uses=$8)}
+KotlinUse = "use"&Tk WS ("message" {%MESSAGE} | "sealed" {%SEALED} | "enum" {%ENUM}) WS FullIdent
+            {KotlinUse(kind: %TypeKind=$2, name=$4)}
 
 Constant: Constant = Ident-("true" | "false") {FullIdent(names=[$0])}
   | Ident (WS '.' WS Ident)+ {FullIdent(names=[$0] + $1)}

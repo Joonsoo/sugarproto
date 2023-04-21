@@ -4,11 +4,15 @@ option java_outer_classname = "GameDataProto"
 
 kotlin {
   package com.giyeok.msspgame.data.model
-  assume message Resources in com.giyeok.msspgame.world.model
+  from package com.giyeok.msspgame.world.proto(kotlin=com.giyeok.msspgame.world.model) {
+    use message Resources
+    use message MicroPoint
+  }
 }
 
 message X {
   1 a: set<int32>
   2 b: set<string>
   3 c: Resources
+  4 d: repeated<MicroPoint>
 }
