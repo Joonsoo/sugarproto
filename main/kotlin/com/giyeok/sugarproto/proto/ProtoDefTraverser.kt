@@ -339,6 +339,7 @@ class ProtoDefTraverser(val ast: SugarProtoAst.CompilationUnit) {
 
     return ProtoMessageMember.MessageField(
       comments,
+      def.useVal,
       fieldName,
       fieldType as ValueType,
       def.tag,

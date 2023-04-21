@@ -78,7 +78,8 @@ MessageMembersWS = WS MessageMemberDef ((WS ',' WS | WSNL) MessageMemberDef {Mes
                    {[MessageMemberDefWS(comments=$0, def=$1)] + $2}
 
 MessageMemberDef: MessageMemberDef = FieldDef | EnumDef | MessageDef | OptionDef | OneOfDef | ReservedDef
-FieldDef = IntLiteral WS Ident WS ':' WS Type (WS FieldOptions)? {FieldDef(tag=$0, name=$2, typ=$6, options=$7)}
+FieldDef = ("val"&Tk WS)? IntLiteral WS Ident WS ':' WS Type (WS FieldOptions)?
+           {FieldDef(useVal=ispresent($0), tag=$1, name=$3, typ=$7, options=$8)}
 FieldOptions = '[' (WS FieldOption (WS ',' WS FieldOption)*)? WS ']' {FieldOptions(options=$1{[$1] + $2} ?: [])}
 FieldOption = OptionName WS '=' WS Constant {FieldOption(name=$0, value=$4)}
 

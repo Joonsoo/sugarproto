@@ -27,7 +27,12 @@ class MutableKotlinDefConverter(val defs: ProtoDefs) {
     )
 
   fun convertField(member: ProtoMessageMember.MessageField): KtFieldDef {
-    return KtFieldDef(member.comments, member.name, member.type)
+    if (member.useVal) {
+      check(member.type is AtomicType.PrimitiveType) {
+        "Currently val field is only supported for primitive type fields"
+      }
+    }
+    return KtFieldDef(member.comments, member.useVal, member.name, member.type)
   }
 
   fun convertMessage(def: ProtoMessageDef): KtDataClassDef {

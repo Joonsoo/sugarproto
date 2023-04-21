@@ -44,6 +44,7 @@ data class KtDataClassDef(
 
 data class KtFieldDef(
   val comments: List<SugarProtoAst.Comment>,
+  val useVal: Boolean,
   // name에서 kotlin 이름과 proto 이름 생성 가능
   val name: SemanticName,
   val type: ValueType,

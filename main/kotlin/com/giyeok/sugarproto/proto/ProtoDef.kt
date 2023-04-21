@@ -47,6 +47,8 @@ sealed class ProtoMessageMember {
 
   data class MessageField(
     val comments: List<SugarProtoAst.Comment>,
+    // kotlin 코드 생성시에 val로 생성을 강제. proto 생성시엔 영향을 주지 않는다
+    val useVal: Boolean,
     val name: SemanticName,
     val type: ValueType,
     val tag: SugarProtoAst.IntLiteral,

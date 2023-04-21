@@ -317,21 +317,12 @@ sealed class FromProtoPostProcessExpr {
     val keyExpr: SugarProtoAst.KeyExpr,
     val valueGetter: AtomicValueGetterExpr
   ): FromProtoPostProcessExpr() {
-    fun genKeyExpr(keyExpr: SugarProtoAst.KeyExpr, inputExpr: String): String =
-      when (keyExpr) {
-        is SugarProtoAst.TargetElem -> inputExpr
-        is SugarProtoAst.MemberAccess -> {
-          val memberName = SemanticName.messageMember(keyExpr.name.name)
-          "${genKeyExpr(keyExpr.expr, inputExpr)}.${memberName.classFieldName}"
-        }
-      }
-
     override fun generate(gen: MutableKtDataClassGen, protoExpr: String, instanceExpr: String) {
       gen.addLine("$protoExpr.${fieldName.classFieldName}List.forEach { elem ->")
       gen.indent {
         val getter = valueGetter.expr("elem")
         gen.addLine("val elemInstance = $getter")
-        val keyExpr = genKeyExpr(keyExpr, "elemInstance")
+        val keyExpr = keyExpr.genKeyExpr("elemInstance")
         gen.addLine("$instanceExpr.${fieldName.classFieldName}.put($keyExpr, elemInstance)")
       }
       gen.addLine("}")

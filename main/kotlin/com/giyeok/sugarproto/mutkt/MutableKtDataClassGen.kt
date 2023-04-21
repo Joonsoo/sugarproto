@@ -1,6 +1,7 @@
 package com.giyeok.sugarproto.mutkt
 
 import com.giyeok.sugarproto.SugarProtoAst
+import com.giyeok.sugarproto.proto.ValueType
 import com.giyeok.sugarproto.toValueString
 
 // Kotlin mutable data class defs -> kotlin mutable data class definition source codes
@@ -67,14 +68,14 @@ class MutableKtDataClassGen(
     addComments(fieldDef.comments)
     val modifier = if (inherited) "override " else ""
     val (useVar, typeStr, _) = tsGen.fromType(fieldDef.type)
-    val valVar = if (useVar) "var" else "val"
+    val valVar = if (useVar && !fieldDef.useVal) "var" else "val"
     addLine("$modifier$valVar ${fieldDef.name.classFieldName}: $typeStr,")
   }
 
   fun addAbstractField(fieldDef: KtFieldDef) {
     addComments(fieldDef.comments)
     val (useVar, typeStr, _) = tsGen.fromType(fieldDef.type)
-    val valVar = if (useVar) "var" else "val"
+    val valVar = if (useVar && !fieldDef.useVal) "var" else "val"
     addLine("abstract $valVar ${fieldDef.name.classFieldName}: $typeStr")
   }
 
@@ -150,6 +151,20 @@ class MutableKtDataClassGen(
         addLine("}")
       }
       addLine()
+      val indexedFields = def.allFields.filter { it.type is ValueType.IndexedType }
+      if (indexedFields.isNotEmpty()) {
+        indexedFields.forEach { field ->
+          val fieldType = field.type as ValueType.IndexedType
+          val ts = tsGen.fromType(fieldType.elemType)
+          addLine("fun add${field.name.capitalClassFieldName}(value: ${ts.typeString}) {")
+          indent {
+            val keyExpr = fieldType.keyExpr.genKeyExpr("value")
+            addLine("this.${field.name.classFieldName}.put($keyExpr, value)")
+          }
+          addLine("}")
+          addLine()
+        }
+      }
       if (sealedSuper != null) {
         addLine("override fun toProto(builder: $toProtoClassName.Builder) {")
         indent {

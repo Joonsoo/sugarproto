@@ -14,6 +14,11 @@ message X {
   1 a: set<int32>
   2 b: set<string>
   3 c: Resources
-  4 d: repeated<MicroPoint>
-  5 e: indexed<MicroPoint> { _.x: sint32 }
+  4 d: repeated<Y>
+  5 e: indexed<Y> { _.id: int32 }
+}
+
+message Y {
+  val 1 id: int32
+  2 name: int32
 }
