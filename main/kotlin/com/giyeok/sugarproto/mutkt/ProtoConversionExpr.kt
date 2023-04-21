@@ -1,5 +1,6 @@
 package com.giyeok.sugarproto.mutkt
 
+import com.giyeok.sugarproto.SugarProtoAst
 import com.giyeok.sugarproto.name.SemanticName
 import com.giyeok.sugarproto.proto.AtomicType
 import com.giyeok.sugarproto.proto.ValueType
@@ -213,11 +214,12 @@ class ProtoConversionExprGen(
             val protoTypeName = "$protoOuterClassName${elemType.name.className}"
             ProtoConversionExpr(
               FromProtoExpr.Const(ts.defaultValue),
-              FromProtoPostProcessExpr.ForEachRepeated(
+              FromProtoPostProcessExpr.ForEachIndexed(
                 fieldDef.name,
+                fieldDef.type.keyExpr,
                 FromProtoPostProcessExpr.MessageValueGetterExpr(elemType.name)
               ),
-              ToProtoExpr.ForEachRepeated(fieldDef.name, ElemType.MESSAGE, protoTypeName)
+              ToProtoExpr.ForEachIndexed(fieldDef.name, ElemType.MESSAGE, protoTypeName)
             )
           }
         }
@@ -309,6 +311,30 @@ sealed class FromProtoPostProcessExpr {
       gen.addLine("}")
     }
   }
+
+  data class ForEachIndexed(
+    val fieldName: SemanticName,
+    val keyExpr: SugarProtoAst.KeyExpr,
+    val valueGetter: AtomicValueGetterExpr
+  ): FromProtoPostProcessExpr() {
+    fun genKeyExpr(keyExpr: SugarProtoAst.KeyExpr, inputExpr: String): String =
+      when (keyExpr) {
+        is SugarProtoAst.TargetElem -> inputExpr
+        is SugarProtoAst.MemberAccess ->
+          "${genKeyExpr(keyExpr.expr, inputExpr)}.${keyExpr.name.name}"
+      }
+
+    override fun generate(gen: MutableKtDataClassGen, protoExpr: String, instanceExpr: String) {
+      gen.addLine("$protoExpr.${fieldName.classFieldName}List.forEach { elem ->")
+      gen.indent {
+        val getter = valueGetter.expr("elem")
+        gen.addLine("val elemInstance = $getter")
+        val keyExpr = genKeyExpr(keyExpr, "elemInstance")
+        gen.addLine("$instanceExpr.${fieldName.classFieldName}.put($keyExpr, elemInstance)")
+      }
+      gen.addLine("}")
+    }
+  }
 }
 
 sealed class ToProtoExpr {
@@ -367,6 +393,29 @@ sealed class ToProtoExpr {
 
           ElemType.MESSAGE ->
             gen.addLine("elem.toProto($builderExpr.add${fieldName.capitalClassFieldName}Builder())")
+        }
+      }
+      gen.addLine("}")
+    }
+  }
+
+  data class ForEachIndexed(
+    val fieldName: SemanticName,
+    val elemType: ElemType,
+    val messageProtoName: String
+  ): ToProtoExpr() {
+    override fun generate(gen: MutableKtDataClassGen, thisExpr: String, builderExpr: String) {
+      gen.addLine("$thisExpr.${fieldName.classFieldName}.forEach { entry ->")
+      gen.indent {
+        when (elemType) {
+          ElemType.PRIM ->
+            gen.addLine("$builderExpr.add${fieldName.capitalClassFieldName}(entry.value)")
+
+          ElemType.ENUM ->
+            gen.addLine("$builderExpr.add${fieldName.capitalClassFieldName}(entry.value.toProto())")
+
+          ElemType.MESSAGE ->
+            gen.addLine("entry.value.toProto($builderExpr.add${fieldName.capitalClassFieldName}Builder())")
         }
       }
       gen.addLine("}")

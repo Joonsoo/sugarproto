@@ -15,7 +15,7 @@ sealed class ValueType: ProtoType() {
   data class SetType(val elemType: AtomicType): ValueType()
   data class IndexedType(
     val elemType: AtomicType,
-    val keyExpr: SugarProtoAst.IndexExpr,
+    val keyExpr: SugarProtoAst.KeyExpr,
     val keyType: ValueType,
   ): ValueType()
 }
