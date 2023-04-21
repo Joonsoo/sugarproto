@@ -80,16 +80,17 @@ class ProtoDefTraverser(val ast: SugarProtoAst.CompilationUnit) {
                   )
 
                 SugarProtoAst.TypeKind.SEALED ->
-                  nameLookup[useNames.joinToString(".")] = AtomicType.MessageType(
+                  nameLookup[useNames.joinToString(".")] = AtomicType.SealedType(
                     SemanticName.messageName(useNames.last()),
                     AtomicType.TypeSource.External(protoPkg)
                   )
 
-                SugarProtoAst.TypeKind.ENUM -> nameLookup[useNames.joinToString(".")] =
-                  AtomicType.MessageType(
-                    SemanticName.messageName(useNames.last()),
-                    AtomicType.TypeSource.External(protoPkg)
-                  )
+                SugarProtoAst.TypeKind.ENUM ->
+                  nameLookup[useNames.joinToString(".")] =
+                    AtomicType.EnumType(
+                      SemanticName.messageName(useNames.last()),
+                      AtomicType.TypeSource.External(protoPkg)
+                    )
               }
             }
           }
