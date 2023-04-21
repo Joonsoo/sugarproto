@@ -320,8 +320,10 @@ sealed class FromProtoPostProcessExpr {
     fun genKeyExpr(keyExpr: SugarProtoAst.KeyExpr, inputExpr: String): String =
       when (keyExpr) {
         is SugarProtoAst.TargetElem -> inputExpr
-        is SugarProtoAst.MemberAccess ->
-          "${genKeyExpr(keyExpr.expr, inputExpr)}.${keyExpr.name.name}"
+        is SugarProtoAst.MemberAccess -> {
+          val memberName = SemanticName.messageMember(keyExpr.name.name)
+          "${genKeyExpr(keyExpr.expr, inputExpr)}.${memberName.classFieldName}"
+        }
       }
 
     override fun generate(gen: MutableKtDataClassGen, protoExpr: String, instanceExpr: String) {

@@ -39,6 +39,7 @@ data class SemanticName constructor(val words: List<String>) {
 
     fun messageName(name: String) = SemanticName(name.toWords())
     fun messageName(ident: SugarProtoAst.Ident) = messageName(ident.name)
+    fun messageMember(name: String) = SemanticName(name.toWords())
     fun messageMember(ident: SugarProtoAst.Ident) = SemanticName(ident.name.toWords())
 
     fun serviceName(ident: SugarProtoAst.Ident) = SemanticName(ident.name.toWords())
