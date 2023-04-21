@@ -52,7 +52,8 @@ class TypeStringGen(val gdxMode: Boolean) {
   fun fromType(typ: ValueType, collectionSizeHint: String? = null): TypeString =
     when (typ) {
       AtomicType.EmptyType -> TODO()
-      is AtomicType.UnknownName -> TODO()
+      is AtomicType.UnknownName ->
+        throw IllegalStateException("Unknown name: ${typ.name}")
 
       is AtomicType.EnumRefType -> {
         val enumName = typ.refName.enumName
