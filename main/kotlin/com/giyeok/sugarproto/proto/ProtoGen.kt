@@ -140,16 +140,21 @@ class ProtoGen(val builder: StringBuilder = StringBuilder()) {
 
   fun ValueType.toProtoString(): String = when (this) {
     is AtomicType.UnknownName -> this.name
-    is AtomicType.MessageOrSealedType -> {
-      when (val source = this.source) {
-        is AtomicType.TypeSource.External ->
-          (source.protoPkg + this.name.messageName).joinToString(".")
 
-        else -> this.name.messageName
-      }
+    is AtomicType.MessageOrSealedType -> when (val source = this.source) {
+      is AtomicType.TypeSource.External ->
+        (source.protoPkg + this.name.messageName).joinToString(".")
+
+      else -> this.name.messageName
     }
 
-    is AtomicType.EnumType -> this.name.enumName
+    is AtomicType.EnumType -> when (val source = this.source) {
+      is AtomicType.TypeSource.External ->
+        (source.protoPkg + this.name.enumName).joinToString(".")
+
+      else -> this.name.enumName
+    }
+
     is AtomicType.PrimitiveType -> when (this.type) {
       SugarProtoAst.PrimitiveTypeEnum.BOOL -> "bool"
       SugarProtoAst.PrimitiveTypeEnum.BYTES -> "bytes"
