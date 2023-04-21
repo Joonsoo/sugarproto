@@ -421,6 +421,8 @@ class MutableKtDataClassGen(
       addLine("import com.badlogic.gdx.utils.ObjectLongMap")
       addLine("import com.badlogic.gdx.utils.ObjectFloatMap")
       addLine("import com.badlogic.gdx.utils.ObjectMap")
+      addLine("import com.badlogic.gdx.utils.IntSet as GdxIntSet")
+      addLine("import com.badlogic.gdx.utils.ObjectSet")
       addLine("import com.giyeok.msspgame.libgdx.forEach")
     }
     imports.forEach { import ->

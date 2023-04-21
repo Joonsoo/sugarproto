@@ -168,6 +168,7 @@ class ProtoGen(val builder: StringBuilder = StringBuilder()) {
     is ValueType.MapType -> "map<${keyType.toProtoString()}, ${valueType.toProtoString()}>"
     is ValueType.OptionalType -> "optional ${elemType.toProtoString()}"
     is ValueType.RepeatedType -> "repeated ${elemType.toProtoString()}"
+    is ValueType.SetType -> "repeated ${elemType.toProtoString()}"
   }
 
   fun addField(member: ProtoMessageMember.MessageField) {

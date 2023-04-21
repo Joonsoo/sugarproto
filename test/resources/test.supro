@@ -1,0 +1,4 @@
+message X {
+  1 a: set<int32>
+  2 b: set<string>
+}

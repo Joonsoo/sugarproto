@@ -9,6 +9,7 @@ sealed class ProtoType {
 
 sealed class ValueType: ProtoType() {
   data class RepeatedType(val elemType: AtomicType): ValueType()
+  data class SetType(val elemType: AtomicType): ValueType()
   data class OptionalType(val elemType: AtomicType): ValueType()
   data class MapType(val keyType: AtomicType.PrimitiveType, val valueType: AtomicType): ValueType()
 }

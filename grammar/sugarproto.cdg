@@ -28,6 +28,7 @@ RpcTypeWhere = Ident WS '=' WS Type {RpcTypeWhere(name=$0, typ=$4)}
 
 Type: Type = PrimitiveType&Tk {PrimitiveType(typ=$0)}
   | "repeated"&Tk WS '<' WS Type WS '>' {RepeatedType(elemType=$4)}
+  | "set"&Tk WS '<' WS Type WS '>' {SetType(elemType=$4)}
   | "optional"&Tk WS '<' WS Type WS '>' {OptionalType(elemType=$4)}
   | "map"&Tk WS '<' WS Type WS ',' WS Type WS '>' {MapType(keyType=$4, valueType=$8)}
   | "stream"&Tk WS '<' WS Type WS '>' {StreamType(elemType=$4)}

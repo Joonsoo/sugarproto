@@ -117,9 +117,14 @@ class ProtoConversionExprGen(
         }
       }
 
-      is ValueType.RepeatedType -> {
+      is ValueType.RepeatedType, is ValueType.SetType -> {
         val ts = tsGen.fromType(fieldDef.type, collectionSizeHint)
-        when (val elemType = fieldDef.type.elemType) {
+        val elemType = when (fieldDef.type) {
+          is ValueType.RepeatedType -> fieldDef.type.elemType
+          is ValueType.SetType -> fieldDef.type.elemType
+          else -> TODO()
+        }
+        when (elemType) {
           AtomicType.EmptyType, is AtomicType.UnknownName -> TODO()
 
           is AtomicType.PrimitiveType ->

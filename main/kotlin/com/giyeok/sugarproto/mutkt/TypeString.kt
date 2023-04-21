@@ -114,6 +114,28 @@ class TypeStringGen(val gdxMode: Boolean) {
         }
       }
 
+      is ValueType.SetType -> {
+        if (gdxMode) {
+          if (typ.elemType.isInt()) {
+            TypeString(false, "GdxIntSet", "GdxIntSet(${collectionSizeHint ?: ""})")
+          } else {
+            val s = fromType(typ.elemType)
+            TypeString(
+              false,
+              "ObjectSet<${s.typeString}>",
+              "ObjectSet(${collectionSizeHint ?: ""})"
+            )
+          }
+        } else {
+          val s = fromType(typ.elemType)
+          TypeString(
+            false,
+            "MutableSet<${s.typeString}>",
+            "mutableSetOf(${if (collectionSizeHint != null) "/* $collectionSizeHint */" else ""})"
+          )
+        }
+      }
+
       is ValueType.MapType -> {
         // TODO gdxMode
         if (gdxMode) {
