@@ -49,6 +49,59 @@ class TypeStringGen(val gdxMode: Boolean) {
     else -> false
   }
 
+  fun mapType(keyType: ValueType, valueType: ValueType, collectionSizeHint: String?): TypeString =
+    if (gdxMode) {
+      if (keyType.isInt()) {
+        if (valueType.isInt()) {
+          TypeString(false, "IntIntMap", "IntIntMap(${collectionSizeHint ?: ""})")
+        } else if (valueType.isFloat()) {
+          TypeString(false, "IntFloatMap", "IntFloatMap(${collectionSizeHint ?: ""})")
+        } else {
+          val s = fromType(valueType)
+          TypeString(false, "IntMap<${s.typeString}>", "IntMap(${collectionSizeHint ?: ""})")
+        }
+      } else if (keyType.isLong()) {
+        val s = fromType(valueType)
+        TypeString(false, "LongMap<${s.typeString}>", "LongMap(${collectionSizeHint ?: ""})")
+      } else {
+        val key = fromType(keyType)
+        if (valueType.isInt()) {
+          TypeString(
+            false,
+            "ObjectIntMap<${key.typeString}>",
+            "ObjectIntMap(${collectionSizeHint ?: ""})"
+          )
+        } else if (valueType.isLong()) {
+          TypeString(
+            false,
+            "ObjectLongMap<${key.typeString}>",
+            "ObjectLongMap(${collectionSizeHint ?: ""})"
+          )
+        } else if (valueType.isFloat()) {
+          TypeString(
+            false,
+            "ObjectFloatMap<${key.typeString}>",
+            "ObjectFloatMap(${collectionSizeHint ?: ""})"
+          )
+        } else {
+          val v = fromType(valueType)
+          TypeString(
+            false,
+            "ObjectMap<${key.typeString}, ${v.typeString}>",
+            "ObjectMap(${collectionSizeHint ?: ""})"
+          )
+        }
+      }
+    } else {
+      val key = fromType(keyType)
+      val value = fromType(valueType)
+      TypeString(
+        false,
+        "MutableMap<${key.typeString}, ${value.typeString}>",
+        "mutableMapOf(${if (collectionSizeHint != null) "/* $collectionSizeHint */" else ""})"
+      )
+    }
+
   fun fromType(typ: ValueType, collectionSizeHint: String? = null): TypeString =
     when (typ) {
       AtomicType.EmptyType -> TODO()
@@ -137,60 +190,11 @@ class TypeStringGen(val gdxMode: Boolean) {
         }
       }
 
-      is ValueType.MapType -> {
-        // TODO gdxMode
-        if (gdxMode) {
-          if (typ.keyType.isInt()) {
-            if (typ.valueType.isInt()) {
-              TypeString(false, "IntIntMap", "IntIntMap(${collectionSizeHint ?: ""})")
-            } else if (typ.valueType.isFloat()) {
-              TypeString(false, "IntFloatMap", "IntFloatMap(${collectionSizeHint ?: ""})")
-            } else {
-              val s = fromType(typ.valueType)
-              TypeString(false, "IntMap<${s.typeString}>", "IntMap(${collectionSizeHint ?: ""})")
-            }
-          } else if (typ.keyType.isLong()) {
-            val s = fromType(typ.valueType)
-            TypeString(false, "LongMap<${s.typeString}>", "LongMap(${collectionSizeHint ?: ""})")
-          } else {
-            val key = fromType(typ.keyType)
-            if (typ.valueType.isInt()) {
-              TypeString(
-                false,
-                "ObjectIntMap<${key.typeString}>",
-                "ObjectIntMap(${collectionSizeHint ?: ""})"
-              )
-            } else if (typ.valueType.isLong()) {
-              TypeString(
-                false,
-                "ObjectLongMap<${key.typeString}>",
-                "ObjectLongMap(${collectionSizeHint ?: ""})"
-              )
-            } else if (typ.valueType.isFloat()) {
-              TypeString(
-                false,
-                "ObjectFloatMap<${key.typeString}>",
-                "ObjectFloatMap(${collectionSizeHint ?: ""})"
-              )
-            } else {
-              val v = fromType(typ.valueType)
-              TypeString(
-                false,
-                "ObjectMap<${key.typeString}, ${v.typeString}>",
-                "ObjectMap(${collectionSizeHint ?: ""})"
-              )
-            }
-          }
-        } else {
-          val key = fromType(typ.keyType)
-          val value = fromType(typ.valueType)
-          TypeString(
-            false,
-            "MutableMap<${key.typeString}, ${value.typeString}>",
-            "mutableMapOf(${if (collectionSizeHint != null) "/* $collectionSizeHint */" else ""})"
-          )
-        }
-      }
+      is ValueType.IndexedType ->
+        mapType(typ.keyType, typ.elemType, collectionSizeHint)
+
+      is ValueType.MapType ->
+        mapType(typ.keyType, typ.valueType, collectionSizeHint)
     }
 }
 

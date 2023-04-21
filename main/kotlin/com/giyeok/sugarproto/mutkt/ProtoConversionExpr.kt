@@ -117,6 +117,45 @@ class ProtoConversionExprGen(
         }
       }
 
+      is ValueType.MapType -> {
+        val ts = tsGen.fromType(fieldDef.type, collectionSizeHint)
+        when (val elemType = fieldDef.type.valueType) {
+          AtomicType.EmptyType, is AtomicType.UnknownName -> TODO()
+
+          is AtomicType.PrimitiveType ->
+            ProtoConversionExpr(
+              FromProtoExpr.Const(ts.defaultValue),
+              FromProtoPostProcessExpr.ForEachMap(
+                fieldDef.name,
+                FromProtoPostProcessExpr.PrimValueGetterExpr,
+              ),
+              ToProtoExpr.ForEachMap(fieldDef.name, ElemType.PRIM, "")
+            )
+
+          is AtomicType.EnumType ->
+            ProtoConversionExpr(
+              FromProtoExpr.Const(ts.defaultValue),
+              FromProtoPostProcessExpr.ForEachMap(
+                fieldDef.name,
+                FromProtoPostProcessExpr.EnumValueGetterExpr(elemType.name),
+              ),
+              ToProtoExpr.ForEachMap(fieldDef.name, ElemType.ENUM, "")
+            )
+
+          is AtomicType.MessageOrSealedType -> {
+            val protoTypeName = "$protoOuterClassName${elemType.name.className}"
+            ProtoConversionExpr(
+              FromProtoExpr.Const(ts.defaultValue),
+              FromProtoPostProcessExpr.ForEachMap(
+                fieldDef.name,
+                FromProtoPostProcessExpr.MessageValueGetterExpr(elemType.name),
+              ),
+              ToProtoExpr.ForEachMap(fieldDef.name, ElemType.MESSAGE, protoTypeName)
+            )
+          }
+        }
+      }
+
       is ValueType.RepeatedType, is ValueType.SetType -> {
         val ts = tsGen.fromType(fieldDef.type, collectionSizeHint)
         val elemType = when (fieldDef.type) {
@@ -161,40 +200,24 @@ class ProtoConversionExprGen(
         }
       }
 
-      is ValueType.MapType -> {
+      is ValueType.IndexedType -> {
         val ts = tsGen.fromType(fieldDef.type, collectionSizeHint)
-        when (val elemType = fieldDef.type.valueType) {
+        when (val elemType = fieldDef.type.elemType) {
           AtomicType.EmptyType, is AtomicType.UnknownName -> TODO()
 
-          is AtomicType.PrimitiveType ->
-            ProtoConversionExpr(
-              FromProtoExpr.Const(ts.defaultValue),
-              FromProtoPostProcessExpr.ForEachMap(
-                fieldDef.name,
-                FromProtoPostProcessExpr.PrimValueGetterExpr,
-              ),
-              ToProtoExpr.ForEachMap(fieldDef.name, ElemType.PRIM, "")
-            )
-
-          is AtomicType.EnumType ->
-            ProtoConversionExpr(
-              FromProtoExpr.Const(ts.defaultValue),
-              FromProtoPostProcessExpr.ForEachMap(
-                fieldDef.name,
-                FromProtoPostProcessExpr.EnumValueGetterExpr(elemType.name),
-              ),
-              ToProtoExpr.ForEachMap(fieldDef.name, ElemType.ENUM, "")
-            )
+          // indexed에서 elem이 primitive이거나 enum인 경우를 지원할 필요가 있을까?
+          is AtomicType.PrimitiveType -> TODO()
+          is AtomicType.EnumType -> TODO()
 
           is AtomicType.MessageOrSealedType -> {
             val protoTypeName = "$protoOuterClassName${elemType.name.className}"
             ProtoConversionExpr(
               FromProtoExpr.Const(ts.defaultValue),
-              FromProtoPostProcessExpr.ForEachMap(
+              FromProtoPostProcessExpr.ForEachRepeated(
                 fieldDef.name,
-                FromProtoPostProcessExpr.MessageValueGetterExpr(elemType.name),
+                FromProtoPostProcessExpr.MessageValueGetterExpr(elemType.name)
               ),
-              ToProtoExpr.ForEachMap(fieldDef.name, ElemType.MESSAGE, protoTypeName)
+              ToProtoExpr.ForEachRepeated(fieldDef.name, ElemType.MESSAGE, protoTypeName)
             )
           }
         }

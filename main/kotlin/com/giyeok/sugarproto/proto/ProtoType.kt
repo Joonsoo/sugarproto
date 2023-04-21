@@ -8,10 +8,16 @@ sealed class ProtoType {
 }
 
 sealed class ValueType: ProtoType() {
-  data class RepeatedType(val elemType: AtomicType): ValueType()
-  data class SetType(val elemType: AtomicType): ValueType()
   data class OptionalType(val elemType: AtomicType): ValueType()
   data class MapType(val keyType: AtomicType.PrimitiveType, val valueType: AtomicType): ValueType()
+
+  data class RepeatedType(val elemType: AtomicType): ValueType()
+  data class SetType(val elemType: AtomicType): ValueType()
+  data class IndexedType(
+    val elemType: AtomicType,
+    val keyExpr: SugarProtoAst.IndexExpr,
+    val keyType: ValueType,
+  ): ValueType()
 }
 
 sealed class AtomicType: ValueType() {

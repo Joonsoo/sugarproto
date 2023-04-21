@@ -283,6 +283,22 @@ class ProtoDefTraverser(val ast: SugarProtoAst.CompilationUnit) {
         }
       }
 
+      is SugarProtoAst.IndexedType -> {
+        val elemType = traverseType(type.elemType, namingContext, localNames, defs)
+        if (elemType !is AtomicType) {
+          throw IllegalStateException("$type is not valid")
+        } else {
+          if (type.keyType == null) {
+            throw IllegalStateException("$type is not valid")
+          }
+          val keyType = traverseType(type.keyType!!, namingContext, localNames, defs)
+          if (keyType !is ValueType) {
+            throw IllegalStateException("$type is not valid")
+          }
+          ValueType.IndexedType(elemType, type.keyExpr, keyType)
+        }
+      }
+
       is SugarProtoAst.SetType -> {
         val elemType = traverseType(type.elemType, namingContext, localNames, defs)
         if (elemType !is AtomicType) {

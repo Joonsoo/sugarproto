@@ -40,11 +40,16 @@ Type: Type = PrimitiveType&Tk {PrimitiveType(typ=$0)}
   | "set"&Tk WS '<' WS Type WS '>' {SetType(elemType=$4)}
   | "optional"&Tk WS '<' WS Type WS '>' {OptionalType(elemType=$4)}
   | "map"&Tk WS '<' WS Type WS ',' WS Type WS '>' {MapType(keyType=$4, valueType=$8)}
+  | "indexed"&Tk WS '<' WS Type WS '>' WS '{' WS IndexExpr (WS ':' WS Type)? WS '}'
+    {IndexedType(elemType=$4, keyExpr=$10, keyType=$11)}
   | "stream"&Tk WS '<' WS Type WS '>' {StreamType(elemType=$4)}
   | OnTheFlyMessageType
   | OnTheFlySealedMessageType
   | OnTheFlyEnumType
   | TypeName
+
+IndexExpr: IndexExpr = '_' {TargetElem()}
+  | IndexExpr WS '.' WS Ident {MemberAccess(expr=$0, name=$4)}
 
 PrimitiveType: %PrimitiveTypeEnum = 
     "double" {%DOUBLE} | "float" {%FLOAT} | "int32" {%INT32} | "int64" {%INT64}

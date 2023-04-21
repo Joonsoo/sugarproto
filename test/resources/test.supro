@@ -15,4 +15,5 @@ message X {
   2 b: set<string>
   3 c: Resources
   4 d: repeated<MicroPoint>
+  5 e: indexed<MicroPoint> { _.x: sint32 }
 }
