@@ -11,6 +11,39 @@ import git("https://github.com/Joonsoo/jparser.git") as jparser
 var ktjvm.outVersion = "19"
 var scala.outVersion = "19"
 
+proto3Parser {
+  parserGen = jparser.genKtAstMgroup2(
+    cdgFile = "grammar/proto3.cdg",
+    astifierClassName = "com.giyeok.sugarproto.Proto3Ast",
+    parserDataFileName = "proto3-mg2-parserdata.pb",
+  )
+
+  action generate {
+    file.clearDirectory("proto3Parser/generated/kotlin")
+    file.clearDirectory("proto3Parser/generated/resources")
+    file.copyDirectory(parserGen.srcsRoot, "proto3Parser/generated/kotlin")
+    file.copyFile(parserGen.parserData, "proto3Parser/generated/resources")
+  }
+
+  generated = ktjvm.library(
+    srcs = glob("proto3Parser/generated/kotlin/**/*.kt"),
+    deps = [jparser.ktparser.main],
+    resources = [
+      "proto3Parser/generated/resources/proto3-mg2-parserdata.pb"
+    ]
+  )
+
+  main = ktjvm.library(
+    srcs = glob("proto3Parser/main/kotlin/**/*.kt"),
+    deps = [proto3Parser.generated],
+  )
+
+  test = ktjvm.library(
+    srcs = glob("proto3Parser/test/kotlin/**/*.kt"),
+    deps = [proto3Parser.main, ...testDeps],
+  )
+}
+
 parser {
   parserGen = jparser.genKtAstMgroup2(
     cdgFile = "grammar/sugarproto.cdg",
@@ -46,7 +79,7 @@ parser {
 
 main = ktjvm.library(
   srcs = glob("main/kotlin/**/*.kt"),
-  deps = [parser.main],
+  deps = [parser.main, proto3Parser.main],
 )
 
 test = ktjvm.library(

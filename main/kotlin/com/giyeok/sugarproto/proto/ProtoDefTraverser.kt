@@ -514,7 +514,7 @@ class ProtoDefTraverser(val ast: SugarProtoAst.CompilationUnit) {
     return ProtoDefs(
       listOf(),
       packageName,
-      ast.imports.map { ImportDef(listOf(), it.toValue()) },
+      ast.imports.map { ImportDef(listOf(), it.target.toValue()) },
       emptyRequired,
       ast.options.map { OptionDef(listOf(), it) },
       defs,

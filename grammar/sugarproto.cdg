@@ -2,7 +2,8 @@ CompilationUnit = (WS PackageDef)? (WS ImportDef)* (WS OptionDef)* (WS KotlinOpt
                   {CompilationUnit(pkgDef=$0, imports=$1, options=$2, kotlinOptions=$3, defs=$4)}
 
 PackageDef = "package"&Tk WS FullIdent
-ImportDef = "import"&Tk WS StringLiteral
+ImportDef = "import"&Tk (WS "deep"&Tk)? WS StringLiteral
+            {ImportDef(deep=ispresent($1), target=$3)}
 
 OptionDef = "option"&Tk WS OptionName WS '=' WS Constant {OptionDef(name=$2, value=$6)}
 OptionName = (Ident {FullIdent([$0])} | '(' WS FullIdent WS ')' $2) (WS '.' WS Ident)*
