@@ -1,14 +1,19 @@
 package com.giyeok.sugarproto.proto
 
-import com.giyeok.sugarproto.NamingContext
-import com.giyeok.sugarproto.SugarProtoAst
+import com.giyeok.sugarproto.*
 import com.giyeok.sugarproto.name.SemanticName
-import com.giyeok.sugarproto.toValue
+import java.nio.file.Path
+import kotlin.io.path.exists
+import kotlin.io.path.isRegularFile
+import kotlin.io.path.readText
 
 // AST -> ProtoMessageDef
 // on the fly message/enum들은 모두 top level에 정의한다
 // 특별히 nested로 명시한 경우에만 nested message/enum으로 변환
-class ProtoDefTraverser(val ast: SugarProtoAst.CompilationUnit) {
+class ProtoDefTraverser(
+  val ast: SugarProtoAst.CompilationUnit,
+  val importProtoProvider: ImportProtoProvider
+) {
   private val packageName = ast.pkgDef?.names?.joinToString(".") { it.name }
 
   private var emptyRequired = false
@@ -98,6 +103,46 @@ class ProtoDefTraverser(val ast: SugarProtoAst.CompilationUnit) {
       }
     }
 
+    ast.imports.forEach { import ->
+      if (import.deep) {
+        val fileName = import.target.toValue()
+        val importedProto = importProtoProvider.lookup(fileName)
+        val importedPackages = importedProto.defs.filterIsInstance<Proto3Ast.Package>()
+        check(importedPackages.size == 1) { "Package name not defined or multiple times in $fileName" }
+        val importedPackageName = importedPackages.first().name.names.map { it.name }
+        importedProto.defs.forEach { def ->
+          when (def) {
+            is Proto3Ast.EnumDef -> {
+              nameLookup[def.name.name] = AtomicType.EnumType(
+                SemanticName.enumName(def.name.name),
+                AtomicType.TypeSource.External(importedPackageName)
+              )
+            }
+
+            is Proto3Ast.Message -> {
+              nameLookup[def.name.name] = AtomicType.MessageType(
+                SemanticName.messageName(def.name.name),
+                AtomicType.TypeSource.External(importedPackageName)
+              )
+
+              def.body.forEach { bodyElem ->
+                when (bodyElem) {
+                  is Proto3Ast.EnumDef -> TODO()
+                  is Proto3Ast.Message -> TODO()
+                  else -> {
+                    // do nothing
+                  }
+                }
+              }
+            }
+
+            else -> {
+              // do nothing
+            }
+          }
+        }
+      }
+    }
     ast.defs.forEach { defWS ->
       when (val def = defWS.def) {
         is SugarProtoAst.EnumDef ->

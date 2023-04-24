@@ -4,6 +4,7 @@ import com.giyeok.bibix.base.*
 import com.giyeok.sugarproto.SugarProtoParser
 import com.giyeok.sugarproto.mutkt.MutableKotlinDefConverter
 import com.giyeok.sugarproto.mutkt.MutableKtDataClassGen
+import com.giyeok.sugarproto.proto.ImportProtoFromPathsProvider
 import com.giyeok.sugarproto.proto.ProtoDefTraverser
 import com.giyeok.sugarproto.proto.ProtoGen
 import kotlin.io.path.createDirectories
@@ -19,10 +20,12 @@ class GenerateMutableKtAndProto {
       (context.arguments.getValue("imports").nullOr<ListValue>())?.values?.map { value ->
         (value as StringValue).value
       }
+    val protoDirs = (context.arguments.getValue("protoDirs") as SetValue).values
+      .map { (it as DirectoryValue).directory }
     val gdxMode = (context.arguments.getValue("gdxMode") as BooleanValue).value
 
     val parsed = SugarProtoParser.parse(source.readText())
-    val defs = ProtoDefTraverser(parsed).traverse()
+    val defs = ProtoDefTraverser(parsed, ImportProtoFromPathsProvider(protoDirs)).traverse()
 
     val srcsRoot = context.destDirectory.resolve("srcs")
     val protoDest = context.destDirectory.resolve(protoFileName)

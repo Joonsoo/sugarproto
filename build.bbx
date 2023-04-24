@@ -130,6 +130,7 @@ bibixPlugin {
 def generateProto(
   source: file,
   filename: string,
+  protoDirs?: set<directory>,
 ): file = bibixPlugin.impl:com.giyeok.sugarproto.bibixPlugin.GenerateProto
 
 class Generated(
@@ -142,5 +143,6 @@ def generateMutableKtAndProto(
   protoFileName: string,
   kotlinFileName: string,
   imports?: list<string>,
+  protoDirs: set<directory> = [],
   gdxMode: boolean = false,
 ): Generated = bibixPlugin.impl:com.giyeok.sugarproto.bibixPlugin.GenerateMutableKtAndProto

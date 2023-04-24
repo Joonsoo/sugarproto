@@ -1,0 +1,5 @@
+import deep "hello.proto"
+
+message A {
+  1 a: Hello
+}
