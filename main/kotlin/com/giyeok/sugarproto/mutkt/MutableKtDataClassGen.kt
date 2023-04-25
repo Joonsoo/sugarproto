@@ -342,10 +342,10 @@ class MutableKtDataClassGen(
                 }
                 addLine("}")
                 addLine()
-                addLine("override fun deepClone(): $className {")
+                addLine("override fun deepClone(): ${subType.fieldName.className} {")
                 indent {
                   val postProcessors = mutableListOf<DeepClonePostProcessExpr>()
-                  addLine("val clone = $className(")
+                  addLine("val clone = ${subType.fieldName.className}(")
                   indent {
                     def.commonFields.forEach { field ->
                       val pc = fieldExprGen.fromField(field)
