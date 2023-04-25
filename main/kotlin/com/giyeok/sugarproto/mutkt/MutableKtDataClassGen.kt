@@ -166,7 +166,7 @@ class MutableKtDataClassGen(
           addLine()
         }
       }
-      addLine("fun deepClone(): $className {")
+      addLine("${if (sealedSuper != null) "override " else ""}fun deepClone(): $className {")
       indent {
         val postProcessors = mutableListOf<DeepClonePostProcessExpr>()
         addLine("val clone = $className(")
@@ -298,6 +298,8 @@ class MutableKtDataClassGen(
                   addLine("builder.${subType.fieldName.classFieldName}Builder")
                 }
                 addLine("}")
+                addLine()
+                addLine("override fun deepClone(): $className = ${subType.fieldName.className}")
               }
               addLine("}")
               addLine()
@@ -337,6 +339,23 @@ class MutableKtDataClassGen(
                     pc.toProtoExpr.generate(this, "this", "builder")
                   }
                   addLine("builder.${subType.fieldName.classFieldName}Builder")
+                }
+                addLine("}")
+                addLine()
+                addLine("override fun deepClone(): $className {")
+                indent {
+                  val postProcessors = mutableListOf<DeepClonePostProcessExpr>()
+                  addLine("val clone = $className(")
+                  indent {
+                    def.commonFields.forEach { field ->
+                      val pc = fieldExprGen.fromField(field)
+                      addLine("${field.name.classFieldName} = ${pc.deepCloneExpr.expr("this")},")
+                      pc.deepClonePostProcessExpr?.let { postProcessors.add(it) }
+                    }
+                  }
+                  addLine(")")
+                  postProcessors.forEach { it.generate(this, "this", "clone") }
+                  addLine("return clone")
                 }
                 addLine("}")
               }
@@ -379,6 +398,26 @@ class MutableKtDataClassGen(
                 }
                 val pc = fieldExprGen.fromField(subType.fieldDef)
                 pc.toProtoExpr.generate(this, "this", "builder")
+              }
+              addLine("}")
+              addLine()
+              addLine("override fun deepClone(): ${subType.fieldName.className} {")
+              indent {
+                val postProcessors = mutableListOf<DeepClonePostProcessExpr>()
+                addLine("val clone = $className(")
+                indent {
+                  def.commonFields.forEach { field ->
+                    val pc = fieldExprGen.fromField(field)
+                    addLine("${field.name.classFieldName} = ${pc.deepCloneExpr.expr("this")},")
+                    pc.deepClonePostProcessExpr?.let { postProcessors.add(it) }
+                  }
+                  val pc = fieldExprGen.fromField(subType.fieldDef)
+                  addLine("${subType.fieldDef.name.classFieldName} = ${pc.deepCloneExpr.expr("this")},")
+                  pc.deepClonePostProcessExpr?.let { postProcessors.add(it) }
+                }
+                addLine(")")
+                postProcessors.forEach { it.generate(this, "this", "clone") }
+                addLine("return clone")
               }
               addLine("}")
             }

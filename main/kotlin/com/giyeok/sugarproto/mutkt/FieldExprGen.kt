@@ -88,7 +88,11 @@ class FieldExprGen(
           ToProtoExpr.MessageToProto(fieldDef.name),
           DeepCloneExpr.MessageDeepClone(fieldDef.name),
           null,
-          CopyFromExpr.MessageCopyFrom(fieldDef.name)
+          if (fieldDef.type is AtomicType.MessageType) {
+            CopyFromExpr.MessageCopyFrom(fieldDef.name)
+          } else {
+            CopyFromExpr.SealedCopyFrom(fieldDef.name)
+          }
         )
 
       is ValueType.OptionalType -> {
@@ -131,7 +135,10 @@ class FieldExprGen(
               ToProtoExpr.MessageOptionalToProto(fieldDef.name),
               DeepCloneExpr.Optional(fieldDef.name, true),
               null,
-              CopyFromExpr.MessageOptionalCopyFrom(fieldDef.name),
+              CopyFromExpr.MessageOptionalCopyFrom(
+                fieldDef.name,
+                elemType is AtomicType.SealedType
+              ),
             )
         }
       }
@@ -581,7 +588,16 @@ sealed class CopyFromExpr {
     }
   }
 
-  data class MessageOptionalCopyFrom(val fieldName: SemanticName) : CopyFromExpr() {
+  data class SealedCopyFrom(val fieldName: SemanticName) : CopyFromExpr() {
+    override fun generate(gen: MutableKtDataClassGen, thisExpr: String, otherExpr: String) {
+      // sealed type은 copyFrom할 수 없음..
+      val ktFieldName = fieldName.classFieldName
+      gen.addLine("$thisExpr.$ktFieldName = $otherExpr.$ktFieldName.deepClone()")
+    }
+  }
+
+  data class MessageOptionalCopyFrom(val fieldName: SemanticName, val isSealedType: Boolean) :
+    CopyFromExpr() {
     override fun generate(gen: MutableKtDataClassGen, thisExpr: String, otherExpr: String) {
       val ktFieldName = fieldName.classFieldName
       //    other.ltTilePoint.let { otherField ->
@@ -597,23 +613,30 @@ sealed class CopyFromExpr {
       //        }
       //      }
       //    }
-      gen.addLine("$otherExpr.$ktFieldName.let { otherField ->")
-      gen.indent {
-        gen.addLine("if (otherField == null) {")
+
+      // this.ltTilePoint = other.ltTilePoint?.deepClone()
+      if (isSealedType) {
+        gen.addLine("$thisExpr.$ktFieldName = $otherExpr.$ktFieldName?.deepClone()")
+      } else {
+        gen.addLine("$otherExpr.$ktFieldName.let { otherField ->")
         gen.indent {
-          gen.addLine("$thisExpr.$ktFieldName = null")
-        }
-        gen.addLine("} else {")
-        gen.indent {
-          gen.addLine("$thisExpr.$ktFieldName.let { thisField ->")
+          gen.addLine("if (otherField == null) {")
           gen.indent {
-            gen.addLine("if (thisField == null) {")
+            gen.addLine("$thisExpr.$ktFieldName = null")
+          }
+          gen.addLine("} else {")
+          gen.indent {
+            gen.addLine("$thisExpr.$ktFieldName.let { thisField ->")
             gen.indent {
-              gen.addLine("$thisExpr.$ktFieldName = otherField.deepClone()")
-            }
-            gen.addLine("} else {")
-            gen.indent {
-              gen.addLine("thisField.copyFrom(otherField)")
+              gen.addLine("if (thisField == null) {")
+              gen.indent {
+                gen.addLine("$thisExpr.$ktFieldName = otherField.deepClone()")
+              }
+              gen.addLine("} else {")
+              gen.indent {
+                gen.addLine("thisField.copyFrom(otherField)")
+              }
+              gen.addLine("}")
             }
             gen.addLine("}")
           }
@@ -621,7 +644,6 @@ sealed class CopyFromExpr {
         }
         gen.addLine("}")
       }
-      gen.addLine("}")
     }
   }
 

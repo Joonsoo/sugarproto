@@ -28,4 +28,13 @@ enum MyEnum {
 
 message MyMessage {
   1 message: string
+  2 my_sealed: MySealed
+}
+
+sealed MySealed {
+  val 1 id: int32
+  common val 2 message: string
+  3 hello: {1 work: string}
+  4 world: string
+  5 empty: {}
 }
