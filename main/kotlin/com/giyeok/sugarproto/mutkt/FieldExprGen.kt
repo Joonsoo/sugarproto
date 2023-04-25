@@ -653,9 +653,9 @@ sealed class CopyFromExpr {
     override fun generate(gen: MutableKtDataClassGen, thisExpr: String, otherExpr: String) {
       val ktFieldName = fieldName.classFieldName
       gen.addLine("$thisExpr.$ktFieldName.clear()")
-      gen.addLine("$otherExpr.$ktFieldName.forEach { elem ->")
+      gen.addLine("$otherExpr.$ktFieldName.forEach { entry ->")
       gen.indent {
-        gen.addLine("$thisExpr.add${fieldName.capitalClassFieldName}(elem)")
+        gen.addLine("$thisExpr.add${fieldName.capitalClassFieldName}(entry.value)")
       }
       gen.addLine("}")
     }
