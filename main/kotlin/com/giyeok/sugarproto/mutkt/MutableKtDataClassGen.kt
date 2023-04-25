@@ -272,6 +272,7 @@ class MutableKtDataClassGen(
       }
 
       addLine("abstract fun toProto(builder: $protoTypeName.Builder)")
+      addLine("abstract fun deepClone(): $className")
       addLine()
 
       var defaultValue = ""
