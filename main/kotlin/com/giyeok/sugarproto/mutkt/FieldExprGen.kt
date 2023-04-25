@@ -631,7 +631,7 @@ sealed class CopyFromExpr {
       gen.addLine("$thisExpr.$ktFieldName.clear()")
       gen.addLine("$otherExpr.$ktFieldName.forEach { entry ->")
       gen.indent {
-        gen.addLine("$thisExpr.$ktFieldName.put(entry.key, entry.value${if (isMessage) ".deepClone" else ""})")
+        gen.addLine("$thisExpr.$ktFieldName.put(entry.key, entry.value${if (isMessage) ".deepClone()" else ""})")
       }
       gen.addLine("}")
     }
@@ -643,7 +643,7 @@ sealed class CopyFromExpr {
       gen.addLine("$thisExpr.$ktFieldName.clear()")
       gen.addLine("$otherExpr.$ktFieldName.forEach { elem ->")
       gen.indent {
-        gen.addLine("$thisExpr.$ktFieldName.add(elem${if (isMessage) ".deepClone" else ""})")
+        gen.addLine("$thisExpr.$ktFieldName.add(elem${if (isMessage) ".deepClone()" else ""})")
       }
       gen.addLine("}")
     }
