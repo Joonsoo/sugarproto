@@ -1,6 +1,7 @@
 package com.giyeok.sugarproto.mutkt
 
 import com.giyeok.sugarproto.SugarProtoAst
+import com.giyeok.sugarproto.proto.AtomicType
 import com.giyeok.sugarproto.proto.ValueType
 import com.giyeok.sugarproto.toValueString
 
@@ -166,6 +167,42 @@ class MutableKtDataClassGen(
           addLine()
         }
       }
+      addLine("fun clear() {")
+      indent {
+        def.allFields.forEach { field ->
+          if (!field.useVal) {
+            val ktFieldName = field.name.classFieldName
+            // val값은 그대로 둠
+            when (field.type) {
+              AtomicType.EmptyType -> TODO()
+              is AtomicType.EnumType ->
+                addLine("this.$ktFieldName = ${field.type.name.enumClassName}.defaultValue")
+
+              is AtomicType.MessageType ->
+                addLine("this.$ktFieldName.clear()")
+
+              is AtomicType.SealedType ->
+                addLine("this.$ktFieldName = ${field.type.name.className}.create()")
+
+              is AtomicType.PrimitiveType -> {
+                val ts = tsGen.fromType(field.type)
+                addLine("this.$ktFieldName = ${ts.defaultValue}")
+              }
+
+              is ValueType.OptionalType ->
+                addLine("this.$ktFieldName = null")
+
+              is ValueType.IndexedType, is ValueType.MapType,
+              is ValueType.RepeatedType, is ValueType.SetType ->
+                addLine("this.$ktFieldName.clear()")
+
+              is AtomicType.UnknownName -> TODO()
+            }
+          }
+        }
+      }
+      addLine("}")
+      addLine()
       addLine("${if (sealedSuper != null) "override " else ""}fun deepClone(): $className {")
       indent {
         val postProcessors = mutableListOf<DeepClonePostProcessExpr>()
