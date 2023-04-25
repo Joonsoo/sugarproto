@@ -554,9 +554,9 @@ sealed class DeepClonePostProcessExpr {
     override fun generate(gen: MutableKtDataClassGen, thisExpr: String, cloneExpr: String) {
       val ktFieldName = fieldName.classFieldName
       // gen.addLine("$cloneExpr.$ktFieldName.clear()")
-      gen.addLine("$thisExpr.$ktFieldName.forEach { elem ->")
+      gen.addLine("$thisExpr.$ktFieldName.forEach { entry ->")
       gen.indent {
-        gen.addLine("$cloneExpr.add${fieldName.capitalClassFieldName}(elem)")
+        gen.addLine("$cloneExpr.add${fieldName.capitalClassFieldName}(entry.value)")
       }
       gen.addLine("}")
     }

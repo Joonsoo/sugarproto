@@ -181,6 +181,7 @@ class MutableKtDataClassGen(
         postProcessors.forEach { postProcessor ->
           postProcessor.generate(this, "this", "clone")
         }
+        addLine("return clone")
       }
       addLine("}")
       addLine()
