@@ -17,6 +17,8 @@ message TypeTest {
   10 j: string
   11 k: MyEnum
   12 l: MyMessage
+
+  13 m: indexed<MyMessage> { _.message: string }
 }
 
 enum MyEnum {

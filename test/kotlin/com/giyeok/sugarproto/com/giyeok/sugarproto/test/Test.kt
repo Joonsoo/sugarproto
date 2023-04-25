@@ -25,6 +25,21 @@ class Test {
   }
 
   @Test
+  fun testTypeConversions() {
+    val sourceText = javaClass.getResourceAsStream("/type_conversions.supro")!!.bufferedReader().readText()
+    val parsed = SugarProtoParser.parse(sourceText)
+
+    val defs = ProtoDefTraverser(parsed, ImportProtoFromResourcesProvider()).traverse()
+
+    val proto = ProtoGen().generate(defs)
+    println(proto)
+
+    val ktDefs = MutableKotlinDefConverter(defs).convert()
+    val kt = MutableKtDataClassGen(ktDefs, gdxMode = true).generate()
+    println(kt)
+  }
+
+  @Test
   fun testDeepImport() {
     val sourceText = javaClass.getResourceAsStream("/deep_import.supro")!!.bufferedReader().readText()
     val parsed = SugarProtoParser.parse(sourceText)
