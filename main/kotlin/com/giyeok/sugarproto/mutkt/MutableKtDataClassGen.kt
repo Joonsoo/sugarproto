@@ -173,7 +173,7 @@ class MutableKtDataClassGen(
         indent {
           def.allFields.forEach { field ->
             val pc = fieldExprGen.fromField(field, "this.${field.name.classFieldName}.size")
-            addLine("${field.name.classFieldName} = ${pc.deepCloneExpr.expr("this")}")
+            addLine("${field.name.classFieldName} = ${pc.deepCloneExpr.expr("this")},")
             pc.deepClonePostProcessExpr?.let { postProcessors.add(it) }
           }
         }
