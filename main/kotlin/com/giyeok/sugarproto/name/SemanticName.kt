@@ -2,7 +2,7 @@ package com.giyeok.sugarproto.name
 
 import com.giyeok.sugarproto.SugarProtoAst
 
-data class SemanticName constructor(val words: List<String>) {
+data class SemanticName(val originalName: String?, val words: List<String>) {
   fun camelCase(): String {
     val restWords = words.drop(1)
     return words.first().lowercase() +
@@ -32,18 +32,19 @@ data class SemanticName constructor(val words: List<String>) {
   val capitalClassFieldName: String get() = capitalCamelCase()
 
   companion object {
-    fun enumName(name: String) = SemanticName(name.toWords())
+    fun enumName(name: String) = SemanticName(name, name.toWords())
     fun enumName(ident: SugarProtoAst.Ident) = enumName(ident.name)
 
-    fun enumMember(ident: SugarProtoAst.Ident) = SemanticName(ident.name.split('_'))
+    fun enumMember(ident: SugarProtoAst.Ident) = SemanticName(ident.name, ident.name.split('_'))
 
-    fun messageName(name: String) = SemanticName(name.toWords())
+    fun messageName(name: String) = SemanticName(name, name.toWords())
     fun messageName(ident: SugarProtoAst.Ident) = messageName(ident.name)
-    fun messageMember(name: String) = SemanticName(name.toWords())
-    fun messageMember(ident: SugarProtoAst.Ident) = SemanticName(ident.name.toWords())
+    fun messageMember(name: String) = SemanticName(name, name.toWords())
+    fun messageMember(ident: SugarProtoAst.Ident) = SemanticName(ident.name, ident.name.toWords())
 
-    fun serviceName(ident: SugarProtoAst.Ident) = SemanticName(ident.name.toWords())
-    fun rpcName(ident: SugarProtoAst.Ident): SemanticName = SemanticName(ident.name.toWords())
+    fun serviceName(ident: SugarProtoAst.Ident) = SemanticName(ident.name, ident.name.toWords())
+    fun rpcName(ident: SugarProtoAst.Ident): SemanticName =
+      SemanticName(ident.name, ident.name.toWords())
 
     fun String.toWords(): List<String> {
       return this.split('_')

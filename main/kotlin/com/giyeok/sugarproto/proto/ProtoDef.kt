@@ -38,6 +38,7 @@ sealed class ProtoDef
 data class ProtoMessageDef(
   val comments: List<SugarProtoAst.Comment>,
   val name: SemanticName,
+  val extends: String?,
   val members: List<ProtoMessageMember>,
   val trailingComments: List<SugarProtoAst.Comment>,
 ): ProtoDef()

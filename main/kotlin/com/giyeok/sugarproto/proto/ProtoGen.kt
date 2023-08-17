@@ -189,65 +189,79 @@ class ProtoGen(val builder: StringBuilder = StringBuilder()) {
     addLine("$typeStr ${member.name.messageFieldName} = $tag$optionStr;")
   }
 
-  fun addMessageDef(def: ProtoMessageDef) {
+  fun addMessageDef(defs: ProtoDefs, def: ProtoMessageDef) {
     addComments(def.comments)
     addLine("message ${def.name.messageName} {")
     indent {
-      def.members.forEach { member ->
-        when (member) {
-          is ProtoMessageMember.MessageOption -> addOption(member.option)
-          is ProtoMessageMember.MessageField -> addField(member)
-          is ProtoMessageMember.NestedEnum -> addEnumDef(member.enumDef)
-          is ProtoMessageMember.NestedMessage -> addMessageDef(member.messageDef)
-          is ProtoMessageMember.OneOf -> {
-            addComments(member.comments)
-            addLine("oneof ${member.name.messageFieldName} {")
-            indent {
-              member.members.forEach { oneof ->
-                when (oneof) {
-                  is ProtoOneOfMember.OneOfOption -> addOption(oneof.option)
-                  is ProtoOneOfMember.OneOfField -> addField(oneof.field)
-                }
-              }
-            }
-            addLine("}")
-          }
-
-          is ProtoMessageMember.Reserved -> {
-            addComments(member.comments)
-            val reserved = member.ranges.joinToString(", ") { reserve ->
-              when (reserve) {
-                is SugarProtoAst.Ident ->
-                  // TODO name escape
-                  "\"${reserve.name}\""
-
-                is SugarProtoAst.ReservedRange -> {
-                  val trailing = reserve.reservedEnd?.let {
-                    when (it) {
-                      is SugarProtoAst.Max -> " to max"
-                      is SugarProtoAst.IntLiteral -> " to ${it.toValueString()}"
-                    }
-                  } ?: ""
-
-                  reserve.reservedStart.toValueString() + trailing
-                }
-              }
-            }
-            addLine("reserved $reserved;")
-          }
-        }
+      if (def.extends != null) {
+        val extending =
+          defs.defs.filterIsInstance<ProtoMessageDef>().find { it.name.originalName == def.extends }
+        checkNotNull(extending) { "Message ${def.extends} not found" }
+        addLine("// Extending ${def.extends} starts")
+        addMessageMembers(defs, extending.members)
+        addLine("// Extending ${def.extends} ends")
       }
+      addMessageMembers(defs, def.members)
       addComments(def.trailingComments)
     }
     addLine("}")
   }
 
-  fun addSealedDef(def: ProtoSealedDef) {
+  fun addMessageMembers(defs: ProtoDefs, members: List<ProtoMessageMember>) {
+    members.forEach { member ->
+      when (member) {
+        is ProtoMessageMember.MessageOption -> addOption(member.option)
+        is ProtoMessageMember.MessageField -> addField(member)
+        is ProtoMessageMember.NestedEnum -> addEnumDef(member.enumDef)
+        is ProtoMessageMember.NestedMessage -> addMessageDef(defs, member.messageDef)
+        is ProtoMessageMember.OneOf -> {
+          addComments(member.comments)
+          addLine("oneof ${member.name.messageFieldName} {")
+          indent {
+            member.members.forEach { oneof ->
+              when (oneof) {
+                is ProtoOneOfMember.OneOfOption -> addOption(oneof.option)
+                is ProtoOneOfMember.OneOfField -> addField(oneof.field)
+              }
+            }
+          }
+          addLine("}")
+        }
+
+        is ProtoMessageMember.Reserved -> {
+          addComments(member.comments)
+          val reserved = member.ranges.joinToString(", ") { reserve ->
+            when (reserve) {
+              is SugarProtoAst.Ident ->
+                // TODO name escape
+                "\"${reserve.name}\""
+
+              is SugarProtoAst.ReservedRange -> {
+                val trailing = reserve.reservedEnd?.let {
+                  when (it) {
+                    is SugarProtoAst.Max -> " to max"
+                    is SugarProtoAst.IntLiteral -> " to ${it.toValueString()}"
+                  }
+                } ?: ""
+
+                reserve.reservedStart.toValueString() + trailing
+              }
+            }
+          }
+          addLine("reserved $reserved;")
+        }
+      }
+    }
+  }
+
+  fun addSealedDef(defs: ProtoDefs, def: ProtoSealedDef) {
     val sealedFields = def.sealedFields.map { field -> ProtoOneOfMember.OneOfField(field) }
     addMessageDef(
+      defs,
       ProtoMessageDef(
         def.comments,
         def.name,
+        null,
         def.commonFields + ProtoMessageMember.OneOf(listOf(), def.name, sealedFields),
         def.trailingComments
       )
@@ -307,8 +321,8 @@ class ProtoGen(val builder: StringBuilder = StringBuilder()) {
     defs.defs.forEach { def ->
       when (def) {
         is ProtoEnumDef -> addEnumDef(def)
-        is ProtoMessageDef -> addMessageDef(def)
-        is ProtoSealedDef -> addSealedDef(def)
+        is ProtoMessageDef -> addMessageDef(defs, def)
+        is ProtoSealedDef -> addSealedDef(defs, def)
         is ProtoServiceDef -> addServiceDef(def)
       }
       addLine()

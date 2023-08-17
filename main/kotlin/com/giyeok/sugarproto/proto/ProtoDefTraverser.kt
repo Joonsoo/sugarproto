@@ -210,6 +210,7 @@ class ProtoDefTraverser(
   fun traverseMessage(
     comments: List<SugarProtoAst.Comment>,
     name: SemanticName,
+    extends: String?,
     members: List<SugarProtoAst.MessageMemberDefWS>,
     namingContext: NamingContext,
     defs: MutableList<ProtoDef>,
@@ -217,6 +218,7 @@ class ProtoDefTraverser(
     return ProtoMessageDef(
       comments,
       name,
+      extends,
       members.map {
         traverseMessageMember(it.comments.filterNotNull(), it.def, namingContext + name, defs)
       },
@@ -233,6 +235,7 @@ class ProtoDefTraverser(
     return traverseMessage(
       comments,
       SemanticName.messageName(ast.name),
+      ast.extends?.name,
       ast.members,
       namingContext,
       defs
@@ -287,8 +290,14 @@ class ProtoDefTraverser(
           val messageName = type.name?.name?.let { SemanticName.messageName(it) }
             ?: namingContext.messageName()
           val subDefs = mutableListOf<ProtoDef>()
-          val generatedMessage =
-            traverseMessage(listOf(), messageName, type.fields, NamingContext(messageName), subDefs)
+          val generatedMessage = traverseMessage(
+            listOf(),
+            messageName,
+            type.extends?.name,
+            type.fields,
+            NamingContext(messageName),
+            subDefs
+          )
           defs.add(generatedMessage)
           defs.addAll(subDefs)
           AtomicType.MessageType(generatedMessage.name, AtomicType.TypeSource.Generated)
