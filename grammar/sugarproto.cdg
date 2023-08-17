@@ -58,8 +58,9 @@ PrimitiveType: %PrimitiveTypeEnum =
   | "fixed32" {%FIXED32} | "fixed64" {%FIXED64} | "sfixed32" {%SFIXED32} | "sfixed64" {%SFIXED64}
   | "bool" {%BOOL} | "string" {%STRING} | "bytes" {%BYTES}
 
-OnTheFlyMessageType = (IdentNoSealedEnum WS)? '{' MessageMembersWS? WS '}'
-                      {OnTheFlyMessageType(name=$0$0, fields=$2 ?: [])}
+OnTheFlyMessageType = '{' MessageMembersWS? WS '}' {OnTheFlyMessageType(name=null, extends=null, fields=$1 ?: [])}
+  | IdentNoSealedEnum (WS '(' WS Ident WS ')')? WS '{' MessageMembersWS? WS '}'
+    {OnTheFlyMessageType(name=$0, extends=$1$3, fields=$4 ?: [])}
 OnTheFlySealedMessageType = "sealed"&Tk (WS IdentNoSealed)? WS '{' SealedMembersWS? WS '}'
                             {OnTheFlySealedMessageType(name=$1, fields=$4 ?: [])}
 OnTheFlyEnumType = "enum"&Tk (WS IdentNoEnum)? WS '{' EnumMembersWS? WS '}'
@@ -74,7 +75,8 @@ TypeNameKeyword = "double" | "float" | "int32" | "int64"
   | "bool" | "string" | "bytes"
 
 
-MessageDef = "message"&Tk WS Ident WS '{' MessageMembersWS? WS '}' {MessageDef(name=$2, members=$5 ?: [])}
+MessageDef = "message"&Tk WS Ident (WS '(' WS Ident WS ')')? WS '{' MessageMembersWS? WS '}'
+             {MessageDef(name=$2, extends=$3$3, members=$6 ?: [])}
 MessageMembersWS = WS MessageMemberDef ((WS ',' WS | WSNL) MessageMemberDef {MessageMemberDefWS(comments=$0, def=$1)})*
                    {[MessageMemberDefWS(comments=$0, def=$1)] + $2}
 
