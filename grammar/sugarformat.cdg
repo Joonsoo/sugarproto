@@ -1,29 +1,42 @@
-Items = (Item WS1 EOL $0)*
-Item = WS1 Name WS1 ItemValue {Item(indent=$0, name=$1, value=$3)}
+Items = WS2 (Item WS1 EOL $0)*
+Item = WS1 ('-' WS1)? Key WS1 ItemValue
+       {Item(indent=str($0), itemHead=str($1), key=$2, value=$4)}
 ItemValue: ItemValue = "::" {ObjectHeader()}
-  | ':' WS1 StringValue
-  | ':' WS1 NumberValue
-  | ':' WS1 EnumValue
+  | "[]" {RepeatedHeader()}
+  | "{}" {MapHeader()}
+  | ':' WS1 Value
 
+Value: Value = StringValue | NumberValue | EnumValue | RepeatedValue | ObjectValue
+
+Key: Key = Name {NameKey(name=$0)} | StringFrac | NumberValue
 
 Name = 'a-zA-Z_' 'a-zA-Z_0-9'* {str($0, $1)}
 
+RepeatedValue = '[' WS2 ']' {RepeatedValue(elems=[])}
+  | '[' WS2 Value (WS2 ',' WS2 Value)* (WS2 ',')? WS2 '}'
+    {RepeatedValue([$2] + $3)}
+
+ObjectValue = '{' WS2 '}' {ObjectValue(pairs=[])}
+  | '{' WS2 KeyValuePair ((WS2 ',')? WS2 KeyValuePair)* WS2 '}'
+    {ObjectValue([$2] + $3)}
+KeyValuePair = Key WS2 ':' WS2 Value {KeyValuePair(key=$0, value=$4)}
+
 StringValue = StringFrac (WS2 StringFrac)* {StringValue(fracs=[$0]+$1)}
 StringFrac = '"' StringElem* '"' {StringFrac(elems=$1)}
-StringElem = '\\' 'abfnrtv?\\\'"' {EscapeCode(code=$1)}
-           | '\\' oct (oct oct?)? {OctCode(code=str($1, $2))}
-           | '\\' 'xX' hex hex? {HexCode(code=str($2, $3))}
-           | '\\' 'u' hex hex hex hex {Unicode(code=str($2, $3, $4, $5))}
-           | '\\' 'U' '0' '0' '0' hex hex hex hex hex {Unicode(code=str($2, $3, $4, $5, $6, $7, $8, $9))}
-           | '\\' 'U' '0' '0' '1' '0' hex hex hex hex {Unicode(code=str($2, $3, $4, $5, $6, $7, $8, $9))}
-           | <(.-'"\\')+> {PlainText(value=str($0))}
+StringElem: StringElem = '\\' 'abfnrtv?\\\'"' {EscapeCode(code=$1)}
+  | '\\' oct (oct oct?)? {OctCode(code=str($1, $2))}
+  | '\\' 'xX' hex hex? {HexCode(code=str($2, $3))}
+  | '\\' 'u' hex hex hex hex {Unicode(code=str($2, $3, $4, $5))}
+  | '\\' 'U' '0' '0' '0' hex hex hex hex hex {Unicode(code=str($2, $3, $4, $5, $6, $7, $8, $9))}
+  | '\\' 'U' '0' '0' '1' '0' hex hex hex hex {Unicode(code=str($2, $3, $4, $5, $6, $7, $8, $9))}
+  | <(.-'"\\')+> {PlainText(value=str($0))}
 oct = '0-8'
 hex = '0-9A-Fa-f'
 NumberValue: NumberValue = DecValue | OctValue | HexValue
 DecValue = '+\-'? Dec ('.' Dec)? ('eE' '+\-'? Dec)?
            {DecValue(sgn=$0, integral=$1, frac=$2, exponent=$3)}
 OctValue = '+\-'? '0' oct+ {OctValue(sgn=$0, value=str($2))}
-HexValue = '+\-'? '0' 'xX' hex+ {HexValue(sgn=$0, value=str($2, $3))}
+HexValue = '+\-'? '0' 'xX' hex+ {HexValue(sgn=$0, value=str($3))}
 Dec = '0' {"0"} | '1-9' '0-9'* {str($0, $1)}
 
 EnumValue = Name {EnumValue(value=$0)}

@@ -105,6 +105,54 @@ proto3ts {
   )
 }
 
+sugarformat {
+  parser {
+    parserGen = jparser.genKtAstMgroup2(
+      cdgFile = "grammar/sugarformat.cdg",
+      astifierClassName = "com.giyeok.sugarproto.SugarFormatAst",
+      parserDataFileName = "sugarformat-mg2-parserdata.pb",
+    )
+
+    durationParserGen = jparser.genKtAstMgroup2(
+      cdgFile = "grammar/duration.cdg",
+      astifierClassName = "com.giyeok.sugarproto.SugarFormatDurationAst",
+      parserDataFileName = "duration-mg2-parserdata.pb",
+    )
+
+    action generate {
+      file.clearDirectory("sugarformat/generated/kotlin")
+      file.clearDirectory("sugarformat/generated/resources")
+      file.copyDirectory(parserGen.srcsRoot, "sugarformat/generated/kotlin")
+      file.copyFile(parserGen.parserData, "sugarformat/generated/resources")
+      file.copyDirectory(durationParserGen.srcsRoot, "sugarformat/generated/kotlin")
+      file.copyFile(durationParserGen.parserData, "sugarformat/generated/resources")
+    }
+
+    generated = ktjvm.library(
+      srcs = glob("sugarformat/generated/kotlin/**/*.kt"),
+      deps = [jparser.ktparser.main],
+      resources = [
+        "sugarformat/generated/resources/sugarformat-mg2-parserdata.pb",
+        "sugarformat/generated/resources/duration-mg2-parserdata.pb",
+      ]
+    )
+
+    main = ktjvm.library(
+      srcs = glob("sugarformat/main/kotlin/**/*.kt"),
+      deps = [generated],
+    )
+
+    test = ktjvm.library(
+      srcs = glob("sugarformat/test/kotlin/**/*.kt"),
+      deps = [
+        main,
+        ...testDeps,
+        maven.artifact("com.google.protobuf", "protobuf-java-util", "3.25.0"),
+      ],
+    )
+  }
+}
+
 bibixPlugin {
   impl = ktjvm.library(
     srcs = glob("bibixPlugin/kotlin/**/*.kt"),
