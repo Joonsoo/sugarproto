@@ -17,7 +17,7 @@ builtinType: %BuiltinTypeEnum = ("double" {%DOUBLE} | "float" {%FLOAT} | "int32"
 fieldNumber = intLit
 
 field = (fieldModifier WS)? type WS fieldName WS '=' WS fieldNumber (WS '[' WS fieldOptions WS ']')? WS ';'
-        {Field(isRepeated=$0$0, typ=$1, name=$3, fieldNumber=$7, options=$8$3)}
+        {Field(modifier=$0$0, typ=$1, name=$3, fieldNumber=$7, options=$8$3)}
 fieldModifier: %FieldModifier = ("repeated" {%REPEATED} | "optional" {%OPTIONAL})&Tk
 fieldOptions = fieldOption (WS ',' WS fieldOption)* {[$0] + $1}
 fieldOption = optionName WS '=' WS constant {FieldOption(name=$0, value=$4)}

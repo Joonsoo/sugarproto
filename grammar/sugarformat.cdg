@@ -1,0 +1,31 @@
+Items = (Item WS1 EOL)*
+Item = WS1 Name WS1 ItemValue {Item(indent=$0, name=$1, value=$3)}
+ItemValue: ItemValue = "::" {ObjectHeader()}
+  | StringValue
+  | NumberValue
+
+
+Name = 'a-zA-Z_' 'a-zA-Z_0-9'*
+
+StringValue = StringFrac (WS2 StringFrac)* {StringValue(fracs=[$0]+$1)}
+StringFrac = '"' StringChar* '"' {StringFrac(chrs=$1)}
+StringChar = '\\' 'abfnrtv?\\\'"' {EscapeCode(code=$1)}
+           | '\\' oct (oct oct?)? {OctCode(code=str($1, $2))}
+           | '\\' 'xX' hex hex? {HexCode(code=str($2, $3))}
+           | '\\' 'u' hex hex hex hex {Unicode(code=str($2, $3, $4, $5))}
+           | '\\' 'U' '0' '0' '0' hex hex hex hex hex {Unicode(code=str($2, $3, $4, $5, $6, $7, $8, $9))}
+           | '\\' 'U' '0' '0' '1' '0' hex hex hex hex {Unicode(code=str($2, $3, $4, $5, $6, $7, $8, $9))}
+oct = '0-8'
+hex = '0-9A-Fa-f'
+NumberValue: NumberValue = DecValue
+DecValue = '+\-'? Dec ('.' Dec) ('eE' '+\-'? Dec)?
+           {DecValue(sgn=$0, integral=$1, frac=$2, exponent=$3)}
+OctValue = '+\-'? '0' oct+ {OctValue(sgn=$0, value=str($2))}
+HexValue = '+\-'? '0' 'xX' hex+ {HexValue(sgn=$0, value=str($2, $3))}
+Dec = '0' {"0"} | '1-9' '0-9'* {str($0, $1)}
+
+WS1 = ' \t'*
+NL = '\n\r'
+WS2 = ' \t\n\r'*
+EOL = EOF | NL+
+EOF = !.

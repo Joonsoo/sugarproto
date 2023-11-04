@@ -281,7 +281,7 @@ data class DecimalLit(
 ): IntLit, AstNode
 
 data class Field(
-  val isRepeated: FieldModifier?,
+  val modifier: FieldModifier?,
   val typ: Type,
   val name: Ident,
   val fieldNumber: IntLit,

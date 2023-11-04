@@ -92,6 +92,19 @@ testDeps = [
   maven.artifact("org.junit.jupiter", "junit-jupiter-api", "5.8.2"),
 ]
 
+// proto3 -> typescript compiler
+proto3ts {
+  main = ktjvm.library(
+    srcs = glob("proto3ts/main/kotlin/**/*.kt"),
+    deps = [proto3Parser.main],
+  )
+
+  test = ktjvm.library(
+    srcs = glob("proto3ts/test/kotlin/**/*.kt"),
+    deps = [proto3ts.main, ...testDeps],
+  )
+}
+
 bibixPlugin {
   impl = ktjvm.library(
     srcs = glob("bibixPlugin/kotlin/**/*.kt"),
