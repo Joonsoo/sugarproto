@@ -13,7 +13,7 @@ Key: Key = Name {NameKey(name=$0)} | StringFrac | NumberValue
 Name = 'a-zA-Z_' 'a-zA-Z_0-9'* {str($0, $1)}
 
 RepeatedValue = '[' WS2 ']' {RepeatedValue(elems=[])}
-  | '[' WS2 Value (WS2 ',' WS2 Value)* (WS2 ',')? WS2 '}'
+  | '[' WS2 Value (WS2 ',' WS2 Value)* (WS2 ',')? WS2 ']'
     {RepeatedValue([$2] + $3)}
 
 ObjectValue = '{' WS2 '}' {ObjectValue(pairs=[])}

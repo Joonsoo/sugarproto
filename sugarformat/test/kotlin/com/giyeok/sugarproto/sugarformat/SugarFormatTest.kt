@@ -87,7 +87,7 @@ class SugarFormatTest {
         "simple"::
           a: "hello"
           b: "bar"
-        "simple": { a: "foo" b: "bar" }
+        "simple": { a: "foo" b: "bar" c: "foo" "bar" }
     """.trimIndent()
 
     println(source)
