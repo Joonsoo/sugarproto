@@ -27,7 +27,7 @@ data class Duration(
 
 data class Seconds(
   val integral: String,
-  val fractional: String?,
+  val frac: String?,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
@@ -43,8 +43,8 @@ fun matchStart(): Duration {
 fun matchDuration(beginGen: Int, endGen: Int): Duration {
 val var1 = history[endGen].findByBeginGenOpt(3, 4, beginGen)
 val var2 = history[endGen].findByBeginGenOpt(7, 1, beginGen)
-val var3 = history[endGen].findByBeginGenOpt(42, 3, beginGen)
-val var4 = history[endGen].findByBeginGenOpt(43, 2, beginGen)
+val var3 = history[endGen].findByBeginGenOpt(44, 3, beginGen)
+val var4 = history[endGen].findByBeginGenOpt(45, 2, beginGen)
 check(hasSingleTrue(var1 != null, var2 != null, var3 != null, var4 != null))
 val var5 = when {
 var1 != null -> {
@@ -92,7 +92,7 @@ val var25 = Duration(var24, null, null, null, nextId(), beginGen, endGen)
 var25
 }
 var3 != null -> {
-val var26 = getSequenceElems(history, 42, listOf(4,23,32), beginGen, endGen)
+val var26 = getSequenceElems(history, 44, listOf(4,23,32), beginGen, endGen)
 val var27 = history[var26[0].second].findByBeginGenOpt(5, 1, var26[0].first)
 val var28 = history[var26[0].second].findByBeginGenOpt(22, 1, var26[0].first)
 check(hasSingleTrue(var27 != null, var28 != null))
@@ -120,7 +120,7 @@ val var38 = Duration(var29, var34, var37, null, nextId(), beginGen, endGen)
 var38
 }
 else -> {
-val var39 = getSequenceElems(history, 43, listOf(4,26), beginGen, endGen)
+val var39 = getSequenceElems(history, 45, listOf(4,26), beginGen, endGen)
 val var40 = history[var39[0].second].findByBeginGenOpt(5, 1, var39[0].first)
 val var41 = history[var39[0].second].findByBeginGenOpt(22, 1, var39[0].first)
 check(hasSingleTrue(var40 != null, var41 != null))
@@ -176,7 +176,7 @@ return var57
 }
 
 fun matchSeconds(beginGen: Int, endGen: Int): Seconds {
-val var58 = getSequenceElems(history, 36, listOf(9,37,17,41), beginGen, endGen)
+val var58 = getSequenceElems(history, 36, listOf(9,37,17,43), beginGen, endGen)
 val var59 = matchNumber(var58[0].first, var58[0].second)
 val var60 = history[var58[1].second].findByBeginGenOpt(22, 1, var58[1].first)
 val var61 = history[var58[1].second].findByBeginGenOpt(38, 1, var58[1].first)
@@ -184,9 +184,11 @@ check(hasSingleTrue(var60 != null, var61 != null))
 val var62 = when {
 var60 != null -> null
 else -> {
-val var63 = getSequenceElems(history, 39, listOf(40,9), var58[1].first, var58[1].second)
-val var64 = matchNumber(var63[1].first, var63[1].second)
-var64
+val var63 = getSequenceElems(history, 39, listOf(40,41), var58[1].first, var58[1].second)
+val var64 = unrollRepeat1(history, 41, 16, 16, 42, var63[1].first, var63[1].second).map { k ->
+source[k.first]
+}
+var64.joinToString("") { it.toString() }
 }
 }
 val var65 = Seconds(var59, var62, nextId(), beginGen, endGen)

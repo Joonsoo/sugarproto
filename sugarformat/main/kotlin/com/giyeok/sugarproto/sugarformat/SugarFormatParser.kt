@@ -36,7 +36,7 @@ object SugarFormatParser {
     builder.seconds = seconds
 
     parsed.seconds?.let { s ->
-      s.fractional?.let { frac ->
+      s.frac?.let { frac ->
         if (frac.length > 9) {
           throw IllegalStateException("Invalid duration format: invalid nanos")
         }

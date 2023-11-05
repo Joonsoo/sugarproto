@@ -1,6 +1,12 @@
-Items = WS2 (Item WS1 EOL $0)*
-Item = WS1 ('-' WS1)? Key WS1 ItemValue
-       {Item(indent=str($0), itemHead=str($1), key=$2, value=$4)}
+Items = WS2 (Item WS1 Comment? EOL $0)*
+Item: Item = SingleItem | ListValueItem | ListFieldItem | MapItem
+
+SingleItem = WS1 Name WS1 ItemValue {SingleItem(indent=str($0), key=$1, value=$3)}
+ListValueItem = WS1 '-' WS1 Value {ListValueItem(indent=str($0), value=$3)}
+ListFieldItem = WS1 '-' WS1 Name WS1 ItemValue {ListFieldItem(indent=str($0), name=$3, value=$5)}
+MapItem = WS1 KeyValue WS1 ItemValue
+
+
 ItemValue: ItemValue = "::" {ObjectHeader()}
   | "[]" {RepeatedHeader()}
   | "{}" {MapHeader()}
@@ -8,7 +14,7 @@ ItemValue: ItemValue = "::" {ObjectHeader()}
 
 Value: Value = StringValue | NumberValue | EnumValue | RepeatedValue | ObjectValue
 
-Key: Key = Name {NameKey(name=$0)} | StringFrac | NumberValue
+KeyValue: KeyValue = StringFrac | NumberValue
 
 Name = 'a-zA-Z_' 'a-zA-Z_0-9'* {str($0, $1)}
 
@@ -20,8 +26,10 @@ ObjectValue = '{' WS2 '}' {ObjectValue(pairs=[])}
   | '{' WS2 KeyValuePair ((WS2 ',')? WS2 KeyValuePair)* WS2 '}'
     {ObjectValue([$2] + $3)}
 KeyValuePair = Key WS2 ':' WS2 Value {KeyValuePair(key=$0, value=$4)}
+Key: Key = Name {NameKey(name=$0)} | KeyValue
 
-StringValue = StringFrac (WS2 StringFrac)* {StringValue(fracs=[$0]+$1)}
+StringValue = StringFrac (WS2 StringFrac)* {StringValue(type=null, fracs=[$0]+$1)}
+  | StringTypeAnnot StringFrac {StringValue(type=$0, fracs=[$1])}
 StringFrac = '"' StringElem* '"' {StringFrac(elems=$1)}
 StringElem: StringElem = '\\' 'abfnrtv?\\\'"' {EscapeCode(code=$1)}
   | '\\' oct (oct oct?)? {OctCode(code=str($1, $2))}
@@ -32,6 +40,7 @@ StringElem: StringElem = '\\' 'abfnrtv?\\\'"' {EscapeCode(code=$1)}
   | <(.-'"\\')+> {PlainText(value=str($0))}
 oct = '0-8'
 hex = '0-9A-Fa-f'
+StringTypeAnnot: %StringTypeAnnot = 'b' {%Base64} | 'h' {%Hex} | 't' {%Timestamp} | 'd' {%Duration}
 NumberValue: NumberValue = DecValue | OctValue | HexValue
 DecValue = '+\-'? Dec ('.' Dec)? ('eE' '+\-'? Dec)?
            {DecValue(sgn=$0, integral=$1, frac=$2, exponent=$3)}
@@ -44,5 +53,7 @@ EnumValue = Name {EnumValue(value=$0)}
 WS1 = ' \t'*
 NL = '\n\r'
 WS2 = ' \t\n\r'*
-EOL = EOF | NL+
+EOL = EOF | NL EmptyLine*
+EmptyLine = WS1 Comment? NL
+Comment = '#' (.-NL)*
 EOF = !.

@@ -1,4 +1,4 @@
-package com.giyeok.sugarproto.test
+package com.giyeok.sugarproto
 
 import com.giyeok.sugarproto.SugarProtoParser
 import com.giyeok.sugarproto.mutkt.MutableKotlinDefConverter

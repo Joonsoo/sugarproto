@@ -6,6 +6,6 @@ Duration = (Days WS)? (Hours WS)? (Minutes WS)? Seconds
 Days = Number WS 'd' $0
 Hours = Number WS 'h' $0
 Minutes = Number WS 'm' $0
-Seconds = Number ('.' Number)? WS 's' {Seconds(integral=$0, fractional=$1)}
+Seconds = Number ('.' '0-9'+ {str($1)})? WS 's' {Seconds(integral=$0, frac=$1)}
 Number = '0' {"0"} | '1-9' '0-9'* {str($0, $1)}
 WS = ' '*

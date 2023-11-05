@@ -1485,7 +1485,7 @@ com.giyeok.sugarproto.test.Test.MyMessage defaultValue) {
                 com.giyeok.sugarproto.test.Test.TypeTest.class, com.giyeok.sugarproto.test.Test.TypeTest.Builder.class);
       }
 
-      // Construct using com.giyeok.sugarproto.test.Test.TypeTest.newBuilder()
+      // Construct using Test.TypeTest.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -3643,7 +3643,7 @@ com.giyeok.sugarproto.test.Test.MyMessage defaultValue) {
                 com.giyeok.sugarproto.test.Test.MyMessage.class, com.giyeok.sugarproto.test.Test.MyMessage.Builder.class);
       }
 
-      // Construct using com.giyeok.sugarproto.test.Test.MyMessage.newBuilder()
+      // Construct using Test.MyMessage.newBuilder()
       private Builder() {
 
       }
