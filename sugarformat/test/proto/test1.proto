@@ -1,0 +1,6 @@
+syntax = "proto3";
+
+message Hello {
+  string world = 1;
+  repeated string hello = 2;
+}

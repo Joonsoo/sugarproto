@@ -7,6 +7,7 @@ from bibix.plugins import scala
 from bibix.plugins import ktjvm
 from bibix.plugins import java
 import git("https://github.com/Joonsoo/jparser.git") as jparser
+from bibix.plugins import protobuf
 
 var ktjvm.outVersion = "19"
 var scala.outVersion = "19"
@@ -137,20 +138,37 @@ sugarformat {
         "sugarformat/generated/resources/duration-mg2-parserdata.pb",
       ]
     )
+  }
 
-    main = ktjvm.library(
-      srcs = glob("sugarformat/main/kotlin/**/*.kt"),
-      deps = [generated],
-    )
+  main = ktjvm.library(
+    srcs = glob("sugarformat/main/kotlin/**/*.kt"),
+    deps = [parser.generated],
+  )
 
-    test = ktjvm.library(
-      srcs = glob("sugarformat/test/kotlin/**/*.kt"),
+  test = ktjvm.library(
+    srcs = glob("sugarformat/test/kotlin/**/*.kt"),
+    deps = [
+      main,
+      ...testDeps,
+      maven.artifact("com.google.protobuf", "protobuf-java-util", "3.25.0"),
+      testProto.javalib,
+    ],
+  )
+
+  testProto {
+    schema = protobuf.schema(glob("sugarformat/test/proto/*.proto"))
+    protoJava = protobuf.java(schema)
+
+    javalib = java.library(
+      srcs = glob("sugarformat/test/java/*.java"),
       deps = [
-        main,
-        ...testDeps,
-        maven.artifact("com.google.protobuf", "protobuf-java-util", "3.25.0"),
-      ],
+        maven.artifact("com.google.protobuf", "protobuf-java", "3.25.0")
+      ]
     )
+
+    action generate {
+      file.copyDirectory(protoJava.rootDir, "sugarformat/test/java")
+    }
   }
 }
 
@@ -161,8 +179,6 @@ bibixPlugin {
   )
 
   test {
-    from bibix.plugins import protobuf
-
     service = generateProto(
       source = "test/resources/service.supro",
       filename = "service.proto",

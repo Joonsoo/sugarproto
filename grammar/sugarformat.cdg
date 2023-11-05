@@ -9,19 +9,18 @@ ListValueItem = '-' WS1 Value {ListValueItem(value=$2)}
 ListFieldItem = '-' WS1 ItemPath WS1 ItemValue {ListFieldItem(name=$2, value=$4)}
 
 
-ItemPath = ItemPathFirst (WS1 ItemPathAccess)* {ItemPath(first=$0, access=$1)}
-ItemPathFirst: ItemPathFirst = Name {NamePath(name=$0)} | StringFrac | NumberValue
-ItemPathAccess: ItemPathAccess = '.' WS1 Name {MemberAccess(name=$2)}
-  | '[' WS1 KeyValue WS1 ']' {KeyAccess(value=$2)}
+ItemPath = KeyValue (WS1 '.' WS1 KeyValue)* {ItemPath(first=$0, access=$1)}
 
 ItemValue: ItemValue = ":" {Header()}
   | ':' WS1 Value
 
-Value: Value = StringValue
-  | NumberValue
-  | NameValue
+Value: Value = ScalarValue
   | RepeatedValue
   | ObjectOrMapValue
+
+ScalarValue: ScalarValue = StringValue
+  | NumberValue
+  | NameValue
   | DurationValue
   | TimestampValue
 
@@ -52,7 +51,7 @@ oct = '0-8'
 hex = '0-9A-Fa-f'
 StringTypeAnnot: %StringTypeAnnot = 'b' {%Base64} | 'h' {%Hex}
 NumberValue: NumberValue = DecValue | OctValue | HexValue
-DecValue = '+\-'? Dec ('.' Dec)? ('eE' '+\-'? Dec)?
+DecValue = '+\-'? Dec ('.' Dec)? ('eE' '+\-'? Dec {Exponent(sgn=$1, value=$2)})?
            {DecValue(sgn=$0, integral=$1, frac=$2, exponent=$3)}
 OctValue = '+\-'? '0' oct+ {OctValue(sgn=$0, value=str($2))}
 HexValue = '+\-'? '0' 'xX' hex+ {HexValue(sgn=$0, value=str($3))}
@@ -72,7 +71,7 @@ Seconds = Number SecondFrac? WS1 's' {Seconds(integral=$0, frac=$1)}
 SecondFrac = '.' '0-9'+ {str($1)}
 Number = '0' {"0"} | '1-9' '0-9'* {str($0, $1)}
 
-TimestampValue = Date ('T' Time)? Timezone {TimestampValue(date=$0, time=$1, timezone=$2)}
+TimestampValue = Date ('T' Time)? Timezone? {TimestampValue(date=$0, time=$1, timezone=$2)}
 Date = digit4 '-' digit2 '-' digit2 {Date(year=$0, month=$2, day=$4)}
 Time = digit2 ':' digit2 ':' digit2 SecondFrac?
        {Time(hour=$0, minute=$2, second=$4, secondFrac=$5)}
@@ -81,7 +80,10 @@ Time = digit2 ':' digit2 ':' digit2 SecondFrac?
   | digit2 digit2 {Time($0, $1, null, null)}
 digit4 = '0-9' '0-9' '0-9' '0-9' {str($0, $1, $2, $3)}
 digit2 = '0-9' '0-9' {str($0, $1)}
-Timezone = 'Z' {Timezone(name="UTC")}
+Timezone: Timezone = 'Z' {NamedTimezone(name="UTC")}
+  | '+\-' digit2 {TimeOffset(hour=$1, minute="00")}
+  | '+\-' digit2 ':' digit2 {TimeOffset(hour=$1, minute=$3)}
+  | '+\-' digit2 digit2 {TimeOffset(hour=$1, minute=$2)}
 
 WS1 = ' \t'*
 NL = '\n\r'

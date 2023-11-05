@@ -1,15 +1,41 @@
 package com.giyeok.sugarproto.sugarformat
 
 import com.giyeok.sugarproto.SugarFormatAst
+import com.google.protobuf.Descriptors.FieldDescriptor
+import com.google.protobuf.Message
+import com.google.protobuf.Message.Builder
 
 object SugarFormat {
+  fun merge(sufText: String, builder: Builder) {
+    val parsed = SugarFormatParser.parse(sufText)
+    Parser(ItemStructurizer(parsed)).merge(builder)
+  }
+
   class Parser(val struct: ItemStructurizer) {
+    fun merge(builder: Message.Builder) {
+      val siblings = struct.all.siblingsOfFirst()
+      siblings.forEach { rootField ->
+        val head = rootField.first
+        check(head is SugarFormatAst.SingleItem)
+        // lookupBuilder(builder, head.key)
+        when (val value = head.value) {
+          is SugarFormatAst.ScalarValue -> {
+            setFieldValue(builder, head.key.first, head.key.access, value)
+          }
+
+          is SugarFormatAst.Header -> TODO()
+          is SugarFormatAst.RepeatedValue -> TODO()
+          is SugarFormatAst.ObjectOrMapValue -> TODO()
+        }
+      }
+    }
+
     fun test() {
       val fields = struct.all.siblingsOfFirst()
       println(fields)
-      val children = fields.first().objChildrenOfFirst()
+      val children = fields.first().childrenOfFirst()
       println(children)
-      val listChildren = fields[6].listChildrenOfFirst()
+      val listChildren = fields.last().listChildrenOfFirst()
       println(listChildren)
     }
   }
@@ -47,7 +73,7 @@ class ItemStructurizer(val items: List<SugarFormatAst.IndentItem>) {
       return siblings
     }
 
-    fun objChildrenOfFirst(): List<Range> {
+    fun childrenOfFirst(): List<Range> {
       check(!isSingular)
       val childIndent = items[start + 1].indent
       var lastIdx = start + 1
