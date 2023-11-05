@@ -11,7 +11,7 @@ object SugarFormatParser {
   val durationParser =
     MilestoneGroupParserLoader.loadParserFromResource("/duration-mg2-parserdata.pb")
 
-  fun parse(sourceText: String): List<SugarFormatAst.Item> {
+  fun parse(sourceText: String): List<SugarFormatAst.IndentItem> {
     val parseResult = parser.parse(sourceText)
     return SugarFormatAst(sourceText, parser.kernelsHistory(parseResult)).matchStart()
   }

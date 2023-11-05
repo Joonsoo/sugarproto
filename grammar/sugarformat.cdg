@@ -1,10 +1,13 @@
-Items = WS2 (Item WS1 Comment? EOL $0)*
-Item: Item = SingleItem | ListValueItem | ListFieldItem | MapItem
+Items = WS2 (IndentItem WS1 Comment? EOL $0)*
+IndentItem = WS1 Item {IndentItem(indent=str($0), item=$1)}
 
-SingleItem = WS1 Name WS1 ItemValue {SingleItem(indent=str($0), key=$1, value=$3)}
-ListValueItem = WS1 '-' WS1 Value {ListValueItem(indent=str($0), value=$3)}
-ListFieldItem = WS1 '-' WS1 Name WS1 ItemValue {ListFieldItem(indent=str($0), name=$3, value=$5)}
-MapItem = WS1 KeyValue WS1 ItemValue
+Item: Item = SingleItem | ListItem | MapItem
+
+SingleItem = Name WS1 ItemValue {SingleItem(key=$0, value=$2)}
+ListItem: ListItem = ListValueItem | ListFieldItem
+ListValueItem = '-' WS1 Value {ListValueItem(value=$2)}
+ListFieldItem = '-' WS1 Name WS1 ItemValue {ListFieldItem(name=$2, value=$4)}
+MapItem = KeyValue WS1 ItemValue {MapItem(key=$0, value=$2)}
 
 
 ItemValue: ItemValue = "::" {ObjectHeader()}

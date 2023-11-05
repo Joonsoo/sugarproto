@@ -21,6 +21,7 @@ class SugarFormatTest {
     val parsed = SugarFormatParser.parse(source)
 
     println(parsed)
+    SugarFormat.Parser(ItemStructurizer(parsed)).test()
   }
 
   @Test
