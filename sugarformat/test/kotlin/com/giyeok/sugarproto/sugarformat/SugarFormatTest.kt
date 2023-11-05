@@ -8,7 +8,7 @@ class SugarFormatTest {
   @Test
   fun test() {
     val source = """
-      hello::
+      hello:
         world: "message"
       expire: "3h"
       numberValue: 123
@@ -21,7 +21,6 @@ class SugarFormatTest {
     val parsed = SugarFormatParser.parse(source)
 
     println(parsed)
-    SugarFormat.Parser(ItemStructurizer(parsed)).test()
   }
 
   @Test
@@ -29,23 +28,23 @@ class SugarFormatTest {
     val source = """
       hello: "good"
       hello: "message"
-      world::
+      world:
         a: "abc"
         b: "def"
-        c:: 
+        c: 
           e: "xyz"
-        d::
+        d:
           e: "asdf"
-        d::
+        d:
           e: "qwer"
-      world::
+      world:
         a: "abc"
         b: "def"
-        c:: 
+        c: 
           e: "xyz"
-        d::
+        d:
           e: "asdf"
-        d::
+        d:
           e: "qwer"
     """.trimIndent()
 
@@ -86,17 +85,17 @@ class SugarFormatTest {
   @Test
   fun testMaps() {
     val source = """
-      myMap{}
-        "simple1"::
+      myMap:
+        "simple1":
           a: "hello"
           b: "bar"
         "simple2": { a: "foo" b: "bar" c: "foo" "bar" }
-        "simple3"[]
+        "simple3":
           - 123
           - 456
-          - good[]
+          - good:
             - hello: "123"
-        "simple4"{}
+        "simple4":
           "simple4-1": "hello"
     """.trimIndent()
 
@@ -111,9 +110,9 @@ class SugarFormatTest {
     val source = """
       threadCounts: 8
       minLogLevel: INFO
-      targetValueExpireTime: d"1h"
-      pluginConfigs{}
-        "com.giyeok.bibix.prelude:git"::
+      targetValueExpireTime: 1h
+      pluginConfigs:
+        "com.giyeok.bibix.prelude:git":
           expireTime: "30m"
     """.trimIndent()
 
@@ -133,9 +132,10 @@ class SugarFormatTest {
       
         # empty line with comment
       
-      targetValueExpireTime: d"1h"
-      pluginConfigs{}
-        "com.giyeok.bibix.prelude:git"::  # another comment
+      targetValueExpireTime: 1h 30m
+      baseTime: 2023-11-12T00:00:00Z
+      pluginConfigs:
+        "com.giyeok.bibix.prelude:git":  # another comment
     """.trimIndent()
 
     println(source)

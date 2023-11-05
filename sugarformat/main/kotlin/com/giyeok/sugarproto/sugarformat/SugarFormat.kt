@@ -5,18 +5,17 @@ import com.giyeok.sugarproto.SugarFormatAst
 object SugarFormat {
   class Parser(val struct: ItemStructurizer) {
     fun test() {
-      struct.findSiblingsOfFirst()
+      val fields = struct.all.siblingsOfFirst()
+      println(fields)
+      val children = fields.first().objChildrenOfFirst()
+      println(children)
+      val listChildren = fields[6].listChildrenOfFirst()
+      println(listChildren)
     }
   }
 }
 
-class ItemStructurizer(
-  val items: List<SugarFormatAst.IndentItem>,
-  val start: Int,
-  val end: Int
-) {
-  constructor(items: List<SugarFormatAst.IndentItem>): this(items, 0, items.size)
-
+class ItemStructurizer(val items: List<SugarFormatAst.IndentItem>) {
   fun checkIndent(checker: Boolean, item: SugarFormatAst.IndentItem) {
     if (!checker) {
       // TODO improve message
@@ -24,34 +23,62 @@ class ItemStructurizer(
     }
   }
 
-  fun findSiblingsOfFirst(): List<ItemStructurizer> {
-    val indent = items[start].indent
-    var lastIdx = 0
-    val siblings = mutableListOf<ItemStructurizer>()
-    (start + 1 until end).forEach { index ->
-      checkIndent(items[index].indent.startsWith(indent), items[index])
-      if (items[index].indent == indent) {
-        siblings.add(ItemStructurizer(items, lastIdx, index))
-        lastIdx = index
+  val all = Range(0, items.size)
+
+  inner class Range(val start: Int, val end: Int) {
+    override fun toString(): String = "[$start..${end - 1}]"
+
+    val isSingular: Boolean get() = start + 1 == end
+
+    val first: SugarFormatAst.Item get() = items[start].item
+
+    fun siblingsOfFirst(): List<Range> {
+      val indent = items[start].indent
+      var lastIdx = start
+      val siblings = mutableListOf<Range>()
+      (start + 1 until end).forEach { index ->
+        checkIndent(items[index].indent.startsWith(indent), items[index])
+        if (items[index].indent == indent && items[index].item !is SugarFormatAst.ListItem) {
+          siblings.add(Range(lastIdx, index))
+          lastIdx = index
+        }
       }
+      siblings.add(Range(lastIdx, end))
+      return siblings
     }
-    return siblings
-  }
 
-  // list head가 headIdx 위치에 들어있을 때, 해당 리스트의 아이템에 해당되는 것들의 위치를 반환
-  // 반환되는 위치의 start 위치에는 ListItem 이 들어있어야 한다
-  fun findListElemsFrom(headIdx: Int): List<ItemStructurizer> {
-    TODO()
-  }
+    fun objChildrenOfFirst(): List<Range> {
+      check(!isSingular)
+      val childIndent = items[start + 1].indent
+      var lastIdx = start + 1
+      val siblings = mutableListOf<Range>()
+      (start + 2 until end).forEach { index ->
+        checkIndent(items[index].indent.startsWith(childIndent), items[index])
+        if (items[index].indent == childIndent) {
+          check(items[index].item !is SugarFormatAst.ListItem)
+          siblings.add(Range(lastIdx, index))
+          lastIdx = index
+        }
+      }
+      siblings.add(Range(lastIdx, end))
+      return siblings
+    }
 
-  // map head가 headIdx 위치에 들어있을 때, 해당 map의 key value pair에 해당되는 것들의 위치를 반환
-  // 반환되는 위치의 start 위치에는 MapItem 이 들어있어야 한다
-  fun findObjectElemsFrom(headIdx: Int): List<ItemStructurizer> {
-    TODO()
-  }
-
-  // object head가 headIdx 위치에 들어있을 때, 해당 object의 field들에 해당되는 것들의 위치를 반환
-  fun findFieldsFrom(headIdx: Int): List<ItemStructurizer> {
-    TODO()
+    fun listChildrenOfFirst(): List<Range> {
+      check(!isSingular)
+      val childIndent = items[start + 1].indent
+      var lastIdx = start + 1
+      val siblings = mutableListOf<Range>()
+      (start + 2 until end).forEach { index ->
+        checkIndent(items[index].indent.startsWith(childIndent), items[index])
+        if (items[index].indent == childIndent) {
+          check(items[index].item is SugarFormatAst.ListItem)
+          siblings.add(Range(lastIdx, index))
+          lastIdx = index
+        }
+      }
+      siblings.add(Range(lastIdx, end))
+      return siblings
+    }
   }
 }
