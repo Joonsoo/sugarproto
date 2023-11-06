@@ -9,4 +9,15 @@ message Hello {
 
   google.protobuf.Timestamp timestamp = 3;
   google.protobuf.Duration duration = 4;
+
+  repeated google.protobuf.Timestamp rep_timestamp = 5;
+  repeated google.protobuf.Duration rep_duration = 6;
+
+  map<string, string> names_map = 7;
+  Greeting greeting = 8;
+  repeated Greeting greetings = 9;
+}
+
+message Greeting {
+  string greeting = 1;
 }

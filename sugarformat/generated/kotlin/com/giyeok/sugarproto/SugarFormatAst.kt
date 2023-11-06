@@ -32,7 +32,7 @@ data class Header(
 sealed interface Timezone: AstNode
 
 data class ListFieldItem(
-  val name: ItemPath,
+  val key: ItemPath,
   val value: ItemValue,
   override val nodeId: Int,
   override val start: Int,
@@ -133,8 +133,7 @@ data class IndentItem(
 ): AstNode
 
 data class ItemPath(
-  val first: KeyValue,
-  val access: List<KeyValue>,
+  val path: List<KeyValue>,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
@@ -342,7 +341,7 @@ val var27 = getSequenceElems(history, 112, listOf(19,96,19,41), k.first, k.secon
 val var28 = matchKeyValue(var27[3].first, var27[3].second)
 var28
 }
-val var29 = ItemPath(var25, var26, nextId(), beginGen, endGen)
+val var29 = ItemPath(listOf(var25) + var26, nextId(), beginGen, endGen)
 return var29
 }
 

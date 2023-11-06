@@ -3,11 +3,14 @@ package com.giyeok.sugarproto.sugarformat
 import com.giyeok.sugarproto.SugarFormatAst
 import com.google.protobuf.Descriptors.FieldDescriptor
 import com.google.protobuf.Message
+import com.google.protobuf.TextFormat
+import com.google.protobuf.util.JsonFormat
 
 sealed interface BuilderSetter {
   companion object {
     fun lookup(bs: BuilderSetter, path: SugarFormatAst.ItemPath): BuilderSetter =
-      lookup(bs, path.first, path.access)
+      // lookup(bs, path.first, path.access)
+      TODO()
 
     fun lookup(
       bs: BuilderSetter,
@@ -24,6 +27,7 @@ sealed interface BuilderSetter {
           when (first) {
             is SugarFormatAst.NameKey -> {
               val field = typeDesc.findFieldByName(first.name)
+              check(field != null) { "Field not found: ${first.name}" }
               when {
                 field.isRepeated ->
                   if (field.type == FieldDescriptor.Type.MESSAGE) {
@@ -110,14 +114,23 @@ sealed interface BuilderSetter {
       TODO()
     }
 
-    fun addValueBuilder(): MessageBuilder =
-      MessageBuilder(builder.getRepeatedFieldBuilder(field, builder.getRepeatedFieldCount(field)))
+    fun addValueBuilder(): MessageBuilder {
+      // TODO
+      val emptyValue = builder.newBuilderForField(field)
+      val index = builder.getRepeatedFieldCount(field)
+      builder.addRepeatedField(field, emptyValue.build())
+      val valueBuilder = builder.getRepeatedFieldBuilder(field, index)
+      // MessageBuilder(builder.getRepeatedFieldBuilder(field, builder.getRepeatedFieldCount(field)))
+      return MessageBuilder(valueBuilder)
+    }
   }
+
+  sealed interface MapBuilder: BuilderSetter
 
   data class ScalarMapBuilder(
     val builder: Message.Builder,
     val field: FieldDescriptor
-  ): BuilderSetter {
+  ): MapBuilder {
     fun put(key: Any, value: Any) {
       // builder.addRepeatedField(field)
     }
@@ -126,7 +139,7 @@ sealed interface BuilderSetter {
   data class MessageMapBuilder(
     val builder: Message.Builder,
     val field: FieldDescriptor
-  ): BuilderSetter {
+  ): MapBuilder {
     fun put(key: Any, value: Any) {
       // builder.addRepeatedField(field)
     }

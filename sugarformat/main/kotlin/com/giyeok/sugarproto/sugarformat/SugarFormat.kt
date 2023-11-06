@@ -1,25 +1,170 @@
 package com.giyeok.sugarproto.sugarformat
 
 import com.giyeok.sugarproto.SugarFormatAst
-import com.google.protobuf.Message
+import com.google.protobuf.*
+import com.google.protobuf.Message.Builder
 
 object SugarFormat {
+  fun print(message: MessageOrBuilder): String {
+    val writer = CodeWriter()
+    Printer(writer).print(message)
+    return writer.toString()
+  }
+
+  class Printer(val writer: CodeWriter) {
+    fun print(message: MessageOrBuilder) {
+      message.allFields.forEach { (field, value) ->
+        when {
+          field.isMapField -> TODO()
+
+          field.isRepeated -> {
+            writer.writeLine("${field.name}:")
+            if (field.type == Descriptors.FieldDescriptor.Type.MESSAGE) {
+              when (field.messageType.fullName) {
+                "google.protobuf.Timestamp" -> {
+                  val coll = value as List<*>
+                  coll.forEach { elemValue ->
+                    check(elemValue is Timestamp)
+                    writer.writeLine("- ${timestampStringOf(elemValue)}")
+                  }
+                }
+
+                "google.protobuf.Duration" -> {
+                  val coll = value as List<*>
+                  coll.forEach { elemValue ->
+                    val duration = elemValue as Duration
+                    writer.writeLine("- ${durationStringOf(duration)}")
+                  }
+                }
+
+                else -> {
+                  writer.indent {
+                    val coll = value as List<*>
+                    coll.forEach { elemValue ->
+                      check(elemValue is Message)
+                      // TODO elemValue의 첫번쨰 필드는 - 뒤에
+                      //   나머지 필드는 두칸 띄워서
+                      writer.writeLine("- TODO()")
+                    }
+                  }
+                }
+              }
+            } else {
+              check(value is Collection<*>)
+              value.forEach { elem ->
+                writer.writeLine("- ${printStringOf(field.type, elem!!)}")
+              }
+            }
+          }
+
+          else -> {
+            if (field.type == Descriptors.FieldDescriptor.Type.MESSAGE) {
+              when (field.messageType.fullName) {
+                "google.protobuf.Timestamp" -> {
+                  val ts = value as Timestamp
+                  writer.writeLine("${field.name}: ${timestampStringOf(ts)}")
+                }
+
+                "google.protobuf.Duration" -> {
+                  val duration = value as Duration
+                  writer.writeLine("${field.name}: ${durationStringOf(duration)}")
+                }
+
+                else -> {
+                  writer.writeLine("${field.name}:")
+                  writer.indent {
+                    check(value is Message)
+                    print(value)
+                  }
+                }
+              }
+            } else {
+              val valueString = printStringOf(field.type, value)
+              writer.writeLine("${field.name}: $valueString")
+            }
+          }
+        }
+      }
+    }
+  }
+
   fun <T: Message.Builder> merge(sufText: String, builder: T): T {
     val parsed = SugarFormatParser.parse(sufText)
-    Parser(ItemStructurizer(parsed)).merge(builder)
+    Parser(ItemStructure(parsed)).merge(builder)
     return builder
   }
 
-  class Parser(val struct: ItemStructurizer) {
-    fun merge(builder: Message.Builder) {
+  class Parser(val struct: ItemStructure) {
+    fun merge(builder: Builder) {
       val siblings = struct.all.siblingsOfFirst()
       siblings.forEach { rootField ->
         mergeField(BuilderSetter.MessageBuilder(builder), rootField)
       }
     }
 
-    private fun mergeField(bs: BuilderSetter, field: ItemStructurizer.Range) {
-      val head = field.first
+    fun setScalarValue(bs: BuilderSetter, value: SugarFormatAst.ScalarValue) {
+      when (value) {
+        is SugarFormatAst.NameValue -> {
+          check(bs is BuilderSetter.ScalarSetter)
+          bs.setScalarValue(value)
+        }
+
+        is SugarFormatAst.StringValue -> {
+          check(bs is BuilderSetter.ScalarSetter)
+          bs.setScalarValue(value)
+        }
+
+        is SugarFormatAst.DecValue -> TODO()
+        is SugarFormatAst.HexValue -> TODO()
+        is SugarFormatAst.OctValue -> TODO()
+
+        is SugarFormatAst.TimestampValue -> {
+          check(bs !is BuilderSetter.RepeatedBuilder && bs !is BuilderSetter.MapBuilder)
+          when (bs) {
+            is BuilderSetter.ScalarSetter -> {
+              // TODO bs의 타입에 따라 string 등으로 변환해서 넣기
+              TODO()
+            }
+
+            is BuilderSetter.MessageBuilder -> {
+              check(bs.builder.descriptorForType.fullName == "google.protobuf.Timestamp")
+              val seconds = bs.builder.descriptorForType.findFieldByName("seconds")
+              val nanos = bs.builder.descriptorForType.findFieldByName("nanos")
+              val timestamp = value.toProtoValue()
+              bs.builder.setField(seconds, timestamp.seconds)
+              bs.builder.setField(nanos, timestamp.nanos)
+            }
+
+            is BuilderSetter.RepeatedBuilder, is BuilderSetter.MapBuilder ->
+              throw IllegalStateException()
+          }
+        }
+
+        is SugarFormatAst.DurationValue -> {
+          when (bs) {
+            is BuilderSetter.ScalarSetter -> {
+              // TODO bs의 타입에 따라 string 등으로 변환해서 넣기
+              TODO()
+            }
+
+            is BuilderSetter.MessageBuilder -> {
+              check(bs.builder.descriptorForType.fullName == "google.protobuf.Duration")
+              val seconds = bs.builder.descriptorForType.findFieldByName("seconds")
+              val nanos = bs.builder.descriptorForType.findFieldByName("nanos")
+              val duration = value.toProtoValue()
+              bs.builder.setField(seconds, duration.seconds)
+              bs.builder.setField(nanos, duration.nanos)
+            }
+
+            is BuilderSetter.RepeatedBuilder, is BuilderSetter.MapBuilder ->
+              throw IllegalStateException()
+          }
+        }
+      }
+    }
+
+    private fun mergeField(bs: BuilderSetter, field: ItemStructure.Range) {
+      val head = field.head
       check(head is SugarFormatAst.SingleItem)
       val path = head.key
       when {
@@ -27,8 +172,7 @@ object SugarFormat {
           when (val value = head.value) {
             is SugarFormatAst.ScalarValue -> {
               val setter = BuilderSetter.lookup(bs, path)
-              check(setter is BuilderSetter.ScalarSetter)
-              setter.setScalarValue(value)
+              setScalarValue(setter, value)
             }
 
             is SugarFormatAst.RepeatedValue -> {
@@ -54,7 +198,7 @@ object SugarFormat {
           when (setter) {
             is BuilderSetter.ScalarRepeatedBuilder -> {
               children.forEach { child ->
-                val item = child.first
+                val item = child.head
                 check(item is SugarFormatAst.ListValueItem)
                 setter.addRepeatedValue(item.value)
               }
@@ -117,71 +261,3 @@ object SugarFormat {
   }
 }
 
-class ItemStructurizer(val items: List<SugarFormatAst.IndentItem>) {
-  fun checkIndent(checker: Boolean, item: SugarFormatAst.IndentItem) {
-    if (!checker) {
-      // TODO improve message
-      throw IllegalStateException("Invalid indent at $item")
-    }
-  }
-
-  val all = Range(0, items.size)
-
-  inner class Range(val start: Int, val end: Int) {
-    override fun toString(): String = "[$start..${end - 1}]"
-
-    val isSingular: Boolean get() = start + 1 == end
-    val isRepeated: Boolean get() = !isSingular && items[start + 1].item is SugarFormatAst.ListItem
-
-    val first: SugarFormatAst.Item get() = items[start].item
-
-    fun siblingsOfFirst(): List<Range> {
-      val indent = items[start].indent
-      var lastIdx = start
-      val siblings = mutableListOf<Range>()
-      (start + 1 until end).forEach { index ->
-        checkIndent(items[index].indent.startsWith(indent), items[index])
-        if (items[index].indent == indent && items[index].item !is SugarFormatAst.ListItem) {
-          siblings.add(Range(lastIdx, index))
-          lastIdx = index
-        }
-      }
-      siblings.add(Range(lastIdx, end))
-      return siblings
-    }
-
-    fun childrenOfFirst(): List<Range> {
-      check(!isSingular)
-      val childIndent = items[start + 1].indent
-      var lastIdx = start + 1
-      val siblings = mutableListOf<Range>()
-      (start + 2 until end).forEach { index ->
-        checkIndent(items[index].indent.startsWith(childIndent), items[index])
-        if (items[index].indent == childIndent) {
-          check(items[index].item !is SugarFormatAst.ListItem)
-          siblings.add(Range(lastIdx, index))
-          lastIdx = index
-        }
-      }
-      siblings.add(Range(lastIdx, end))
-      return siblings
-    }
-
-    fun listChildrenOfFirst(): List<Range> {
-      check(!isSingular)
-      val childIndent = items[start + 1].indent
-      var lastIdx = start + 1
-      val siblings = mutableListOf<Range>()
-      (start + 2 until end).forEach { index ->
-        checkIndent(items[index].indent.startsWith(childIndent), items[index])
-        if (items[index].indent == childIndent) {
-          check(items[index].item is SugarFormatAst.ListItem)
-          siblings.add(Range(lastIdx, index))
-          lastIdx = index
-        }
-      }
-      siblings.add(Range(lastIdx, end))
-      return siblings
-    }
-  }
-}

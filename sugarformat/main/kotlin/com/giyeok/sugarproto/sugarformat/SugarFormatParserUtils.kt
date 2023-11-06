@@ -2,8 +2,15 @@ package com.giyeok.sugarproto.sugarformat
 
 import com.giyeok.sugarproto.SugarFormatAst
 import com.google.protobuf.Descriptors
+import com.google.protobuf.Descriptors.FieldDescriptor
+import com.google.protobuf.Duration
 import com.google.protobuf.Message
+import com.google.protobuf.Timestamp
 import java.lang.StringBuilder
+import java.time.Instant
+import java.time.ZoneOffset
+import java.util.Calendar
+import java.util.TimeZone
 
 fun setFieldValue(
   builder: Message.Builder,
@@ -108,7 +115,7 @@ private fun doubleValueFrom(
   TODO("Not yet implemented")
 }
 
-private fun stringValueFrom(value: SugarFormatAst.StringValue): String = when (value.type) {
+fun stringValueFrom(value: SugarFormatAst.StringValue): String = when (value.type) {
   SugarFormatAst.StringTypeAnnot.Base64 -> TODO()
   SugarFormatAst.StringTypeAnnot.Hex -> TODO()
   null -> {
@@ -126,4 +133,108 @@ private fun stringValueFrom(value: SugarFormatAst.StringValue): String = when (v
     }
     stringBuilder.toString()
   }
+}
+
+fun SugarFormatAst.TimestampValue.toProtoValue(): Timestamp {
+  val cal = Calendar.getInstance()
+  cal.timeZone = TimeZone.getTimeZone("UTC")
+  cal.set(
+    this.date.year.toInt(), this.date.month.toInt() - 1, this.date.day.toInt(),
+    this.time?.hour?.toInt() ?: 0, this.time?.minute?.toInt() ?: 0, this.time?.second?.toInt() ?: 0
+  )
+  val timestamp = Timestamp.newBuilder()
+  timestamp.seconds = cal.toInstant().epochSecond
+  this.time?.secondFrac?.let { secondFrac ->
+    timestamp.nanos = secondFrac.padEnd(9, '0').toInt()
+  }
+  return timestamp.build()
+}
+
+fun SugarFormatAst.DurationValue.toProtoValue(): Duration {
+  val duration = Duration.newBuilder()
+  duration.seconds = (this.days?.toLong() ?: 0) * (24 * 3600) +
+    (this.hours?.toInt() ?: 0) * 3600 +
+    (this.minutes?.toInt() ?: 0) * 60 +
+    (this.seconds?.integral?.toInt() ?: 0)
+  this.seconds?.frac?.let { frac ->
+    duration.nanos = frac.padEnd(9, '0').toInt()
+  }
+  return duration.build()
+}
+
+fun String.canOmitQuotes(): Boolean {
+  if (!this.all { chr -> chr in '0'..'9' || chr in 'a'..'z' || chr in 'A'..'Z' || chr == '_' }) {
+    return false
+  }
+  if (this.first() in '0'..'9') {
+    return false
+  }
+  return true
+}
+
+fun String.escape(): String = this
+
+fun printStringOf(type: FieldDescriptor.Type, value: Any): String = when (type) {
+  Descriptors.FieldDescriptor.Type.STRING -> {
+    value as String
+    if (value.canOmitQuotes()) value else "\"${value.escape()}\""
+  }
+
+  Descriptors.FieldDescriptor.Type.DOUBLE -> TODO()
+  Descriptors.FieldDescriptor.Type.FLOAT -> TODO()
+  Descriptors.FieldDescriptor.Type.INT64 -> TODO()
+  Descriptors.FieldDescriptor.Type.UINT64 -> TODO()
+  Descriptors.FieldDescriptor.Type.INT32 -> TODO()
+  Descriptors.FieldDescriptor.Type.FIXED64 -> TODO()
+  Descriptors.FieldDescriptor.Type.FIXED32 -> TODO()
+  Descriptors.FieldDescriptor.Type.BOOL -> TODO()
+  Descriptors.FieldDescriptor.Type.GROUP -> TODO()
+  Descriptors.FieldDescriptor.Type.MESSAGE -> TODO()
+  Descriptors.FieldDescriptor.Type.BYTES -> TODO()
+  Descriptors.FieldDescriptor.Type.UINT32 -> TODO()
+  Descriptors.FieldDescriptor.Type.ENUM -> TODO()
+  Descriptors.FieldDescriptor.Type.SFIXED32 -> TODO()
+  Descriptors.FieldDescriptor.Type.SFIXED64 -> TODO()
+  Descriptors.FieldDescriptor.Type.SINT32 -> TODO()
+  Descriptors.FieldDescriptor.Type.SINT64 -> TODO()
+}
+
+fun timestampStringOf(ts: Timestamp): String {
+  val instant = Instant.ofEpochSecond(ts.seconds, ts.nanos.toLong())
+  return instant.atOffset(ZoneOffset.UTC).toString()
+}
+
+fun durationStringOf(dur: Duration): String {
+  var leftSeconds = dur.seconds
+  val builder = StringBuilder()
+  val days = leftSeconds / (24 * 3600)
+  if (days > 0) {
+    builder.append("${days}d")
+    leftSeconds -= 24 * 3600 * days
+  }
+  val hours = leftSeconds / 3600
+  if (hours > 0) {
+    builder.append("${hours}h")
+    leftSeconds -= 3600 * hours
+  }
+  val mins = leftSeconds / 60
+  if (mins > 0) {
+    builder.append("${mins}m")
+    leftSeconds -= 60 * mins
+  }
+  if (leftSeconds > 0) {
+    builder.append(leftSeconds)
+    if (dur.nanos == 0) {
+      builder.append("s")
+    }
+  } else if (dur.nanos != 0) {
+    builder.append("0")
+  }
+  if (dur.nanos != 0) {
+    val fracVal = dur.nanos.toString().padStart(9, '0').trimEnd { it == '0' }
+    builder.append(".")
+    builder.append(fracVal)
+    builder.append("s")
+  }
+  return builder.toString()
 }

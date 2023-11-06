@@ -142,7 +142,10 @@ sugarformat {
 
   main = ktjvm.library(
     srcs = glob("sugarformat/main/kotlin/**/*.kt"),
-    deps = [parser.generated],
+    deps = [
+      parser.generated,
+      maven.artifact("com.google.protobuf", "protobuf-java-util", "3.25.0"),
+    ],
   )
 
   test = ktjvm.library(
@@ -150,7 +153,6 @@ sugarformat {
     deps = [
       main,
       ...testDeps,
-      maven.artifact("com.google.protobuf", "protobuf-java-util", "3.25.0"),
       testProto.javalib,
     ],
   )

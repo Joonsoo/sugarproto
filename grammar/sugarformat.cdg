@@ -6,10 +6,10 @@ Item: Item = SingleItem | ListItem
 SingleItem = ItemPath WS1 ItemValue {SingleItem(key=$0, value=$2)}
 ListItem: ListItem = ListValueItem | ListFieldItem
 ListValueItem = '-' WS1 Value {ListValueItem(value=$2)}
-ListFieldItem = '-' WS1 ItemPath WS1 ItemValue {ListFieldItem(name=$2, value=$4)}
+ListFieldItem = '-' WS1 ItemPath WS1 ItemValue {ListFieldItem(key=$2, value=$4)}
 
 
-ItemPath = KeyValue (WS1 '.' WS1 KeyValue)* {ItemPath(first=$0, access=$1)}
+ItemPath = KeyValue (WS1 '.' WS1 KeyValue)* {ItemPath(path=[$0] + $1)}
 
 ItemValue: ItemValue = ":" {Header()}
   | ':' WS1 Value

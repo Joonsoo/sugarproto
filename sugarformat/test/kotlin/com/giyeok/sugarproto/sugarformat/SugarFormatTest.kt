@@ -10,53 +10,44 @@ class SugarFormatTest {
       hello:
       - "world"
       - "foo"
-      - "bar"
-      hello: [abc, def]
+      - "bar good"
+      # hello: [abc, def]
+      timestamp: 2023-11-06T09:15Z
+      duration: 30h30.00144s
+
+      rep_timestamp:
+      - 2023-11-06T09:15Z
+      - 2023-11-06T09:15Z
+      - 2023-11-06T09:15Z
+      - 2023-11-06T09:15Z
+      rep_duration:
+      - 30h30.00144s
+      - 60h30.00144s
+      - 90h30.00144s
       
-      timestamp: 2023-11-06T09:15
-      duration: 3h
+      #names_map.hello: abc
+      greeting.greeting: "Hello!"
+      greetings:
+      - greeting: "안녕하세요"
+      - greeting: "곤니찌와"
+      - greeting: "니하오"
     """.trimIndent()
     println(source)
     println()
-    println(SugarFormat.merge(source, Test1.Hello.newBuilder()).build())
-  }
 
-  @Test
-  fun test123() {
-    val source = """
-      hello:
-        world: "message"
-        foo:
-          bar: foofoo
-      expire: "3h"
-      numberValue: 123
-      numberValue: 0123
-      numberValue: 0x123
-      enumValue: INFO
-      list:
-      - "hello"
-      - "world"
-      dict:
-        "key1": "value1"
-        "key2":
-          value1: 123
-        "key3".value1: 234
-      logBlocks:
-      - level: INFO
-        timestamp: 2023-11-23T10:00:22
-        message: "hello!"
-      - level: WARN
-        timestamp: 2023-11-23T10:00:30
-        message: "world!\n"
-                 "foo!\n"
-                 "bar!"
-      - level: ERROR
-        timestamp: 2023-11-23T10:02:01
-        message: "Hello!"
-    """.trimIndent()
+    val items = SugarFormatParser.parse(source)
+    val parsed = SugarFormatParserImpl(ItemStructure(items))
+      .parse(Test1.Hello.getDescriptor())
+    // println(parsed)
 
-    println(source)
-    val parsed = SugarFormatParser.parse(source)
-    SugarFormat.Parser(ItemStructurizer(parsed)).test()
+    println("=====")
+
+    val builder = Test1.Hello.newBuilder()
+    parsed.mergeTo(builder)
+    println(builder.build())
+
+    println("=====")
+
+    println(SugarFormat.print(builder))
   }
 }
