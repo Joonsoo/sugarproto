@@ -11,9 +11,14 @@ class SugarFormatTest {
       - "world"
       - "foo"
       - "bar"
+      hello: [abc, def]
+      
+      timestamp: 2023-11-06T09:15
+      duration: 3h
     """.trimIndent()
     println(source)
-    SugarFormat.merge(source, Test1.Hello.newBuilder())
+    println()
+    println(SugarFormat.merge(source, Test1.Hello.newBuilder()).build())
   }
 
   @Test

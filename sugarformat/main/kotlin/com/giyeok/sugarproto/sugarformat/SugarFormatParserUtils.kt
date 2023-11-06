@@ -3,6 +3,7 @@ package com.giyeok.sugarproto.sugarformat
 import com.giyeok.sugarproto.SugarFormatAst
 import com.google.protobuf.Descriptors
 import com.google.protobuf.Message
+import java.lang.StringBuilder
 
 fun setFieldValue(
   builder: Message.Builder,
@@ -15,7 +16,7 @@ fun setFieldValue(
   } else {
     val fieldDesc = when (first) {
       is SugarFormatAst.NameKey ->
-        builder.descriptorForType.fields.find { it.name == first.name }
+        builder.descriptorForType.findFieldByName(first.name)
 
       is SugarFormatAst.DecValue -> TODO()
       is SugarFormatAst.HexValue -> TODO()
@@ -49,6 +50,7 @@ fun SugarFormatAst.ScalarValue.toProtoValue(type: Descriptors.FieldDescriptor.Ty
       is SugarFormatAst.DecValue -> {
         check(this.frac == null)
         check(this.exponent == null)
+        // TODO sgn
         this.integral.toInt()
       }
 
@@ -57,6 +59,7 @@ fun SugarFormatAst.ScalarValue.toProtoValue(type: Descriptors.FieldDescriptor.Ty
         this.value.toInt(16)
 
       is SugarFormatAst.OctValue ->
+        // TODO sgn
         this.value.toInt(8)
 
       is SugarFormatAst.StringValue -> stringValueFrom(this).toInt()
@@ -105,21 +108,22 @@ private fun doubleValueFrom(
   TODO("Not yet implemented")
 }
 
-private fun stringValueFrom(value: SugarFormatAst.StringValue): String {
-  TODO()
-}
-
-fun lookupBuilder(builder: Message.Builder, path: SugarFormatAst.ItemPath) {
-  when (val first = path.first) {
-    is SugarFormatAst.NameKey -> {
-      val fieldDesc = builder.descriptorForType.fields.find { it.name == first.name }
-      println(fieldDesc)
-      TODO()
+private fun stringValueFrom(value: SugarFormatAst.StringValue): String = when (value.type) {
+  SugarFormatAst.StringTypeAnnot.Base64 -> TODO()
+  SugarFormatAst.StringTypeAnnot.Hex -> TODO()
+  null -> {
+    val stringBuilder = StringBuilder()
+    value.fracs.forEach { frac ->
+      frac.elems.forEach { elem ->
+        when (elem) {
+          is SugarFormatAst.PlainText -> stringBuilder.append(elem.value)
+          is SugarFormatAst.EscapeCode -> TODO()
+          is SugarFormatAst.HexCode -> TODO()
+          is SugarFormatAst.OctCode -> TODO()
+          is SugarFormatAst.Unicode -> TODO()
+        }
+      }
     }
-
-    is SugarFormatAst.StringFrac -> TODO()
-    is SugarFormatAst.DecValue -> TODO()
-    is SugarFormatAst.HexValue -> TODO()
-    is SugarFormatAst.OctValue -> TODO()
+    stringBuilder.toString()
   }
 }

@@ -1,6 +1,12 @@
 syntax = "proto3";
 
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+
 message Hello {
   string world = 1;
   repeated string hello = 2;
+
+  google.protobuf.Timestamp timestamp = 3;
+  google.protobuf.Duration duration = 4;
 }
