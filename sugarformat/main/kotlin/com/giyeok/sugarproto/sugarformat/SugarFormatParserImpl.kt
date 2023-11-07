@@ -49,7 +49,10 @@ class SugarFormatParserImpl(val st: ItemStructure) {
           }
         }
 
-        is SugarFormatAst.ListFieldItem -> TODO()
+        is SugarFormatAst.ListFieldItem -> {
+          TODO()
+        }
+
         is SugarFormatAst.ListValueItem -> throw IllegalStateException()
       }
     }
@@ -57,17 +60,16 @@ class SugarFormatParserImpl(val st: ItemStructure) {
 
   fun parseRepeated(
     builder: ParsedValueBuilder.RepeatedValueBuilder,
-    siblings: List<ItemStructure.Range>
+    elems: List<ItemStructure.Range>
   ) {
-    siblings.forEach { sibling ->
+    elems.forEach { elem ->
       val elemBuilder = builder.addElemBuilder()
-      when (val head = sibling.head) {
+      when (val head = elem.head) {
         is SugarFormatAst.SingleItem -> {
           throw IllegalStateException()
         }
 
         is SugarFormatAst.ListFieldItem -> {
-          // TODO sibling.head보다는 indent가 들어가 있는 것들 찾기
           val elemFieldBuilder = elemBuilder.followPath(head.key.path)
           when (val value = head.value) {
             is SugarFormatAst.Header -> {
@@ -84,6 +86,11 @@ class SugarFormatParserImpl(val st: ItemStructure) {
             is SugarFormatAst.Value ->
               setFieldValue(elemFieldBuilder, value)
           }
+
+          check(elemBuilder is ParsedValueBuilder.MessageValueBuilder)
+          // sibling.head보다는 indent가 들어가 있는 것들 찾기
+          val elemFields = elem.siblingsOfFirstListField()
+          parseMessage(elemBuilder, elemFields.drop(1))
         }
 
         is SugarFormatAst.ListValueItem ->
@@ -103,14 +110,68 @@ class SugarFormatParserImpl(val st: ItemStructure) {
           }
 
           is SugarFormatAst.NameValue -> {
-            check(fieldBuilder.fieldDesc.type == FieldDescriptor.Type.STRING)
-            fieldBuilder.value = value.value
+            when (fieldBuilder.fieldDesc.type) {
+              FieldDescriptor.Type.STRING -> {
+                fieldBuilder.value = value.value
+              }
+
+              FieldDescriptor.Type.ENUM -> {
+                val enumType = fieldBuilder.fieldDesc.enumType
+                val enumValue = enumType.values.find { it.name == value.value }
+                checkNotNull(enumValue) { "Invalid enum value: ${value.value}" }
+                fieldBuilder.value = enumValue
+              }
+
+              FieldDescriptor.Type.DOUBLE -> TODO()
+              FieldDescriptor.Type.FLOAT -> TODO()
+              FieldDescriptor.Type.INT64 -> TODO()
+              FieldDescriptor.Type.UINT64 -> TODO()
+              FieldDescriptor.Type.INT32 -> TODO()
+              FieldDescriptor.Type.FIXED64 -> TODO()
+              FieldDescriptor.Type.FIXED32 -> TODO()
+              FieldDescriptor.Type.BOOL -> TODO()
+              FieldDescriptor.Type.GROUP -> TODO()
+              FieldDescriptor.Type.MESSAGE -> TODO()
+              FieldDescriptor.Type.BYTES -> TODO()
+              FieldDescriptor.Type.UINT32 -> TODO()
+              FieldDescriptor.Type.SFIXED32 -> TODO()
+              FieldDescriptor.Type.SFIXED64 -> TODO()
+              FieldDescriptor.Type.SINT32 -> TODO()
+              FieldDescriptor.Type.SINT64 -> TODO()
+            }
           }
 
           is SugarFormatAst.ObjectOrMapValue -> TODO()
           is SugarFormatAst.RepeatedValue -> TODO()
           is SugarFormatAst.DurationValue -> TODO()
-          is SugarFormatAst.DecValue -> TODO()
+          is SugarFormatAst.DecValue -> {
+            when (fieldBuilder.fieldDesc.type) {
+              FieldDescriptor.Type.INT32 -> {
+                // TODO sgn
+                check(value.frac == null && value.exponent == null)
+                fieldBuilder.value = value.integral.toInt()
+              }
+
+              FieldDescriptor.Type.INT64 -> TODO()
+              FieldDescriptor.Type.DOUBLE -> TODO()
+              FieldDescriptor.Type.FLOAT -> TODO()
+              FieldDescriptor.Type.UINT64 -> TODO()
+              FieldDescriptor.Type.FIXED64 -> TODO()
+              FieldDescriptor.Type.FIXED32 -> TODO()
+              FieldDescriptor.Type.BOOL -> TODO()
+              FieldDescriptor.Type.STRING -> TODO()
+              FieldDescriptor.Type.GROUP -> TODO()
+              FieldDescriptor.Type.MESSAGE -> TODO()
+              FieldDescriptor.Type.BYTES -> TODO()
+              FieldDescriptor.Type.UINT32 -> TODO()
+              FieldDescriptor.Type.ENUM -> TODO()
+              FieldDescriptor.Type.SFIXED32 -> TODO()
+              FieldDescriptor.Type.SFIXED64 -> TODO()
+              FieldDescriptor.Type.SINT32 -> TODO()
+              FieldDescriptor.Type.SINT64 -> TODO()
+            }
+          }
+
           is SugarFormatAst.HexValue -> TODO()
           is SugarFormatAst.OctValue -> TODO()
           is SugarFormatAst.TimestampValue -> TODO()

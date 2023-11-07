@@ -35,6 +35,24 @@ class ItemStructure(val items: List<SugarFormatAst.IndentItem>) {
       return siblings
     }
 
+    fun siblingsOfFirstListField(): List<Range> {
+      val head = items[start]
+      val headItem = head.item
+      check(headItem is SugarFormatAst.ListFieldItem)
+      val indent = head.indent + " " + headItem.innerIndent.drop(1)
+      var lastIdx = start
+      val siblings = mutableListOf<Range>()
+      (start + 1 until end).forEach { index ->
+        checkIndent(items[index].indent.startsWith(indent), items[index])
+        if (items[index].indent == indent && items[index].item !is SugarFormatAst.ListItem) {
+          siblings.add(Range(lastIdx, index))
+          lastIdx = index
+        }
+      }
+      siblings.add(Range(lastIdx, end))
+      return siblings
+    }
+
     fun childrenOfFirst(): List<Range> {
       check(!isSingular)
       val childIndent = items[start + 1].indent

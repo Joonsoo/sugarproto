@@ -20,4 +20,5 @@ message Hello {
 
 message Greeting {
   string greeting = 1;
+  string farewell = 2;
 }

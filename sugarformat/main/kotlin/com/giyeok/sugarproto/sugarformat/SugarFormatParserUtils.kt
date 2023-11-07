@@ -180,11 +180,14 @@ fun printStringOf(type: FieldDescriptor.Type, value: Any): String = when (type) 
     if (value.canOmitQuotes()) value else "\"${value.escape()}\""
   }
 
+  Descriptors.FieldDescriptor.Type.INT32 -> "$value"
+  Descriptors.FieldDescriptor.Type.INT64 -> "$value"
+
+  Descriptors.FieldDescriptor.Type.ENUM -> "$value"
+
   Descriptors.FieldDescriptor.Type.DOUBLE -> TODO()
   Descriptors.FieldDescriptor.Type.FLOAT -> TODO()
-  Descriptors.FieldDescriptor.Type.INT64 -> TODO()
   Descriptors.FieldDescriptor.Type.UINT64 -> TODO()
-  Descriptors.FieldDescriptor.Type.INT32 -> TODO()
   Descriptors.FieldDescriptor.Type.FIXED64 -> TODO()
   Descriptors.FieldDescriptor.Type.FIXED32 -> TODO()
   Descriptors.FieldDescriptor.Type.BOOL -> TODO()
@@ -192,7 +195,6 @@ fun printStringOf(type: FieldDescriptor.Type, value: Any): String = when (type) 
   Descriptors.FieldDescriptor.Type.MESSAGE -> TODO()
   Descriptors.FieldDescriptor.Type.BYTES -> TODO()
   Descriptors.FieldDescriptor.Type.UINT32 -> TODO()
-  Descriptors.FieldDescriptor.Type.ENUM -> TODO()
   Descriptors.FieldDescriptor.Type.SFIXED32 -> TODO()
   Descriptors.FieldDescriptor.Type.SFIXED64 -> TODO()
   Descriptors.FieldDescriptor.Type.SINT32 -> TODO()

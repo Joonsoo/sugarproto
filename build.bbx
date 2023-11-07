@@ -158,7 +158,7 @@ sugarformat {
   )
 
   testProto {
-    schema = protobuf.schema(glob("sugarformat/test/proto/*.proto"))
+    schema = protobuf.schema(glob("sugarformat/test/proto/**/*.proto"))
     protoJava = protobuf.java(schema)
 
     javalib = java.library(

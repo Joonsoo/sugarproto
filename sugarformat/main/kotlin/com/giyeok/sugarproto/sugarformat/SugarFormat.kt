@@ -2,6 +2,7 @@ package com.giyeok.sugarproto.sugarformat
 
 import com.giyeok.sugarproto.SugarFormatAst
 import com.google.protobuf.*
+import com.google.protobuf.Descriptors.FieldDescriptor
 import com.google.protobuf.Message.Builder
 
 object SugarFormat {
@@ -12,6 +13,10 @@ object SugarFormat {
   }
 
   class Printer(val writer: CodeWriter) {
+    fun printField(field: FieldDescriptor, value: Any) {
+
+    }
+
     fun print(message: MessageOrBuilder) {
       message.allFields.forEach { (field, value) ->
         when {
@@ -42,9 +47,13 @@ object SugarFormat {
                     val coll = value as List<*>
                     coll.forEach { elemValue ->
                       check(elemValue is Message)
+                      val entries = elemValue.allFields.entries.toList()
                       // TODO elemValue의 첫번쨰 필드는 - 뒤에
                       //   나머지 필드는 두칸 띄워서
-                      writer.writeLine("- TODO()")
+                      writer.writeLine("- ${entries.first()}")
+                      entries.drop(1).forEach { entry ->
+                        writer.writeLine("  $entry")
+                      }
                     }
                   }
                 }

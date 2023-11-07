@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+import "google/protobuf/duration.proto";
+
+message ServerConfig {
+  int32 port = 1;
+  string firebase_credential_file_path = 2;
+  int32 event_assigner_threads_count = 3;
+  DevDatabase dev_database = 4;
+
+  message DevDatabase {
+    string location = 1;
+    string username = 2;
+    string password = 3;
+  }
+
+  AwsS3Config aws_s3_config = 5;
+
+  message AwsS3Config {
+    string access_key_id = 1;
+    string secret_access_key = 2;
+    string region = 3;
+    string bucket_name = 4;
+    google.protobuf.Duration upload_expire_time = 5;
+    google.protobuf.Duration download_expire_time = 6;
+  }
+}

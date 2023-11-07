@@ -2786,6 +2786,18 @@ java.lang.String defaultValue) {
      */
     com.google.protobuf.ByteString
         getGreetingBytes();
+
+    /**
+     * <code>string farewell = 2;</code>
+     * @return The farewell.
+     */
+    java.lang.String getFarewell();
+    /**
+     * <code>string farewell = 2;</code>
+     * @return The bytes for farewell.
+     */
+    com.google.protobuf.ByteString
+        getFarewellBytes();
   }
   /**
    * Protobuf type {@code Greeting}
@@ -2801,6 +2813,7 @@ java.lang.String defaultValue) {
     }
     private Greeting() {
       greeting_ = "";
+      farewell_ = "";
     }
 
     @java.lang.Override
@@ -2862,6 +2875,45 @@ java.lang.String defaultValue) {
       }
     }
 
+    public static final int FAREWELL_FIELD_NUMBER = 2;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object farewell_ = "";
+    /**
+     * <code>string farewell = 2;</code>
+     * @return The farewell.
+     */
+    @java.lang.Override
+    public java.lang.String getFarewell() {
+      java.lang.Object ref = farewell_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        farewell_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string farewell = 2;</code>
+     * @return The bytes for farewell.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getFarewellBytes() {
+      java.lang.Object ref = farewell_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        farewell_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -2879,6 +2931,9 @@ java.lang.String defaultValue) {
       if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(greeting_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, greeting_);
       }
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(farewell_)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, farewell_);
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -2890,6 +2945,9 @@ java.lang.String defaultValue) {
       size = 0;
       if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(greeting_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, greeting_);
+      }
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(farewell_)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, farewell_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
@@ -2908,6 +2966,8 @@ java.lang.String defaultValue) {
 
       if (!getGreeting()
           .equals(other.getGreeting())) return false;
+      if (!getFarewell()
+          .equals(other.getFarewell())) return false;
       if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
@@ -2921,6 +2981,8 @@ java.lang.String defaultValue) {
       hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + GREETING_FIELD_NUMBER;
       hash = (53 * hash) + getGreeting().hashCode();
+      hash = (37 * hash) + FAREWELL_FIELD_NUMBER;
+      hash = (53 * hash) + getFarewell().hashCode();
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -3051,6 +3113,7 @@ java.lang.String defaultValue) {
         super.clear();
         bitField0_ = 0;
         greeting_ = "";
+        farewell_ = "";
         return this;
       }
 
@@ -3087,6 +3150,9 @@ java.lang.String defaultValue) {
         if (((from_bitField0_ & 0x00000001) != 0)) {
           result.greeting_ = greeting_;
         }
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          result.farewell_ = farewell_;
+        }
       }
 
       @java.lang.Override
@@ -3104,6 +3170,11 @@ java.lang.String defaultValue) {
         if (!other.getGreeting().isEmpty()) {
           greeting_ = other.greeting_;
           bitField0_ |= 0x00000001;
+          onChanged();
+        }
+        if (!other.getFarewell().isEmpty()) {
+          farewell_ = other.farewell_;
+          bitField0_ |= 0x00000002;
           onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
@@ -3137,6 +3208,11 @@ java.lang.String defaultValue) {
                 bitField0_ |= 0x00000001;
                 break;
               } // case 10
+              case 18: {
+                farewell_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 18
               default: {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                   done = true; // was an endgroup tag
@@ -3222,6 +3298,78 @@ java.lang.String defaultValue) {
         checkByteStringIsUtf8(value);
         greeting_ = value;
         bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object farewell_ = "";
+      /**
+       * <code>string farewell = 2;</code>
+       * @return The farewell.
+       */
+      public java.lang.String getFarewell() {
+        java.lang.Object ref = farewell_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          farewell_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string farewell = 2;</code>
+       * @return The bytes for farewell.
+       */
+      public com.google.protobuf.ByteString
+          getFarewellBytes() {
+        java.lang.Object ref = farewell_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          farewell_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string farewell = 2;</code>
+       * @param value The farewell to set.
+       * @return This builder for chaining.
+       */
+      public Builder setFarewell(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        farewell_ = value;
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string farewell = 2;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearFarewell() {
+        farewell_ = getDefaultInstance().getFarewell();
+        bitField0_ = (bitField0_ & ~0x00000002);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string farewell = 2;</code>
+       * @param value The bytes for farewell to set.
+       * @return This builder for chaining.
+       */
+      public Builder setFarewellBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        farewell_ = value;
+        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
@@ -3324,8 +3472,8 @@ java.lang.String defaultValue) {
       "map\030\007 \003(\0132\024.Hello.NamesMapEntry\022\033\n\010greet" +
       "ing\030\010 \001(\0132\t.Greeting\022\034\n\tgreetings\030\t \003(\0132" +
       "\t.Greeting\032/\n\rNamesMapEntry\022\013\n\003key\030\001 \001(\t" +
-      "\022\r\n\005value\030\002 \001(\t:\0028\001\"\034\n\010Greeting\022\020\n\010greet" +
-      "ing\030\001 \001(\tb\006proto3"
+      "\022\r\n\005value\030\002 \001(\t:\0028\001\".\n\010Greeting\022\020\n\010greet" +
+      "ing\030\001 \001(\t\022\020\n\010farewell\030\002 \001(\tb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -3350,7 +3498,7 @@ java.lang.String defaultValue) {
     internal_static_Greeting_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_Greeting_descriptor,
-        new java.lang.String[] { "Greeting", });
+        new java.lang.String[] { "Greeting", "Farewell", });
     com.google.protobuf.TimestampProto.getDescriptor();
     com.google.protobuf.DurationProto.getDescriptor();
   }
