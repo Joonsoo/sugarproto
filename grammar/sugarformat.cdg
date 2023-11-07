@@ -6,7 +6,7 @@ Item: Item = SingleItem | ListItem
 SingleItem = ItemPath WS1 ItemValue {SingleItem(key=$0, value=$2)}
 ListItem: ListItem = ListValueItem | ListFieldItem
 ListValueItem = '-' WS1 Value {ListValueItem(value=$2)}
-ListFieldItem = '-' WS1 ItemPath WS1 ItemValue {ListFieldItem(innerIndent=str($0, $1), key=$2, value=$4)}
+ListFieldItem = '-' WS1 SingleItem {ListFieldItem(innerIndent=str($0, $1), item=$2)}
 
 
 ItemPath = KeyValue (WS1 '.' WS1 KeyValue)* {ItemPath(path=[$0] + $1)}

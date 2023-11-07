@@ -60,8 +60,7 @@ class ItemStructure(val items: List<SugarFormatAst.IndentItem>) {
       val siblings = mutableListOf<Range>()
       (start + 2 until end).forEach { index ->
         checkIndent(items[index].indent.startsWith(childIndent), items[index])
-        if (items[index].indent == childIndent) {
-          check(items[index].item !is SugarFormatAst.ListItem)
+        if (items[index].indent == childIndent && items[index].item !is SugarFormatAst.ListItem) {
           siblings.add(Range(lastIdx, index))
           lastIdx = index
         }

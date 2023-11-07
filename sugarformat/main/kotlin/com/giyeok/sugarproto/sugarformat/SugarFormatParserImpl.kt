@@ -2,6 +2,7 @@ package com.giyeok.sugarproto.sugarformat
 
 import com.giyeok.sugarproto.SugarFormatAst
 import com.giyeok.sugarproto.sugarformat.ParsedValueBuilder.Companion.messageValueBuilderFor
+import com.google.protobuf.ByteString
 import com.google.protobuf.Descriptors.Descriptor
 import com.google.protobuf.Descriptors.FieldDescriptor
 import com.google.protobuf.Duration
@@ -19,41 +20,38 @@ class SugarFormatParserImpl(val st: ItemStructure) {
 
   fun parseMessage(
     builder: ParsedValueBuilder.MessageValueBuilder,
-    siblings: List<ItemStructure.Range>
+    fields: List<ItemStructure.Range>
   ) {
-    siblings.forEach { sibling ->
-      when (val head = sibling.head) {
-        is SugarFormatAst.SingleItem -> {
-          val fieldBuilder = builder.followPath(head.key.path)
-          when (val value = head.value) {
-            is SugarFormatAst.Header -> {
-              when (fieldBuilder) {
-                is ParsedValueBuilder.MessageValueBuilder -> {
-                  parseMessage(fieldBuilder, sibling.childrenOfFirst())
-                }
+    fields.forEach { sibling ->
+      val headItem = when (val head = sibling.head) {
+        is SugarFormatAst.SingleItem -> head
+        is SugarFormatAst.ListFieldItem -> head.item
+        is SugarFormatAst.ListValueItem -> throw IllegalStateException()
+      }
 
-                is ParsedValueBuilder.RepeatedValueBuilder -> {
-                  parseRepeated(fieldBuilder, sibling.listChildrenOfFirst())
-                }
 
-                is ParsedValueBuilder.MapValueBuilder -> TODO()
-                is ParsedValueBuilder.SingularValueBuilder -> TODO()
-                is ParsedValueBuilder.TimestampValueBuilder -> TODO()
-                is ParsedValueBuilder.DurationValueBuilder -> TODO()
-              }
+      val fieldBuilder = builder.followPath(headItem.key.path)
+      when (val value = headItem.value) {
+        is SugarFormatAst.Header -> {
+          when (fieldBuilder) {
+            is ParsedValueBuilder.MessageValueBuilder -> {
+              parseMessage(fieldBuilder, sibling.childrenOfFirst())
             }
 
-            is SugarFormatAst.Value -> {
-              setFieldValue(fieldBuilder, value)
+            is ParsedValueBuilder.RepeatedValueBuilder -> {
+              parseRepeated(fieldBuilder, sibling.listChildrenOfFirst())
             }
+
+            is ParsedValueBuilder.MapValueBuilder -> TODO()
+            is ParsedValueBuilder.SingularValueBuilder -> TODO()
+            is ParsedValueBuilder.TimestampValueBuilder -> TODO()
+            is ParsedValueBuilder.DurationValueBuilder -> TODO()
           }
         }
 
-        is SugarFormatAst.ListFieldItem -> {
-          TODO()
+        is SugarFormatAst.Value -> {
+          setFieldValue(fieldBuilder, value)
         }
-
-        is SugarFormatAst.ListValueItem -> throw IllegalStateException()
       }
     }
   }
@@ -70,27 +68,10 @@ class SugarFormatParserImpl(val st: ItemStructure) {
         }
 
         is SugarFormatAst.ListFieldItem -> {
-          val elemFieldBuilder = elemBuilder.followPath(head.key.path)
-          when (val value = head.value) {
-            is SugarFormatAst.Header -> {
-              when (elemFieldBuilder) {
-                is ParsedValueBuilder.MessageValueBuilder -> TODO()
-                is ParsedValueBuilder.DurationValueBuilder -> TODO()
-                is ParsedValueBuilder.MapValueBuilder -> TODO()
-                is ParsedValueBuilder.RepeatedValueBuilder -> TODO()
-                is ParsedValueBuilder.SingularValueBuilder -> TODO()
-                is ParsedValueBuilder.TimestampValueBuilder -> TODO()
-              }
-            }
-
-            is SugarFormatAst.Value ->
-              setFieldValue(elemFieldBuilder, value)
-          }
-
           check(elemBuilder is ParsedValueBuilder.MessageValueBuilder)
           // sibling.head보다는 indent가 들어가 있는 것들 찾기
           val elemFields = elem.siblingsOfFirstListField()
-          parseMessage(elemBuilder, elemFields.drop(1))
+          parseMessage(elemBuilder, elemFields)
         }
 
         is SugarFormatAst.ListValueItem ->
@@ -105,8 +86,32 @@ class SugarFormatParserImpl(val st: ItemStructure) {
         when (value) {
           is SugarFormatAst.StringValue -> {
             // TODO fieldBuilder가 string이 아니어도 적당히 바꿔서 넣어주기
-            check(fieldBuilder.fieldDesc.type == FieldDescriptor.Type.STRING)
-            fieldBuilder.value = stringValueFrom(value)
+            when (fieldBuilder.fieldDesc.type) {
+              FieldDescriptor.Type.STRING -> {
+                fieldBuilder.value = stringValueFrom(value)
+              }
+
+              FieldDescriptor.Type.BYTES -> {
+                fieldBuilder.value = bytesValueFrom(value)
+              }
+
+              FieldDescriptor.Type.DOUBLE -> TODO()
+              FieldDescriptor.Type.FLOAT -> TODO()
+              FieldDescriptor.Type.INT64 -> TODO()
+              FieldDescriptor.Type.UINT64 -> TODO()
+              FieldDescriptor.Type.INT32 -> TODO()
+              FieldDescriptor.Type.FIXED64 -> TODO()
+              FieldDescriptor.Type.FIXED32 -> TODO()
+              FieldDescriptor.Type.BOOL -> TODO()
+              FieldDescriptor.Type.GROUP -> TODO()
+              FieldDescriptor.Type.MESSAGE -> TODO()
+              FieldDescriptor.Type.UINT32 -> TODO()
+              FieldDescriptor.Type.ENUM -> TODO()
+              FieldDescriptor.Type.SFIXED32 -> TODO()
+              FieldDescriptor.Type.SFIXED64 -> TODO()
+              FieldDescriptor.Type.SINT32 -> TODO()
+              FieldDescriptor.Type.SINT64 -> TODO()
+            }
           }
 
           is SugarFormatAst.NameValue -> {
@@ -152,7 +157,12 @@ class SugarFormatParserImpl(val st: ItemStructure) {
                 fieldBuilder.value = value.integral.toInt()
               }
 
-              FieldDescriptor.Type.INT64 -> TODO()
+              FieldDescriptor.Type.INT64 -> {
+                // TODO sgn
+                check(value.frac == null && value.exponent == null)
+                fieldBuilder.value = value.integral.toLong()
+              }
+
               FieldDescriptor.Type.DOUBLE -> TODO()
               FieldDescriptor.Type.FLOAT -> TODO()
               FieldDescriptor.Type.UINT64 -> TODO()

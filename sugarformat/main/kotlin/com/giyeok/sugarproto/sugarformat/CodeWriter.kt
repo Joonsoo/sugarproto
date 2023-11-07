@@ -1,7 +1,7 @@
 package com.giyeok.sugarproto.sugarformat
 
-class CodeWriter {
-  private var indentLevel = 0
+class CodeWriter(val defaultIndentDepth: String = "  ") {
+  private var indent = ""
   private val stringBuilder = StringBuilder()
 
   fun writeLine() {
@@ -9,7 +9,7 @@ class CodeWriter {
   }
 
   fun writeLine(line: String) {
-    stringBuilder.append((0 until indentLevel).joinToString("") { "  " })
+    stringBuilder.append(indent)
     stringBuilder.append(line)
     stringBuilder.append('\n')
   }
@@ -21,13 +21,18 @@ class CodeWriter {
   }
 
   fun indent(body: () -> Unit) {
-    indentLevel += 1
+    indent(defaultIndentDepth, body)
+  }
+
+  fun indent(indentDepth: String, body: () -> Unit) {
+    val prevIndent = indent
+    indent += indentDepth
     body()
-    indentLevel -= 1
+    indent = prevIndent
   }
 
   open fun clear() {
-    indentLevel = 0
+    indent = ""
     stringBuilder.clear()
   }
 

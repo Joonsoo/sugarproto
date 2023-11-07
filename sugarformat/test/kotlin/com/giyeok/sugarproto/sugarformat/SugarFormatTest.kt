@@ -1,11 +1,32 @@
 package com.giyeok.sugarproto.sugarformat
 
-import com.giyeok.bibix.repo.BibixRepoProto
+import PhoclubConfig
+import Test1
+import com.giyeok.bibix.repo.BibixRepoProto.BibixTargetLogs
 import com.giyeok.bibix.repo.BibixRepoProto.TargetState
 import com.giyeok.bibix.runner.RunConfigProto.RunConfig
+import com.google.protobuf.Descriptors.Descriptor
+import com.google.protobuf.Message
 import org.junit.jupiter.api.Test
 
 class SugarFormatTest {
+  private fun <B: Message.Builder> test(
+    source: String,
+    builderFunc: () -> B
+  ) {
+    println(source)
+    println()
+
+    println("=====")
+
+    val parsed = SugarFormat.merge(source, builderFunc()).build()
+    println(parsed)
+
+    println("=====")
+
+    println(SugarFormat.print(parsed))
+  }
+
   @Test
   fun testHello() {
     val source = """
@@ -38,23 +59,8 @@ class SugarFormatTest {
       - greeting: "니하오"
         farewell: "짜이찌엔"
     """.trimIndent()
-    println(source)
-    println()
 
-    val items = SugarFormatParser.parse(source)
-    val parsed = SugarFormatParserImpl(ItemStructure(items))
-      .parse(Test1.Hello.getDescriptor())
-    // println(parsed)
-
-    println("=====")
-
-    val builder = Test1.Hello.newBuilder()
-    parsed.mergeTo(builder)
-    println(builder.build())
-
-    println("=====")
-
-    println(SugarFormat.print(builder))
+    test(source, Test1.Hello::newBuilder)
   }
 
   @Test
@@ -73,23 +79,8 @@ class SugarFormatTest {
         upload_expire_time: 30h
         download_expire_time: 20m
     """.trimIndent()
-    println(source)
-    println()
 
-    val items = SugarFormatParser.parse(source)
-    val parsed = SugarFormatParserImpl(ItemStructure(items))
-      .parse(PhoclubConfig.ServerConfig.getDescriptor())
-    // println(parsed)
-
-    println("=====")
-
-    val builder = PhoclubConfig.ServerConfig.newBuilder()
-    parsed.mergeTo(builder)
-    println(builder.build())
-
-    println("=====")
-
-    println(SugarFormat.print(builder))
+    test(source, PhoclubConfig.ServerConfig::newBuilder)
   }
 
   @Test
@@ -99,23 +90,8 @@ class SugarFormatTest {
       min_log_level: INFO
       target_result_reuse_duration: 10d
     """.trimIndent()
-    println(source)
-    println()
 
-    val items = SugarFormatParser.parse(source)
-    val parsed = SugarFormatParserImpl(ItemStructure(items))
-      .parse(RunConfig.getDescriptor())
-    // println(parsed)
-
-    println("=====")
-
-    val builder = RunConfig.newBuilder()
-    parsed.mergeTo(builder)
-    println(builder.build())
-
-    println("=====")
-
-    println(SugarFormat.print(builder))
+    test(source, RunConfig::newBuilder)
   }
 
   @Test
@@ -135,23 +111,8 @@ class SugarFormatTest {
       build_succeeded:
         build_end_time: 2023-11-07T11:15:15Z
     """.trimIndent()
-    println(source)
-    println()
 
-    val items = SugarFormatParser.parse(source)
-    val parsed = SugarFormatParserImpl(ItemStructure(items))
-      .parse(TargetState.getDescriptor())
-    // println(parsed)
-
-    println("=====")
-
-    val builder = TargetState.newBuilder()
-    parsed.mergeTo(builder)
-    println(builder.build())
-
-    println("=====")
-
-    println(SugarFormat.print(builder))
+    test(source, TargetState::newBuilder)
   }
 
   @Test
@@ -161,28 +122,12 @@ class SugarFormatTest {
       - unique_run_id: "123123"
         target_id: "321321"
         blocks:
-        - blocks:
-          - level: INFO
-            time: 2023-11-04T11:11Z
-            message: "Hello\n"
-                     "Foobar"
+        - level: INFO
+          time: 2023-11-04T11:11Z
+          message: "Hello\n"
+                   "Foobar"
     """.trimIndent()
-    println(source)
-    println()
 
-    val items = SugarFormatParser.parse(source)
-    val parsed = SugarFormatParserImpl(ItemStructure(items))
-      .parse(BibixRepoProto.BibixTargetLogs.getDescriptor())
-    // println(parsed)
-
-    println("=====")
-
-    val builder = BibixRepoProto.BibixTargetLogs.newBuilder()
-    parsed.mergeTo(builder)
-    println(builder.build())
-
-    println("=====")
-
-    println(SugarFormat.print(builder))
+    test(source, BibixTargetLogs::newBuilder)
   }
 }

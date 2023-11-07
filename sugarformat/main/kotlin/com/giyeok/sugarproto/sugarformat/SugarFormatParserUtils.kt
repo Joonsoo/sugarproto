@@ -1,16 +1,15 @@
 package com.giyeok.sugarproto.sugarformat
 
 import com.giyeok.sugarproto.SugarFormatAst
+import com.google.protobuf.ByteString
 import com.google.protobuf.Descriptors
 import com.google.protobuf.Descriptors.FieldDescriptor
 import com.google.protobuf.Duration
 import com.google.protobuf.Message
 import com.google.protobuf.Timestamp
-import java.lang.StringBuilder
 import java.time.Instant
 import java.time.ZoneOffset
-import java.util.Calendar
-import java.util.TimeZone
+import java.util.*
 
 fun setFieldValue(
   builder: Message.Builder,
@@ -115,23 +114,62 @@ private fun doubleValueFrom(
   TODO("Not yet implemented")
 }
 
+fun SugarFormatAst.StringFrac.appendToStringBuilder(stringBuilder: StringBuilder) {
+  this.elems.forEach { elem ->
+    when (elem) {
+      is SugarFormatAst.PlainText -> stringBuilder.append(elem.value)
+      is SugarFormatAst.EscapeCode -> {
+        val chr = when (elem.code) {
+          'n' -> '\n'
+          else -> TODO()
+        }
+        stringBuilder.append(chr)
+      }
+
+      is SugarFormatAst.HexCode -> TODO()
+      is SugarFormatAst.OctCode -> TODO()
+      is SugarFormatAst.Unicode -> TODO()
+    }
+  }
+}
+
+fun SugarFormatAst.StringFrac.toStringValue(): String {
+  val stringBuilder = StringBuilder()
+  this.appendToStringBuilder(stringBuilder)
+  return stringBuilder.toString()
+}
+
 fun stringValueFrom(value: SugarFormatAst.StringValue): String = when (value.type) {
-  SugarFormatAst.StringTypeAnnot.Base64 -> TODO()
-  SugarFormatAst.StringTypeAnnot.Hex -> TODO()
+  SugarFormatAst.StringTypeAnnot.Base64 -> {
+    TODO()
+  }
+
+  SugarFormatAst.StringTypeAnnot.Hex -> {
+    TODO()
+  }
+
   null -> {
     val stringBuilder = StringBuilder()
     value.fracs.forEach { frac ->
-      frac.elems.forEach { elem ->
-        when (elem) {
-          is SugarFormatAst.PlainText -> stringBuilder.append(elem.value)
-          is SugarFormatAst.EscapeCode -> TODO()
-          is SugarFormatAst.HexCode -> TODO()
-          is SugarFormatAst.OctCode -> TODO()
-          is SugarFormatAst.Unicode -> TODO()
-        }
-      }
+      frac.appendToStringBuilder(stringBuilder)
     }
     stringBuilder.toString()
+  }
+}
+
+fun bytesValueFrom(value: SugarFormatAst.StringValue): ByteString = when (value.type) {
+  SugarFormatAst.StringTypeAnnot.Base64 -> {
+    check(value.fracs.size == 1)
+    ByteString.copyFrom(Base64.getDecoder().decode(value.fracs.first().toStringValue()))
+  }
+
+  SugarFormatAst.StringTypeAnnot.Hex -> {
+    check(value.fracs.size == 1)
+    ByteString.fromHex(value.fracs.first().toStringValue())
+  }
+
+  null -> {
+    ByteString.copyFromUtf8(stringValueFrom(value))
   }
 }
 
@@ -193,7 +231,13 @@ fun printStringOf(type: FieldDescriptor.Type, value: Any): String = when (type) 
   Descriptors.FieldDescriptor.Type.BOOL -> TODO()
   Descriptors.FieldDescriptor.Type.GROUP -> TODO()
   Descriptors.FieldDescriptor.Type.MESSAGE -> TODO()
-  Descriptors.FieldDescriptor.Type.BYTES -> TODO()
+  Descriptors.FieldDescriptor.Type.BYTES -> {
+    check(value is ByteString)
+    // TODO utf8로 바꿀 수 있으면 일반 스트링으로
+    val base64 = Base64.getEncoder().withoutPadding().encodeToString(value.toByteArray())
+    "b\"${base64}\""
+  }
+
   Descriptors.FieldDescriptor.Type.UINT32 -> TODO()
   Descriptors.FieldDescriptor.Type.SFIXED32 -> TODO()
   Descriptors.FieldDescriptor.Type.SFIXED64 -> TODO()
