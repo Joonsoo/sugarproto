@@ -210,18 +210,19 @@ fun String.canOmitQuotes(): Boolean {
   return true
 }
 
-fun String.escape(): String = this
+fun String.escape(): String = this.replace("\n", "\\n")
 
-fun printStringOf(type: FieldDescriptor.Type, value: Any): String = when (type) {
+fun printStringOf(type: FieldDescriptor.Type, value: Any): List<String> = when (type) {
   Descriptors.FieldDescriptor.Type.STRING -> {
     value as String
-    if (value.canOmitQuotes()) value else "\"${value.escape()}\""
+    if (value.canOmitQuotes()) listOf(value) else {
+      val lines = value.split('\n')
+      (lines.dropLast(1).map { "$it\n" } + lines.last()).map { "\"${it.escape()}\"" }
+    }
   }
 
-  Descriptors.FieldDescriptor.Type.INT32 -> "$value"
-  Descriptors.FieldDescriptor.Type.INT64 -> "$value"
-
-  Descriptors.FieldDescriptor.Type.ENUM -> "$value"
+  Descriptors.FieldDescriptor.Type.INT32, Descriptors.FieldDescriptor.Type.INT64,
+  Descriptors.FieldDescriptor.Type.ENUM -> listOf("$value")
 
   Descriptors.FieldDescriptor.Type.DOUBLE -> TODO()
   Descriptors.FieldDescriptor.Type.FLOAT -> TODO()
@@ -235,7 +236,7 @@ fun printStringOf(type: FieldDescriptor.Type, value: Any): String = when (type) 
     check(value is ByteString)
     // TODO utf8로 바꿀 수 있으면 일반 스트링으로
     val base64 = Base64.getEncoder().withoutPadding().encodeToString(value.toByteArray())
-    "b\"${base64}\""
+    listOf("b\"${base64}\"")
   }
 
   Descriptors.FieldDescriptor.Type.UINT32 -> TODO()

@@ -85,11 +85,18 @@ class SugarFormatPrinterImpl(val writer: CodeWriter) {
       }
 
       else -> {
-        val valueString = printStringOf(field.type, value)
+        val valueLines = printStringOf(field.type, value)
+        check(valueLines.isNotEmpty())
         if (isListItem) {
-          writer.writeLine("- ${field.name}: $valueString")
+          writer.writeLine("- ${field.name}: ${valueLines.first()}")
+          writer.indent("    " + (0 until field.name.length).joinToString("") { " " }) {
+            valueLines.drop(1).forEach { writer.writeLine(it) }
+          }
         } else {
-          writer.writeLine("${field.name}: $valueString")
+          writer.writeLine("${field.name}: ${valueLines.first()}")
+          writer.indent("  " + (0 until field.name.length).joinToString("") { " " }) {
+            valueLines.drop(1).forEach { writer.writeLine(it) }
+          }
         }
       }
     }
