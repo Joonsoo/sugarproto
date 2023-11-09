@@ -2,12 +2,23 @@ package com.giyeok.sugarproto.sugarformat
 
 import com.google.protobuf.Message
 import com.google.protobuf.MessageOrBuilder
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.OutputStream
+import java.io.PrintWriter
+import java.io.StringWriter
+import java.io.Writer
+import java.nio.charset.Charset
 
 object SugarFormat {
-  fun print(message: MessageOrBuilder): String {
-    val writer = CodeWriter()
-    SugarFormatPrinterImpl(writer).print(message)
-    return writer.toString()
+  fun print(message: MessageOrBuilder): String =
+    StringWriter().use { writer ->
+      printTo(message, writer)
+      writer.toString()
+    }
+
+  fun printTo(message: MessageOrBuilder, writer: Writer) {
+    SugarFormatPrinterImpl(CodeWriter(writer)).print(message)
   }
 
   fun <T: Message.Builder> merge(sufText: String, builder: T): T {
