@@ -5,7 +5,6 @@ import Test1
 import com.giyeok.bibix.repo.BibixRepoProto.BibixTargetLogs
 import com.giyeok.bibix.repo.BibixRepoProto.TargetState
 import com.giyeok.bibix.runner.RunConfigProto.RunConfig
-import com.google.protobuf.Descriptors.Descriptor
 import com.google.protobuf.Message
 import org.junit.jupiter.api.Test
 

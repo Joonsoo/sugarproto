@@ -162,7 +162,7 @@ sugarformat {
     protoJava = protobuf.java(schema)
 
     javalib = java.library(
-      srcs = glob("sugarformat/test/java/*.java"),
+      srcs = glob("sugarformat/test/java/**.java"),
       deps = [
         maven.artifact("com.google.protobuf", "protobuf-java", "3.25.0")
       ]
