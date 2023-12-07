@@ -9,9 +9,6 @@ from bibix.plugins import java
 import git("https://github.com/Joonsoo/jparser.git") as jparser
 from bibix.plugins import protobuf
 
-var ktjvm.outVersion = "19"
-var scala.outVersion = "19"
-
 proto3Parser {
   parserGen = jparser.genKtAstMgroup2(
     cdgFile = "grammar/proto3.cdg",
@@ -226,3 +223,25 @@ def generateMutableKtAndProto(
   protoDirs: set<directory> = [],
   gdxMode: boolean = false,
 ): Generated = bibixPlugin.impl:com.giyeok.sugarproto.bibixPlugin.GenerateMutableKtAndProto
+
+rustProto {
+  codegen {
+    impl = ktjvm.library(
+      srcs = glob("rustProto/codegen/**.kt"),
+      deps = [bibix.base, proto3Parser.main],
+    )
+  }
+
+  class GeneratedRustFiles(
+    srcsRoot: directory
+  )
+
+  def generateRustProto(
+    schema: protobuf.ProtoSchema
+  ): GeneratedRustFiles = codegen.impl:com.giyeok.rustProto.codegen.GenerateRustProto
+
+  test {
+    steditProto = generateProto("rustProto/test/stedit.supro", "stedit.proto", [])
+    stedit = generateRustProto(protobuf.schema([steditProto]))
+  }
+}

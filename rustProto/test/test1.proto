@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+message Project {
+
+}
+
+message Document {
+
+}

@@ -1,0 +1,107 @@
+package com.giyeok.stedit.proto
+
+message Project {
+  1 schema_version: int32
+  2 document: Document
+  3 edit_state: EditState {
+    1 pointing_node: int32
+    2 expanded_nodes: repeated<int32>
+  }
+  // TODO snapshot
+}
+
+message Document {
+  1 roots: repeated<Node>
+  // tag id to tag name
+  2 tags: map<int32, string>
+}
+
+message Node {
+  1 id: int32
+  // 사용자가 지정한 ID
+  2 user_id: optional<string>
+  3 tag_ids: repeated<int32>
+  4 meta: NodeMeta {
+    1 is_todo: bool
+  }
+  5 content: NodeContent
+  // e.g. 다국어 번역 버전
+  6 alt_versions: map<string, NodeContent>
+}
+
+sealed NodeContent {
+  // 섹션은 실제 렌더링에는 사용되지 않는 논리적 개념
+  // 블럭은 node들을 묶어서 스타일을 준다는 점에서 차이가 있다
+  // 편집시에는 헤더를 쓰면 자동으로 섹션이 생성되고, 트리 뷰에서 수정이 가능하도록 한다
+  1 section: SectionNode {
+    1 children: repeated<Node>
+  }
+  2 header: HeaderNode {
+    1 header_level: int32
+    2 text: Text
+  }
+  3 paragraph: ParagraphNode {
+    1 style_class: string
+    2 text: Text
+  }
+  4 block: BlockNode {
+    1 style_class: string
+    2 children: repeated<Node>
+  }
+  5 list: ListNode {
+    1 is_numbered: bool
+    2 items: repeated<ListItem {
+      1 item_bullet: optional<string>
+      2 content: repeated<Node>
+    }>
+  }
+  6 code_block: CodeBlockNode {
+    1 style_class: string
+    2 language: optional<string>
+    3 code: string
+  }
+  7 horizontal_line: HorizontalLineNode {
+    1 style_class: string
+  }
+  8 table: TableNode {
+    // TODO
+  }
+  9 image: ImageNode {
+    // bundle에 포함된 이미지의 이름
+    1 image_file: string
+  }
+  10 drawing: DrawingNode {
+    // TODO
+  }
+}
+
+// Text는 기본적으로 string이되, 몇가지 escape sequence가 들어갈 수 있음
+message Text {
+  1 chunks: repeated<sealed Chunk {
+    1 text: TextChunk {
+      1 text: string
+      2 style: ChunkStyle {
+        1 style_class: string
+        2 is_italic: bool
+        3 is_bold: bool
+      }
+      3 link: optional<sealed LinkTo {
+        1 node_id: string
+        2 external_link: string
+      }>
+      // foot note?
+    }
+    2 code: CodeChunk {
+      1 language: optional<string>
+      2 code: string
+    }
+    3 reference: ReferenceChunk {
+      1 node_id: string
+      // 해당 레퍼런스를 어떻게 표시할지 포맷. 구체적인 내용은 미정
+      2 presentation: string
+    }
+    4 footnote: FootNote {
+      1 footnote: Text
+    }
+  }>
+}
