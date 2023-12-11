@@ -89,6 +89,7 @@ test = ktjvm.library(
 testDeps = [
   maven.artifact("org.junit.jupiter", "junit-jupiter-api", "5.8.2"),
   maven.artifact("com.google.truth", "truth", "1.1.5"),
+  maven.artifact("org.jetbrains.kotlin", "kotlin-test", "1.9.21"),
 ]
 
 // proto3 -> typescript compiler
@@ -224,24 +225,24 @@ def generateMutableKtAndProto(
   gdxMode: boolean = false,
 ): Generated = bibixPlugin.impl:com.giyeok.sugarproto.bibixPlugin.GenerateMutableKtAndProto
 
-rustProto {
-  codegen {
-    impl = ktjvm.library(
-      srcs = glob("rustProto/codegen/**.kt"),
-      deps = [bibix.base, proto3Parser.main],
-    )
-  }
-
-  class GeneratedRustFiles(
-    srcsRoot: directory
+tsProto {
+  compiler = ktjvm.library(
+    srcs = glob("tsProto/compiler/**.kt"),
+    deps = [proto3Parser.main],
   )
 
-  def generateRustProto(
-    schema: protobuf.ProtoSchema
-  ): GeneratedRustFiles = codegen.impl:com.giyeok.rustProto.codegen.GenerateRustProto
-
-  test {
-    steditProto = generateProto("rustProto/test/stedit.supro", "stedit.proto", [])
-    stedit = generateRustProto(protobuf.schema([steditProto]))
-  }
+  test = ktjvm.library(
+    srcs = glob("tsProto/compilerTest/main/**.kt"),
+    resources = glob("tsProto/compilerTest/resources/**.kt"),
+    deps = [
+      compiler,
+      ...testDeps,
+      java.library(
+        srcs=protobuf.java(protobuf.schema(glob("tsProto/compilerTest/resources/*.proto"))),
+        deps=[
+          maven.artifact("com.google.protobuf", "protobuf-java", "3.25.0"),
+        ],
+      ),
+    ],
+  )
 }
