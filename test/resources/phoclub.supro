@@ -1,0 +1,582 @@
+package com.giyeok.phoclub.user
+
+import deep "phoclub_public.proto"
+import "google/protobuf/timestamp.proto"
+
+option java_multiple_files = true
+
+// view = entity의 정보의 일부(혹은 전체)를 담은 데이터
+// data = view + view와 직접적으로 관련된 정보를 포함한 메시지
+//   e.g. EventData - EventView + Event가 공유된 버킷, 공유된 앨범
+// feed = data + 부가 정보(추천, 해당 entity의 최근의 업데이트 사안 관련 정보 등)
+//   e.g. EventFeed - EventData + 썸네일 + 추천(공유할만 한 사용자, 업로드할 만 한 앨범)
+
+service Phoclub {
+  // *** 사용자 가입/계정 관리
+  rpc signInByFirebaseId: {
+    1 firebase_token: string
+  } -> {
+    // auth_token과 refresh_token의 만료 시각은 jwt 토큰 내용을 보고서 확인할 수도 있음
+    1 auth_token: AuthTokenInfo {
+      1 auth_token: string
+      // auth_token의 만료 시각
+      2 expire_time: google.protobuf.Timestamp
+    }
+    2 refresh_token: RefreshTokenInfo {
+      1 refresh_token: string
+      // refresh_token의 만료 시각
+      2 expire_time: google.protobuf.Timestamp
+    }
+    3 user: PrivateUserView
+    4 is_new_user: bool
+    // 토큰 만료 시각을 비교하기 위한 서버 시각
+    5 server_time: google.protobuf.Timestamp
+  }
+
+  // auth_token
+  rpc refreshToken: {
+    1 refresh_token: string
+    // renew_refresh_token을 실행하면 기존의 refresh_token은 더이상 사용할 수 없다.
+    2 renew_refresh_token: bool
+  } -> {
+    1 auth_token: AuthTokenInfo
+    2 new_refresh_token: optional<RefreshTokenInfo>
+    // 토큰 만료 시각을 비교하기 위한 서버 시각
+    3 server_time: google.protobuf.Timestamp
+  }
+
+  // TODO 한 계정에 여러 로그인 방법 등록 가능
+
+  // *** 아이템 업로드/다운로드
+
+  // createItemUpload를 실행해서 upload_id를 얻어온 다음 uploadFile로 실제 파일 업로드
+  rpc createItemUpload: {
+    1 auth_token: string
+    // path의 의미는 아직 불분명
+    2 file_path: string
+    3 file_size: int64
+    4 file_sha1_sum: bytes
+  } -> {
+    1 item_key: ItemKey
+    2 upload_token: string
+    3 recommended_chunk_size: int32
+  }
+
+  rpc uploadFile: {
+    1 auth_token: string
+    2 upload_item: ItemKey
+    3 upload_token: string
+    // TODO 압축, SHA sum
+    4 content: bytes
+    5 sha1_sum: bytes
+  } -> sealed {
+    1 next_upload_token: string
+    2 file_meta: FileMeta {
+      1 file_size: int64
+    }
+  }
+
+  // 아이템 하나를 한번에 올릴 때.
+  // 처음엔 StartUpload 메시지를 보내고, 그 뒤로 content를 이어서 보냄
+  rpc createAndUpload: stream<sealed {
+    1 startUpload: StartUpload {
+      1 auth_token: string
+      2 file_path: string
+      3 file_size: int64
+      4 file_sha1_sum: bytes
+    }
+    2 content: bytes
+  }> -> FileMeta
+
+  rpc downloadItem: {
+    1 auth_token: string
+    2 item: ItemKey
+    3 download_token: optional<string>
+  } -> {
+    // TODO 압축, SHA sum
+    1 content: bytes
+    2 next_download_token: string
+  }
+
+  // *** 이벤트
+
+  // 새로운 이벤트 생성
+  rpc createEvent: {
+    1 auth_token: string
+    2 name: string
+    3 description: string
+    4 items: repeated<ItemKey>
+  } -> EventData {
+    // extends EventView(1~5)
+    1 key: EventKey
+    2 name: string
+    3 description: string
+
+    // 이벤트의 시작 시각-종료 시각
+    4 items_time_range: ItemsTimeRange {
+      1 start_time: google.protobuf.Timestamp
+      2 end_time: google.protobuf.Timestamp
+    }
+
+    5 items_count: int32
+
+    // 이벤트에 등장하는 사람 얼굴
+    6 faces: Faces {
+      1 count: int32
+      2 faces: repeated<UserKey>
+      // TODO 모르는 얼굴에 대한 정보
+    }
+
+    // 이 이벤트에 속한 사진이 공유된 공유 버킷의 정보
+    7 share_info: repeated<EventShareInfo {
+      1 bucket: ShareBucketKey
+      // 공유된 아이템 갯수 - 0인 경우 모든 아이템이 공유되었음을 의미
+      2 items_count: int32
+      // 버킷의 멤버 수
+      3 share_users_count: int32
+      // 버킷의 멤버들(모든 멤버가 나오진 않음)
+      4 share_users: repeated<UserData>
+    }>
+
+    // 이 이벤트에 속한 사진이 공유된 앨범의 정보
+    8 album_share_info: repeated<AlbumShareInfo {
+      1 album: AlbumKey
+      2 items_count: int32
+      3 album_events: repeated<AlbumEventView>
+    }>
+  }
+
+  // 우선은 listEvents로 만들지만, 이렇게 하면 과거 데이터로 접근하기가 힘듦
+  // TODO 화면 오른쪽에 빠르게 과거로 스크롤할 수 있는 버튼을 추가해야 함
+  //  - 그러려면 전체 이벤트 갯수, 이벤트 시간대 등의 정보를 빠르게 얻고, 시간대가 주어지면 해당 시점의 이벤트를 알 수 있어야 함
+  // TODO 이벤트 검색/이벤트 빨리 찾기 기능
+  rpc listEvents: {
+    1 auth_token: string
+    2 page_token: string
+  } -> {
+    1 events: repeated<EventFeed(EventData) {
+      // 대표 아이템 몇 개(1개~10개정도?)
+      // 대표 아이템은 서버에서 선정 알고리즘이 바뀌면 달라질 수 있다
+      9 thumbnail_items: repeated<ItemView>
+      // 이 이벤트의 사진들을 공유할만 한 사용자 추천
+      10 share_recommendations: repeated<EventShareRecommendation {
+        1 user: UserData
+        2 reason: string
+      }>
+      // 이 이벤트의 사진들을 올릴만 한 앨범 추천
+      11 album_upload_recommendations: repeated<AlbumUploadRecommendation {
+        1 album: AlbumView
+        2 reason: string
+      }>
+    }>
+    2 next_page_token: string
+  }
+
+  rpc getEvent: {
+    1 auth_token: string
+    2 event: EventKey
+  } -> EventData
+
+  // 이벤트 삭제
+  // 이벤트를 삭제해도 아이템은 그대로 남고, 아이템들은 미분류 아이템이 됨(Item.event = null)
+  rpc deleteEvent: {
+    1 auth_token: string
+    2 event: EventKey
+  } -> {}
+
+  // 이벤트에 속한 아이템 목록
+  rpc listEventItems: {
+    1 auth_token: string
+    2 event: EventKey
+    3 page_token: string
+  } -> {
+    1 items: repeated<ItemBriefData {
+      1 key: ItemKey
+      // 내 소유의 사진인지 공유받은 사진인지 확인할 때 사용
+      2 owner: UserKey
+      // 썸네일 이미지 URL
+      3 thumbnail_url: string
+      // 동영상인 경우 동영상에 대한 정보
+      4 video_info: optional<VideoItemBriefData {
+        // 동영상의 길이. 초 단위
+        1 length: int32
+        // TODO 동영상 미리보기 URL
+      }>
+      // 아이템이 어디서 왔는지
+      5 item_source: sealed ItemSourceBrief {
+        // 내가 올린 아이템
+        1 my_item: MyItemBrief {
+          // 이 아이템이 공유된 버킷의 수
+          // shared_buckets_count와 shared_albums_count가 모두 0이면 공유되지 않은 사진
+          1 shared_buckets_count: int32
+          // 이 아이템이 공유된 앨범의 수
+          2 shared_albums_count: int32
+        }
+        // 공유 버킷을 통해 볼 수 있게 된 아이템
+        2 from_bucket: SourceFromShareBucketBrief {
+          // ItemBriefData를 렌더링하는 시점에는 버킷에 대한 상세 정보는 필요 없기 때문에 키만 제공
+          1 bucket_key: ShareBucketKey
+        }
+        // 앨범을 통해 볼 수 있게 된 아이템
+        3 from_album: SourceFromAlbumEventBrief {
+          // ItemBriefData를 렌더링하는 시점에는 앨범에 대한 상세 정보는 필요 없기 때문에 키만 제공
+          1 album_event_key: AlbumEventKey
+        }
+      }
+      // 이 아이템의 사본이 있는 경우. 사본 사진들은 list에서는 표시되지 않는다.
+      6 has_duplicate: bool
+    }>
+    2 next_page_token: string
+  }
+
+  rpc getItem: {
+    1 auth_token: string
+    2 item: ItemKey
+  } -> ItemData {
+    1 key: ItemKey
+    // 내 소유의 사진인지 공유받은 사진인지 확인할 때 사용
+    2 owner: UserKey
+    // 썸네일 이미지 URL
+    3 thumbnail_url: string
+    // 동영상인 경우 동영상에 대한 정보
+    4 video_info: optional<VideoItemBriefData>
+    // 아이템 상세 페이지에서 보여줄 URL
+    5 url: string
+    // 원본 다운로드 URL
+    6 download_url: string
+    // 아이템을 어떻게 볼 수 있게 되었는지
+    7 item_source: sealed ItemSourceData {
+      // 내가 올린 아이템
+      1 my_item: MyItemData {
+        // 이 아이템이 공유된 공유 버킷 목록
+        // shared_buckets의 faces는 비어서 옴
+        // ShareBucketData에서 face 뺀 것이 ShareBucketView여서 shared_bucket은 repeated<ShareBucketView>
+        1 shared_buckets: repeated<ShareBucketView>
+        // 이 아이템이 공유된 앨범 이벤트 목록
+        // shared_album_events의 faces는 비어서 옴
+        2 shared_album_events: repeated<AlbumEventData>
+      }
+      // 공유 버킷을 통해 볼 수 있게 된 아이템
+      2 from_bucket: SourceFromShareBucketData {
+        1 bucket: ShareBucketData
+        // 원래 사진의 소유자
+        2 owner: UserData
+      }
+      // 앨범을 통해 볼 수 있게 된 아이템
+      3 from_album: SourceFromAlbumEventData {
+        1 album_event: AlbumEventData
+        // 원래 사진의 소유자
+        2 owner: UserData
+      }
+    }
+    // 이 사진이 다른 사진의 복제본인 경우 원본으로 보이는 아이템의 key
+    8 duplicate_of: optional<ItemKey>
+    // 이 사진의 사본으로 보이는 아이템들이 있는 경우 사본들의 key의 목록
+    9 duplicates: repeated<ItemKey>
+    // 이 아이템에 등장하는 얼굴들
+    10 faces: Faces
+  }
+
+  // 이벤트에 아이템 추가(한번에 여러개 추가 가능)
+  rpc createEventItems: {
+    1 auth_token: string
+    2 event: EventKey
+    3 items: repeated<ItemKey>
+  } -> {
+    // TODO
+  }
+
+  // 이벤트에서 아이템 제거
+  rpc deleteEventItem: {
+    1 auth_token: string
+    2 event: EventKey
+    3 items: repeated<ItemKey>
+  } -> {}
+
+
+  // *** 공유 버킷
+  rpc createShareBucket: {
+    1 auth_token: string
+    2 name: string
+    // 버킷 생성과 동시에 초대를 보낼 사용자 목록
+    3 shared: repeated<UserKey>
+    // 기본적으로 events와 items에 속한 모든 아이템을 포함한 share bucket을 생성
+    4 events: repeated<EventKey>
+    5 items: repeated<ItemKey>
+  } -> ShareBucketData {
+    // extends ShareBucketView(1~7)
+    1 key: ShareBucketKey
+    2 name: string
+    3 description: string
+    4 items_time_range: ItemsTimeRange
+
+    5 items_count: int32
+
+    6 owner: UserData
+    7 members: repeated<UserData>
+
+    8 faces: Faces
+  }
+
+  // 사용자가 접근할 수 있는 공유 버킷 목록.
+  // 공유 탭에서는 이 메소드를 사용해서 공유 버킷 목록을 얻어간다.
+  rpc listShareBuckets: {
+    1 auth_token: string
+    2 page_token: string
+  } -> {
+    1 buckets: repeated<ShareBucketFeed(ShareBucketData) {
+      9 thumbnail_items: repeated<ItemView>
+    }>
+    2 next_page_token: string
+  }
+
+  rpc getShareBucket: {
+    1 auth_token: string
+  } -> ShareBucketData
+
+  rpc deleteShareBucket: {
+    1 auth_token: string
+    2 bucket: ShareBucketKey
+  } -> {}
+
+  // 공유 버킷에 사용자 초대
+  rpc createShareBucketMember: {
+    1 auth_token: string
+    2 bucket: ShareBucketKey
+    3 user: UserKey
+  } -> {
+    // user를 초대한 이후에 버킷의 사용자 목록
+    1 members: repeated<UserData>
+  }
+
+  // 공유 버킷 멤버 제거
+  // 멤버를 강퇴할 때, 본인이 탈퇴하고 싶을 때 사용
+  rpc deleteShareBucketMember: {
+    1 auth_token: string
+    2 bucket: ShareBucketKey
+    3 user: UserKey
+  } -> {}
+
+  // 공유 버킷 아이템 목록
+  rpc listShareBucketItems: {
+    1 auth_token: string
+    2 bucket: ShareBucketKey
+    3 page_token: string
+  } -> {
+    1 items: repeated<ItemBriefData>
+    2 next_page_token: string
+  }
+
+  // 공유 버킷에 아이템 추가
+  rpc createShareBucketItems: {
+    1 auth_token: string
+    2 bucket: ShareBucketKey
+    3 items: repeated<ItemKey>
+  } -> {
+    // TODO
+  }
+
+  // 공유 버킷에서 아이템 제거
+  rpc deleteShareBucketItem: {
+    1 auth_token: string
+    2 bucket: ShareBucketKey
+    3 item: ItemKey
+  } -> {}
+
+  // *** 앨범
+  rpc createAlbum: {
+    1 auth_token: string
+    2 name: string
+    3 events: repeated<EventKey>
+    4 items: repeated<ItemKey>
+    // TODO 주제 설정(e.g. 인물, 요일, 시간 등)
+  } -> AlbumData {
+    1 key: AlbumKey
+    2 owner: UserData
+    3 events_count: int32
+    4 items_count: int32
+    // 일단은 앨범 스페이스 개념은 없기 때문에 spaces는 (공유되지 않은 앨범의 경우엔) 비어있거나 space 1개가 들어있음
+    5 spaces: repeated<AlbumSpaceData>
+  }
+
+  rpc getAlbum: {
+    1 auth_token: string
+    2 album: AlbumKey
+  } -> AlbumData
+
+  // 내가 만든 앨범+내가 초대된 앨범
+  rpc listAlbums: {
+    1 auth_token: string
+    2 page_token: string
+  } -> {
+    1 albums: repeated<AlbumFeed(AlbumData) {
+      // extends AlbumData(1~5)
+      6 recent_updates: repeated<sealed AlbumUpdate {
+        1 event_added: AlbumEventFeed
+        2 event_updated: AlbumEventFeed
+        // 현재 사용자가 속한 앨범 스페이스에 새로운 사용자가 추가된 경우
+        // 혹은 album owner인 경우 새로운 앨범 스페이스를 만든 경우. 이 경우 members_changed 업데이트가 여러개 나올 수도 있다.
+        3 members_changed: MembersAdded {
+          1 space: AlbumSpaceData
+          2 new_members: repeated<UserData>
+        }
+      }>
+    }>
+    2 next_page_token: string
+  }
+
+  rpc deleteAlbum: {
+    1 auth_token: string
+    2 album: AlbumKey
+  } -> {}
+
+  rpc createAlbumEvent: {
+    1 auth_token: string
+    2 name: string
+    // events와 items에 속한 모든 아이템을 포함한 album event 생성
+    3 events: repeated<EventKey>
+    4 items: repeated<ItemKey>
+  } -> AlbumEventData {
+    // AlbumEventView(1~5)
+    1 key: AlbumEventKey
+    2 name: string
+    3 description: string
+    4 items_count: int32
+    5 items_time_range: ItemsTimeRange
+    6 album: AlbumData
+    7 faces: Faces
+  }
+
+  // TODO 타임라인에서와 마찬가지로 앨범 이벤트도 과거로 랜덤 액세스할 수 있도록 만들어야 함
+  rpc listAlbumEvents: {
+    1 auth_token: string
+    2 page_token: string
+  } -> {
+    1 album_events: repeated<AlbumEventFeed(AlbumEventData) {
+      8 thumbnail_items: repeated<ItemView>
+    }>
+    2 next_page_token: string
+  }
+
+  rpc getAlbumEvent: {
+    1 auth_token: string
+    2 album_event: AlbumEventKey
+  } -> AlbumEventData
+
+  rpc deleteAlbumEvent: {
+    1 auth_token: string
+    2 album_event: AlbumEventKey
+  } -> {}
+
+  // 앨범 이벤트에 아이템 추가
+  rpc createAlbumEventItems: {
+    1 auth_token: string
+    2 album_event: AlbumEventKey
+    3 items: repeated<ItemKey>
+  } -> {
+    // TODO
+  }
+
+  rpc listAlbumEventItems: {
+    1 auth_token: string
+    2 album_event: AlbumEventKey
+    3 page_token: string
+  } -> {
+    1 items: repeated<ItemBriefData>
+    2 next_page_token: string
+  }
+
+  rpc deleteAlbumEventItem: {
+    1 auth_token: string
+    2 album_event: AlbumEventKey
+    3 item: ItemKey
+  } -> {}
+
+  // *** 앨범 스페이스
+  rpc createAlbumSpace: {
+    1 auth_token: string
+    2 album: AlbumKey
+    3 members: repeated<UserKey>
+  } -> AlbumSpaceData {
+    1 key: AlbumSpaceKey
+    2 members: repeated<UserData>
+  }
+
+  rpc deleteAlbumSpace: {
+    1 auth_token: string
+    2 album_space: AlbumSpaceKey
+  } -> {}
+
+  rpc listAlbumSpaces: {
+    1 auth_token: string
+    2 album: AlbumKey
+    3 page_token: string
+  } -> {
+    1 album_spaces: repeated<AlbumSpaceView>
+    2 next_page_token: string
+  }
+
+  rpc createAlbumSpaceUser: {
+    1 auth_token: string
+    2 album_space: AlbumSpaceKey
+    3 user: UserKey
+  } -> {
+    1 album_space: AlbumSpaceView
+  }
+
+  rpc deleteAlbumSpaceUser: {
+    1 auth_token: string
+    2 album_space: AlbumSpaceKey
+    3 user: UserKey
+  } -> {}
+
+  // TODO album space에서 아이템에 대한 반응(좋아요 등)/댓글
+  //  - 현재 기획이 확실치 않아서 일단 보류
+
+  // ** 친구
+  rpc createFriend: {
+    1 auth_token: string
+    2 user: UserKey
+  } -> FriendView
+
+  rpc listFriends: {
+    1 auth_token: string
+    2 page_token: string
+  } -> {
+    1 friends: repeated<FriendData {
+      // friend나 phone_number 중 하나는 반드시 설정되어야 함
+      // friend가 비어있으면 전화번호부에 phone_number가 등록되어있음을 의미
+      1 friend: optional<UserKey>
+      2 create_time: google.protobuf.Timestamp
+      3 phone_number: optional<string>
+    }>
+    2 next_page_token: string
+  }
+
+  rpc deleteFriend: {
+    1 auth_token: string
+    2 user: UserKey
+  } -> {}
+
+  // TODO 사용자 차단, 공유 추천 범위 제한
+
+  // *** 사용자 전화번호부 관리
+  rpc createUserPhoneBookEntries: {
+    1 auth_token: string
+    2 contacts: repeated<UserPhoneBookEntryInfo {
+      1 phone_number: string
+      2 name: string
+    }>
+  } -> UserPhoneBookEntryView
+
+  rpc deleteUserPhoneBookEntry: {
+    1 auth_token: string
+    2 phone_number: string
+  } -> {}
+}
+
+message UserData {
+  1 key: UserKey
+  2 name: string
+  3 profile_image_url: optional<string>
+}

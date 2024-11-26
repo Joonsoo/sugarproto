@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package com.giyeok.sugarproto.proto3kmp.generated;
+
+service Proto3KmpTestService {
+  rpc MyProtocol(MyProtocolReq) returns (MyProtocolRes);
+}
+
+message MyProtocolReq {
+  string name = 1;
+  int32 age = 2;
+}
+
+message MyProtocolRes {
+  string address = 1;
+}

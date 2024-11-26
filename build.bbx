@@ -246,3 +246,74 @@ tsProto {
     ],
   )
 }
+
+from bibix.plugins import grpc
+
+// proto3 -> kotlin multi platform + ktor3
+proto3kmp {
+  main = ktjvm.library(
+    srcs = glob("proto3kmp/main/kotlin/**.kt"),
+    deps = [
+      proto3Parser.main,
+    ]
+  )
+
+  protobufVersion = "3.25.0"
+  grpcVersion = "1.59.0"
+
+  protoSchema = protobuf.schema(["proto3kmp/grpcresearch/proto/test.proto"])
+  protoJava = protobuf.java(protoSchema)
+  protoKotlin = protobuf.kotlin(protoSchema)
+  grpcJava = grpc.java(protoSchema)
+  grpcKotlin = grpc.kotlin(protoSchema)
+
+  action generateTestProto {
+    file.clearDirectory("proto3kmp/grpcresearch/generated/java")
+    file.copyDirectory(protoJava.rootDir, "proto3kmp/grpcresearch/generated/java")
+    file.copyDirectory(grpcJava.rootDir, "proto3kmp/grpcresearch/generated/java")
+
+    file.clearDirectory("proto3kmp/grpcresearch/generated/kotlin")
+    file.copyDirectory(protoKotlin.rootDir, "proto3kmp/grpcresearch/generated/kotlin")
+    file.copyDirectory(grpcKotlin.rootDir, "proto3kmp/grpcresearch/generated/kotlin")
+  }
+
+  generatedJava = java.library(
+    srcs = glob("proto3kmp/grpcresearch/generated/java/**.java"),
+    deps = [
+      maven.artifact("com.google.protobuf", "protobuf-java", protobufVersion),
+      maven.artifact("com.google.protobuf", "protobuf-java-util", protobufVersion),
+      maven.artifact("io.grpc", "grpc-api", grpcVersion),
+      maven.artifact("io.grpc", "grpc-services", grpcVersion),
+      maven.artifact("io.grpc", "grpc-core", grpcVersion),
+      maven.artifact("io.grpc", "grpc-stub", grpcVersion),
+      maven.artifact("io.grpc", "grpc-netty-shaded", grpcVersion),
+      maven.artifact("javax.annotation", "javax.annotation-api", "1.3.2"),
+    ],
+  )
+
+  generatedKotlin = ktjvm.library(
+    srcs = glob("proto3kmp/grpcresearch/generated/kotlin/**.kt"),
+    deps = [
+      generatedJava,
+      maven.artifact("com.google.protobuf", "protobuf-kotlin", protobufVersion),
+      maven.artifact("io.grpc", "grpc-kotlin-stub", "1.4.1"),
+    ],
+  )
+
+  ktor_version = "3.0.1"
+  ktxCoroutinesVersion = "1.7.0"
+  grpcresearch = ktjvm.library(
+    srcs = glob("proto3kmp/grpcresearch/kotlin/**.kt"),
+    deps = [
+      generatedKotlin,
+      maven.artifact("io.ktor", "ktor-client-core-jvm", ktor_version),
+      maven.artifact("io.ktor", "ktor-client-okhttp-jvm", ktor_version),
+      maven.artifact("io.ktor", "ktor-server-core-jvm", ktor_version),
+      maven.artifact("io.ktor", "ktor-server-jetty-jakarta-jvm", ktor_version),
+      maven.artifact("com.squareup.okhttp3", "okhttp", "4.12.0"),
+      maven.artifact("org.jetbrains.kotlinx", "kotlinx-coroutines-core", ktxCoroutinesVersion),
+      maven.artifact("org.jetbrains.kotlinx", "kotlinx-coroutines-core-jvm", ktxCoroutinesVersion),
+      maven.artifact("org.jetbrains.kotlinx", "kotlinx-coroutines-jdk9", ktxCoroutinesVersion),
+    ]
+  )
+}

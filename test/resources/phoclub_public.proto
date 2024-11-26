@@ -1,0 +1,184 @@
+syntax = "proto3";
+
+package com.giyeok.phoclub.proto;
+
+import "google/protobuf/timestamp.proto";
+
+option java_multiple_files = true;
+
+message UserKey {
+  int64 id = 1;
+}
+message PrivateUserView {
+  UserKey key = 1;
+  google.protobuf.Timestamp createTime = 2;
+  string name = 3;
+}
+message UserView {
+  UserKey key = 1;
+  google.protobuf.Timestamp createTime = 2;
+  string name = 3;
+}
+message UserLoginKey {
+  UserKey user = 1;
+  int64 id = 2;
+}
+message UserLoginView {
+  UserLoginKey key = 1;
+  google.protobuf.Timestamp createTime = 2;
+  string description = 3;
+}
+message RefreshTokenKey {
+  UserKey user = 1;
+  int64 id = 2;
+}
+message ItemKey {
+  int64 id = 1;
+}
+message ItemView {
+  ItemKey key = 1;
+  UserKey owner = 2;
+  ItemKey duplicateOf = 3;
+  EventKey event = 4;
+  int64 size = 5;
+  bytes sha1Sum = 6;
+  bool uploadDone = 7;
+  int64 uploadSize = 8;
+  google.protobuf.Timestamp createTime = 9;
+  Location createLocation = 10;
+}
+message SharedItemView {
+  ItemKey key = 1;
+  UserKey owner = 2;
+  int64 size = 3;
+  bytes sha1Sum = 4;
+}
+message ItemDuplicateKey {
+  ItemKey original = 1;
+  ItemKey duplicate = 2;
+}
+message FaceKey {
+  UserKey user = 1;
+  int64 id = 2;
+}
+message ItemFaceKey {
+  ItemKey item = 1;
+  FaceKey face = 2;
+}
+message EventKey {
+  int64 id = 1;
+}
+message EventView {
+  EventKey key = 1;
+  string name = 2;
+  string description = 3;
+  EventTitleItems titleItem = 4;
+}
+message EventItemKey {
+  EventKey event = 1;
+  ItemKey item = 2;
+}
+message EventItemView {
+  EventKey event = 1;
+  ItemKey item = 2;
+}
+message ShareBucketKey {
+  int64 id = 1;
+}
+message ShareBucketView {
+  ShareBucketKey key = 1;
+  string name = 2;
+  ShareBucketAccessList shared = 3;
+  ItemKey titleItem = 4;
+}
+message ShareBucketAccessKey {
+  ShareBucketKey bucket = 1;
+  UserKey user = 2;
+}
+message ShareBucketAccessView {
+  ShareBucketKey bucket = 1;
+  UserKey user = 2;
+  UserKey inviter = 3;
+  google.protobuf.Timestamp createTime = 4;
+}
+message ShareBucketItemKey {
+  ShareBucketKey bucket = 1;
+  ItemKey item = 2;
+}
+message AlbumKey {
+  int64 id = 1;
+}
+message AlbumView {
+  AlbumKey key = 1;
+  UserKey owner = 2;
+  string name = 3;
+}
+message AlbumEventKey {
+  int64 id = 1;
+}
+message AlbumEventView {
+  AlbumEventKey key = 1;
+  string name = 2;
+  google.protobuf.Timestamp createTime = 3;
+  int32 itemsCount = 4;
+}
+message AlbumEventItemKey {
+  AlbumEventKey albumEvent = 1;
+  ItemKey item = 2;
+}
+message AlbumSpaceKey {
+  int64 id = 1;
+}
+message AlbumSpaceView {
+  AlbumSpaceKey key = 1;
+  AlbumSpaceUsers users = 2;
+  google.protobuf.Timestamp createTime = 3;
+}
+message AlbumSpaceUserKey {
+  AlbumSpaceKey albumSpace = 1;
+  UserKey user = 2;
+}
+message FriendKey {
+  UserKey user = 1;
+  UserKey friend = 2;
+}
+message FriendView {
+  FriendKey key = 1;
+  google.protobuf.Timestamp createTime = 2;
+}
+message UserPhoneBookEntryKey {
+  UserKey owner = 1;
+  string phoneNumber = 2;
+}
+message UserPhoneBookEntryView {
+  UserPhoneBookEntryKey key = 1;
+  string phoneNumber = 2;
+  string name = 3;
+  google.protobuf.Timestamp createTime = 4;
+}
+message Location {
+  double lat = 1;
+  double lon = 2;
+  double alt = 3;
+}
+message EventTitleItems {
+  repeated ItemKey items = 1;
+}
+message EventShareState {
+  repeated EventShareBucketState shareBuckets = 1;
+  repeated EventAlbumEventState albumEvents = 2;
+}
+message EventShareBucketState {
+  ShareBucketKey shareBucket = 1;
+  int32 sharedItemsCount = 2;
+  int32 sharedUsersCount = 3;
+}
+message EventAlbumEventState {
+  AlbumEventKey albumEvent = 1;
+}
+message ShareBucketAccessList {
+  repeated UserKey shared = 1;
+}
+message AlbumSpaceUsers {
+  repeated UserKey users = 1;
+}
