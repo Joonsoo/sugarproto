@@ -9,6 +9,9 @@ service Proto3KmpTestService {
 message MyProtocolReq {
   string name = 1;
   int32 age = 2;
+  optional string address = 3;
+  repeated string family = 4;
+  map<string, string> map = 5;
 }
 
 message MyProtocolRes {

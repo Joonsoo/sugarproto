@@ -5,6 +5,10 @@ import com.giyeok.sugarproto.proto3kmp.generated.Test.MyProtocolReq
 import com.giyeok.sugarproto.proto3kmp.generated.Test.MyProtocolRes
 import com.giyeok.sugarproto.proto3kmp.generated.myProtocolReq
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder
+import io.ktor.client.*
+import io.ktor.client.engine.okhttp.*
+import io.ktor.client.request.*
+import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
@@ -13,8 +17,50 @@ import okhttp3.Protocol
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.ByteArrayOutputStream
+import java.net.http.HttpClient
 
 fun main() {
+  val client = HttpClient(OkHttp) {
+    engine {
+      config {
+        protocols(listOf(Protocol.H2_PRIOR_KNOWLEDGE))
+      }
+    }
+  }
+
+  runBlocking {
+    val req = myProtocolReq {
+      this.name = "Joonsoo"
+      this.age = 36
+    }
+
+    val msgBytes = req.toByteArray()
+    val payload = ByteArrayOutputStream().use { stream ->
+      val len = msgBytes.size
+      // Length-Prefixed-Message → Compressed-Flag Message-Length Message
+      // Compressed-Flag → 0 / 1 ; encoded as 1 byte unsigned integer
+      stream.write(0)
+      // Message-Length → {length of Message} ; encoded as 4 byte unsigned integer (big endian)
+      stream.write((len shr 24) and 0xff)
+      stream.write((len shr 16) and 0xff)
+      stream.write((len shr 8) and 0xff)
+      stream.write(len and 0xff)
+      // Message → *{binary octet}
+      stream.writeBytes(msgBytes)
+      stream.flush()
+      stream.toByteArray()
+    }
+
+    val reqBuilder = HttpRequestBuilder {
+      this.host = "localhost"
+      this.port = 8880
+      this.path("/com.giyeok.sugarproto.proto3kmp.generated.Proto3KmpTestService/MyProtocol")
+    }
+    reqBuilder.setBody(payload)
+    val res = client.post(reqBuilder)
+    println(res)
+  }
+
   val req = myProtocolReq {
     this.name = "Joonsoo"
     this.age = 36
@@ -86,7 +132,8 @@ fun tryOkHttp(req: MyProtocolReq) {
     stream.toByteArray()
   }
 
-  val url = "http://localhost:8880/com.giyeok.sugarproto.proto3kmp.generated.Proto3KmpTestService/MyProtocol".toHttpUrl()
+  val url =
+    "http://localhost:8880/com.giyeok.sugarproto.proto3kmp.generated.Proto3KmpTestService/MyProtocol".toHttpUrl()
   println(url.scheme)
   println(url.host)
   println(url.encodedPath)

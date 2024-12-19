@@ -255,6 +255,7 @@ proto3kmp {
     srcs = glob("proto3kmp/main/kotlin/**.kt"),
     deps = [
       proto3Parser.main,
+      pblib,
     ]
   )
 
@@ -300,14 +301,23 @@ proto3kmp {
     ],
   )
 
+  pblib = ktjvm.library(
+    srcs = glob("proto3kmp/pblib/kotlin/**.kt"),
+    deps = [
+      maven.artifact("io.ktor", "ktor-client-core-jvm", ktor_version),
+    ]
+  )
+
   ktor_version = "3.0.1"
   ktxCoroutinesVersion = "1.7.0"
   grpcresearch = ktjvm.library(
     srcs = glob("proto3kmp/grpcresearch/kotlin/**.kt"),
     deps = [
       generatedKotlin,
+      pblib,
       maven.artifact("io.ktor", "ktor-client-core-jvm", ktor_version),
       maven.artifact("io.ktor", "ktor-client-okhttp-jvm", ktor_version),
+      maven.artifact("io.ktor", "ktor-client-cio-jvm", ktor_version),
       maven.artifact("io.ktor", "ktor-server-core-jvm", ktor_version),
       maven.artifact("io.ktor", "ktor-server-jetty-jakarta-jvm", ktor_version),
       maven.artifact("com.squareup.okhttp3", "okhttp", "4.12.0"),
@@ -315,5 +325,10 @@ proto3kmp {
       maven.artifact("org.jetbrains.kotlinx", "kotlinx-coroutines-core-jvm", ktxCoroutinesVersion),
       maven.artifact("org.jetbrains.kotlinx", "kotlinx-coroutines-jdk9", ktxCoroutinesVersion),
     ]
+  )
+
+  test = ktjvm.library(
+    srcs = glob("proto3kmp/test/kotlin/**.kt"),
+    deps = [main, ...testDeps]
   )
 }
