@@ -1,6 +1,6 @@
 package com.giyeok.sugarproto.proto3kmp.example
 
-import com.giyeok.sugarproto.proto3kmp.GrpcService
+import com.giyeok.sugarproto.proto3kmp.GeneratedGrpcService
 import com.giyeok.sugarproto.proto3kmp.ServiceDescriptor
 import com.giyeok.sugarproto.proto3kmp.ServiceRpcDescriptor
 import com.giyeok.sugarproto.proto3kmp.parseBinary
@@ -11,15 +11,17 @@ import io.ktor.http.*
 
 class ExampleGeneratedServiceClient(
   channel: HttpClient,
-  val serverHost: String,
-  val serverPort: Int
-): GrpcService(channel) {
-  override val serviceDescriptor: ServiceDescriptor = ServiceDescriptor(
-    "", "Example",
-    listOf(
-      ServiceRpcDescriptor("SigninByFirebaseId", false, Pair("", ""), false, Pair("", ""))
+  serverHost: String,
+  serverPort: Int
+): GeneratedGrpcService(channel, serverHost, serverPort) {
+  companion object {
+    val serviceDescriptor: ServiceDescriptor = ServiceDescriptor(
+      "", "Example",
+      listOf(
+        ServiceRpcDescriptor("SigninByFirebaseId", false, "", false, "")
+      )
     )
-  )
+  }
 
   suspend fun signinByFirebaseId(request: ExampleGeneratedMessage): ExampleGeneratedMessage {
     val serialized = request.serialize()

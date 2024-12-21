@@ -45,9 +45,7 @@ data object DoubleType: ScalarType() {
 
 data object StringType: ValueType()
 data object BytesType: ValueType()
-data class MessageType(val pkg: String, val messageTypeName: String): ValueType() {
-  val canonicalName get() = if (pkg.isEmpty()) messageTypeName else "$pkg.$messageTypeName"
-}
+data class MessageType(val canonicalName: String): ValueType()
 
 data class PackedRepeatedField(val elemType: ScalarType): ValueType()
 

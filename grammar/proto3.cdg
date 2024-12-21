@@ -78,8 +78,8 @@ oneofName = ident
 mapName = ident
 serviceName = ident
 rpcName = ident
-messageType = '.'? (ident '.')* messageName {MessageType(firstDot=ispresent($0), parent=$1, name=$2)}
-enumType = '.'? (ident '.')* enumName {EnumType(firstDot=ispresent($0), parent=$1, name=$2)}
+messageType = '.'? (ident '.')* messageName {MessageType(firstDot=ispresent($0), parent=$1$0, name=$2)}
+enumType = '.'? (ident '.')* enumName {EnumType(firstDot=ispresent($0), parent=$1$0, name=$2)}
 
 intLit: IntLit = <zeroLit | decimalLit | octalLit | hexLit>
 zeroLit = '0' {DecimalLit("0")}

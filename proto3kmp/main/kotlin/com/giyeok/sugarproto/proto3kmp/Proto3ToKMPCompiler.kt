@@ -56,7 +56,16 @@ class Proto3ToKMPCompiler(val names: ProtoNames, val def: Proto3Ast.Proto3) {
       Proto3Ast.BuiltinTypeEnum.UINT64 -> Int64Type(Int64Encoding.UINT64)
     }
 
-    is Proto3Ast.MessageOrEnumType -> TODO()
+    is Proto3Ast.MessageOrEnumType -> {
+      val canonicalName = (typ.name.parent + typ.name.name).joinToString(".") { it.name }
+      if (canonicalName in names.messages) {
+        MessageType(canonicalName)
+      } else if (canonicalName in names.enums) {
+        EnumType(canonicalName)
+      } else {
+        throw IllegalStateException("Type not found: $canonicalName")
+      }
+    }
   }
 
   fun compileType(typ: Proto3Ast.MapKeyType): ValueType = when (typ) {
@@ -75,8 +84,8 @@ class Proto3ToKMPCompiler(val names: ProtoNames, val def: Proto3Ast.Proto3) {
   }
 
   fun compileType(typ: Proto3Ast.MessageType): MessageType {
-    // TODO
-    return MessageType("", typ.name.name)
+    val canonicalName = (typ.parent + typ.name).joinToString(".") { it.name }
+    return MessageType(canonicalName)
   }
 
   fun Proto3Ast.FieldModifier?.isRepeated(): Boolean =
@@ -84,6 +93,13 @@ class Proto3ToKMPCompiler(val names: ProtoNames, val def: Proto3Ast.Proto3) {
 
   fun Proto3Ast.FieldModifier?.isOptional(): Boolean =
     this == Proto3Ast.FieldModifier.OPTIONAL
+
+  fun fieldNameToCamelCase(name: String): String {
+    val words = name.split("_")
+    return (words.take(1) +
+      words.drop(1).map { word -> word.replaceFirstChar { it.uppercase() } })
+      .joinToString("")
+  }
 
   fun compileMessage(msg: Proto3Ast.Message): MessageDef {
     val fields = mutableListOf<MessageField>()
@@ -95,7 +111,7 @@ class Proto3ToKMPCompiler(val names: ProtoNames, val def: Proto3Ast.Proto3) {
           fields.add(
             MessageField(
               elem.fieldNumber.toInt(),
-              elem.name.name,
+              fieldNameToCamelCase(elem.name.name),
               MessageFieldType.Value(
                 compileType(elem.typ),
                 elem.modifier.isRepeated(),
@@ -109,7 +125,7 @@ class Proto3ToKMPCompiler(val names: ProtoNames, val def: Proto3Ast.Proto3) {
           fields.add(
             MessageField(
               elem.number.toInt(),
-              elem.mapName.name,
+              fieldNameToCamelCase(elem.mapName.name),
               MessageFieldType.Map(compileType(elem.keyType), compileType(elem.valueType))
             )
           )

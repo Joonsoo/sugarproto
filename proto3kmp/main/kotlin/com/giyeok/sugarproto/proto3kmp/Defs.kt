@@ -29,7 +29,9 @@ data class ServiceDef(
   val pkg: String,
   val name: String,
   val rpcs: List<RpcDef>,
-)
+) {
+  val canonicalName: String get() = if (pkg.isEmpty()) name else "$pkg.$name"
+}
 
 data class RpcDef(
   val name: String,

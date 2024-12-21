@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package com.giyeok.sugarproto.proto3kmp.generated;
 
+// import "google/protobuf/timestamp.proto";
+
 service Proto3KmpTestService {
   rpc MyProtocol(MyProtocolReq) returns (MyProtocolRes);
 }
@@ -12,8 +14,24 @@ message MyProtocolReq {
   optional string address = 3;
   repeated string family = 4;
   map<string, string> map = 5;
+  Timestamp plain_ts = 6;
+  optional Timestamp optional_ts = 7;
+  repeated Timestamp repeated_ts = 8;
 }
 
 message MyProtocolRes {
   string address = 1;
+}
+
+message Timestamp {
+  // Represents seconds of UTC time since Unix epoch
+  // 1970-01-01T00:00:00Z. Must be from 0001-01-01T00:00:00Z to
+  // 9999-12-31T23:59:59Z inclusive.
+  int64 seconds = 1;
+
+  // Non-negative fractions of a second at nanosecond resolution. Negative
+  // second values with fractions must still have non-negative nanos values
+  // that count forward in time. Must be from 0 to 999,999,999
+  // inclusive.
+  int32 nanos = 2;
 }

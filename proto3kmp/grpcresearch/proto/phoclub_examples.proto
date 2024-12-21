@@ -1,0 +1,16 @@
+message PendingItemData {
+  com.giyeok.phoclub.proto.ItemKey key = 1;
+  // 서버가 알고 있는 파일의 크기와 sha256 sum - 서버에 업로드할 때 정확하게 일치시켜야 한다
+  int64 file_size = 2;
+  bytes sha256_sum = 3;
+  // 아이템이 서버에 추가된 시각
+  google.protobuf.Timestamp server_create_time = 4;
+  // 서버에 마킹된 업데이트 시각
+  int64 update_timestamp = 5;
+  // 업로드 URL. 24시간이 지나면 만료
+  string upload_url = 6;
+  // 업로드시 설정해주어야 하는 헤더
+  map<string, string> upload_headers = 8;
+  // URL이 만료되는 시각
+  google.protobuf.Timestamp upload_url_expire_time = 7;
+}

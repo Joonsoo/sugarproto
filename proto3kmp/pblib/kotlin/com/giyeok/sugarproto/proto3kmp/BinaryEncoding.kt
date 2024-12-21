@@ -36,10 +36,10 @@ data class MessageEncodingResult(
   private val grouped = pairs.groupBy { it.tagNumber }
 
   fun getSingle(tagNumber: Int): Value =
-    grouped[tagNumber]?.singleOrNull()?.value ?: throw IllegalArgumentException()
+    grouped[tagNumber]?.lastOrNull()?.value ?: throw IllegalArgumentException()
 
   fun getOptional(tagNumber: Int): Value? =
-    grouped[tagNumber]?.singleOrNull()?.value
+    grouped[tagNumber]?.lastOrNull()?.value
 
   fun getRepeated(tagNumber: Int): List<Value> =
     grouped[tagNumber]?.map { it.value } ?: listOf()
@@ -47,11 +47,11 @@ data class MessageEncodingResult(
   fun calculateSerializedSize(): Int {
     var size = 0
     for ((tagNumber, value) in pairs) {
-      size += lengthOfEncodedVarint(tagNumber shl 3)
+      size += lengthOfEncodedVarInt(tagNumber shl 3)
       when (value) {
-        is VarIntValue -> size += lengthOfEncodedVarint(value.value)
+        is VarIntValue -> size += lengthOfEncodedVarInt(value.value)
         is I64Value -> size += 8
-        is LenValue -> size += lengthOfEncodedVarint(value.length) + value.length
+        is LenValue -> size += lengthOfEncodedVarInt(value.length) + value.length
         is I32Value -> size += 4
       }
     }
@@ -72,13 +72,13 @@ data class MessageEncodingResult(
         is LenValue -> 2
         is I32Value -> 5
       }
-      writer.writeVarint((pair.tagNumber.toLong() shl 3) or typeCode.toLong())
+      writer.writeVarInt((pair.tagNumber.toLong() shl 3) or typeCode.toLong())
 
       when (pair.value) {
-        is VarIntValue -> writer.writeVarint(pair.value.value)
+        is VarIntValue -> writer.writeVarInt(pair.value.value)
         is I64Value -> writer.write64(pair.value.value)
         is LenValue -> {
-          writer.writeVarint(pair.value.length.toLong())
+          writer.writeVarInt(pair.value.length.toLong())
           writer.writeBytes(pair.value.bytes)
         }
 
@@ -96,7 +96,10 @@ data class MessageEncodingPair(
 )
 
 sealed class Value
-data class VarIntValue(val value: Long): Value()
+data class VarIntValue(val value: Long): Value() {
+  constructor(value: Int): this(value.toLong())
+}
+
 data class I64Value(val value: Long): Value()
 data class LenValue(val length: Int, val bytes: ByteArray): Value()
 data class I32Value(val value: Int): Value()

@@ -43,7 +43,17 @@ object KMPCodeGen {
       is MessageFieldType.Value -> {
         when (ftype.type) {
           BytesType -> TODO()
-          is MessageType -> TODO()
+          is MessageType -> {
+            val bld = ftype.type.canonicalName + ".Builder"
+            if (ftype.repeated) {
+              BuilderFieldInfo("MutableList<$bld>", "mutableListOf()", true)
+            } else if (ftype.optional) {
+              BuilderFieldInfo("$bld?", "null", false)
+            } else {
+              BuilderFieldInfo(bld, "$bld()", true)
+            }
+          }
+
           is PackedRepeatedField -> TODO()
           BoolType -> {
             if (ftype.repeated) {
@@ -69,7 +79,17 @@ object KMPCodeGen {
             }
           }
 
-          is Int64Type -> TODO()
+          is Int64Type -> {
+            val valueType = if (ftype.type.encoding.isUnsigned) "ULong" else "Long"
+            if (ftype.repeated) {
+              BuilderFieldInfo("MutableList<$valueType>", "mutableListOf()", true)
+            } else if (ftype.optional) {
+              BuilderFieldInfo("$valueType?", "null", false)
+            } else {
+              BuilderFieldInfo(valueType, if (ftype.type.encoding.isUnsigned) "0u" else "0", false)
+            }
+          }
+
           StringType -> {
             if (ftype.repeated) {
               BuilderFieldInfo("MutableList<String>", "mutableListOf()", true)
@@ -90,17 +110,42 @@ object KMPCodeGen {
         )
     }
 
-  fun descCodeOf(type: ValueType): String = when (type) {
+  fun descCodeOf(writer: CodeWriter, type: ValueType): String = when (type) {
     BoolType -> "BoolType"
-    is Int32Type -> "Int32Type()"
-    is Int64Type -> "Int64Type()"
+    is Int32Type -> {
+      writer.addImport("com.giyeok.sugarproto.proto3kmp.Int32Type")
+      writer.addImport("com.giyeok.sugarproto.proto3kmp.Int32Encoding")
+      "Int32Type(Int32Encoding.${type.encoding})"
+    }
+
+    is Int64Type -> {
+      writer.addImport("com.giyeok.sugarproto.proto3kmp.Int64Type")
+      writer.addImport("com.giyeok.sugarproto.proto3kmp.Int64Encoding")
+      "Int64Type(Int64Encoding.${type.encoding})"
+    }
+
     FloatType -> "FloatType"
     DoubleType -> "DoubleType"
     BytesType -> "BytesType"
-    StringType -> "StringType"
-    is MessageType -> "MessageType(\"${type.pkg}\", \"${type.messageTypeName}\")"
+    StringType -> {
+      writer.addImport("com.giyeok.sugarproto.proto3kmp.StringType")
+      "StringType"
+    }
+
+    is MessageType -> {
+      writer.addImport("com.giyeok.sugarproto.proto3kmp.MessageType")
+      "MessageType(\"${type.canonicalName}\")"
+    }
+
     is EnumType -> "EnumType(\"${type.enumName}\")"
     is PackedRepeatedField -> TODO()
+  }
+
+  fun ktValueEncodeType(encoding: ProtoEncodingType): String = when (encoding) {
+    ProtoEncodingType.VARINT -> "VarIntValue"
+    ProtoEncodingType.LEN -> "LenValue"
+    ProtoEncodingType.I64 -> "I64Value"
+    ProtoEncodingType.I32 -> "I32Value"
   }
 
   // returns 필요한 타입 이름들
@@ -111,34 +156,38 @@ object KMPCodeGen {
         writer.writeLine("val ${field.name}: ${fieldTypeDefCodeOf(field)},")
       }
     }
-    writer.writeLine("): MessageType() {")
+    writer.writeLine("): GeneratedMessage() {")
+    writer.addImport("com.giyeok.sugarproto.proto3kmp.GeneratedMessage")
     writer.indent {
       writer.writeLine("companion object {")
       writer.indent {
         writer.writeLine("val descriptor: MessageTypeDescriptor = MessageTypeDescriptor(")
+        writer.addImport("com.giyeok.sugarproto.proto3kmp.MessageTypeDescriptor")
         writer.indent {
           writer.writeLine("\"${message.pkg}\",")
           writer.writeLine("\"${message.name}\",")
           writer.writeLine("listOf(")
+          writer.addImport("com.giyeok.sugarproto.proto3kmp.MessageField")
+          writer.addImport("com.giyeok.sugarproto.proto3kmp.MessageFieldType")
           writer.indent {
             for (field in message.fields) {
               when (val fieldType = field.fieldType) {
                 is MessageFieldType.Map -> {
-                  val keyTypeDesc = descCodeOf(fieldType.key)
-                  val valueTypeDesc = descCodeOf(fieldType.value)
-                  writer.writeLine("MessageField.Map(${field.number}, \"${field.name}\", $keyTypeDesc, $valueTypeDesc),")
+                  val keyTypeDesc = descCodeOf(writer, fieldType.key)
+                  val valueTypeDesc = descCodeOf(writer, fieldType.value)
+                  writer.writeLine("MessageField(${field.number}, \"${field.name}\", MessageFieldType.Map($keyTypeDesc, $valueTypeDesc)),")
                 }
 
                 is MessageFieldType.Value -> {
-                  val typeDesc = descCodeOf(fieldType.type)
-                  writer.writeLine("MessageField.Value(${field.number}, \"${field.name}\", ${typeDesc}, ${fieldType.optional}, ${fieldType.repeated}),")
+                  val typeDesc = descCodeOf(writer, fieldType.type)
+                  writer.writeLine("MessageField(${field.number}, \"${field.name}\", MessageFieldType.Value(${typeDesc}, ${fieldType.optional}, ${fieldType.repeated})),")
                 }
               }
             }
           }
           writer.writeLine(")")
         }
-        writer.writeLine("}")
+        writer.writeLine(")")
         writer.writeLine()
         writer.writeLine("fun fromByteArray(bytes: ByteArray): ${message.name} {")
         writer.indent {
@@ -158,11 +207,13 @@ object KMPCodeGen {
           writer.writeLine("$valVar ${field.name}: ${d.builderFieldType} = ${d.initExpr},")
         }
       }
-      writer.writeLine("): MessageBuilderType<${message.name}>() {")
+      writer.writeLine("): GeneratedMessageBuilder<${message.name}>() {")
+      writer.addImport("com.giyeok.sugarproto.proto3kmp.GeneratedMessageBuilder")
       writer.indent {
         writer.writeLine("override fun setFromSerializedByteArray(bytes: ByteArray) {")
         writer.indent {
           writer.writeLine("val pairs = parseBinary(bytes)")
+          writer.addImport("com.giyeok.sugarproto.proto3kmp.parseBinary")
           writer.writeLine("setFromEncodingResult(pairs)")
         }
         writer.writeLine("}")
@@ -179,44 +230,118 @@ object KMPCodeGen {
             writer.writeLine("check(encodingResult.tagNumbers.containsAll(setOf(${requiredFields.joinToString { it.number.toString() }})))")
           }
 
+          fun generateConvertCode(typ: ValueType, valueName: String): String {
+            when (typ) {
+              StringType -> {
+                writer.addImport("com.giyeok.sugarproto.proto3kmp.LenValue")
+                writer.writeLine("check($valueName is LenValue)")
+                return "String(${valueName}.bytes)"
+              }
+
+              is Int32Type -> {
+                val ktValueType = ktValueEncodeType(typ.encoding.encodingType)
+                val valueConvertMethod = when (typ.encoding) {
+                  Int32Encoding.INT32 -> ".toInt()"
+                  Int32Encoding.UINT32 -> ".toUInt()"
+                  Int32Encoding.SINT32 -> ".toInt()"
+                  Int32Encoding.FIXED32 -> TODO()
+                  Int32Encoding.SFIXED32 -> TODO()
+                }
+                writer.writeLine("check($valueName is $ktValueType)")
+                return "$valueName.value$valueConvertMethod"
+              }
+
+              is Int64Type -> {
+                val ktValueType = ktValueEncodeType(typ.encoding.encodingType)
+                val valueConvertMethod = when (typ.encoding) {
+                  Int64Encoding.INT64 -> ""
+                  Int64Encoding.UINT64 -> ".toULong()"
+                  Int64Encoding.SINT64 -> ""
+                  Int64Encoding.FIXED64 -> TODO()
+                  Int64Encoding.SFIXED64 -> TODO()
+                }
+                writer.writeLine("check($valueName is $ktValueType)")
+                return "$valueName.value$valueConvertMethod"
+              }
+
+              BytesType -> TODO()
+              is MessageType -> throw AssertionError()
+
+              is PackedRepeatedField -> TODO()
+              BoolType -> TODO()
+              DoubleType -> TODO()
+              is EnumType -> TODO()
+              FloatType -> TODO()
+            }
+          }
+
           for (field in message.fields) {
             when (val ftype = field.fieldType) {
               is MessageFieldType.Value -> {
-                if (ftype.optional) {
-                  writer.writeLine("val ${field.name} = encodingResult.getOptional(${field.number})")
-                } else if (ftype.repeated) {
-                  writer.writeLine("TODO()")
-                } else {
-                  writer.writeLine("val ${field.name} = encodingResult.getSingle(${field.number})")
-                  when (ftype.type) {
-                    StringType -> {
+                if (ftype.type is MessageType) {
+                  if (ftype.optional) {
+                    writer.writeLine("val ${field.name} = encodingResult.getOptional(${field.number})")
+                    writer.writeLine("${field.name}?.let {")
+                    writer.indent {
                       writer.writeLine("check(${field.name} is LenValue)")
-                      writer.writeLine("this.${field.name} = String(${field.name}.bytes)")
+                      writer.writeLine("val builder = ${ftype.type.canonicalName}.Builder()")
+                      writer.writeLine("builder.setFromSerializedByteArray(${field.name}.bytes)")
+                      writer.writeLine("this.${field.name} = builder")
                     }
-
-                    is Int32Type -> {
-                      writer.writeLine("check(${field.name} is ${ftype.type.encoding.encodingType})")
-                      writer.writeLine("this.${field.name} = ${field.name}.value")
+                    writer.writeLine("}")
+                  } else if (ftype.repeated) {
+                    writer.writeLine("this.${field.name}.clear()")
+                    writer.writeLine("encodingResult.getRepeated(${field.number}).forEach {")
+                    writer.indent {
+                      writer.writeLine("check(it is LenValue)")
+                      writer.writeLine("val builder = ${ftype.type.canonicalName}.Builder()")
+                      writer.writeLine("builder.setFromSerializedByteArray(it.bytes)")
+                      writer.writeLine("this.${field.name}.add(builder)")
                     }
-
-                    is Int64Type -> {
-                      writer.writeLine("check(${field.name} is ${ftype.type.encoding.encodingType})")
-                      writer.writeLine("this.${field.name} = ${field.name}.value")
+                    writer.writeLine("}")
+                  } else {
+                    writer.writeLine("val ${field.name} = encodingResult.getSingle(${field.number})")
+                    writer.writeLine("check(${field.name} is LenValue)")
+                    writer.writeLine("this.${field.name}.setFromSerializedByteArray(${field.name}.bytes)")
+                  }
+                } else {
+                  if (ftype.optional) {
+                    writer.writeLine("val ${field.name} = encodingResult.getOptional(${field.number})")
+                    writer.writeLine("this.${field.name} = ${field.name}?.let {")
+                    writer.indent {
+                      val expr = generateConvertCode(ftype.type, "it")
+                      writer.writeLine(expr)
                     }
-
-                    BytesType -> TODO()
-                    is MessageType -> TODO()
-                    is PackedRepeatedField -> TODO()
-                    BoolType -> TODO()
-                    DoubleType -> TODO()
-                    is EnumType -> TODO()
-                    FloatType -> TODO()
+                    writer.writeLine("}")
+                  } else if (ftype.repeated) {
+                    writer.writeLine("this.${field.name}.clear()")
+                    writer.writeLine("encodingResult.getRepeated(${field.number}).forEach {")
+                    writer.indent {
+                      val expr = generateConvertCode(ftype.type, "it")
+                      writer.writeLine("this.${field.name}.add($expr)")
+                    }
+                    writer.writeLine("}")
+                  } else {
+                    writer.writeLine("val ${field.name} = encodingResult.getSingle(${field.number})")
+                    val expr = generateConvertCode(ftype.type, field.name)
+                    writer.writeLine("this.${field.name} = $expr")
                   }
                 }
               }
 
               is MessageFieldType.Map -> {
-                writer.writeLine("// TODO")
+                writer.writeLine("this.${field.name}.clear()")
+                writer.writeLine("encodingResult.getRepeated(${field.number}).forEach { kvPair ->")
+                writer.indent {
+                  writer.writeLine("check(kvPair is LenValue)")
+                  writer.writeLine("val parsedKvPair = parseBinary(kvPair.bytes)")
+                  writer.writeLine("val rawKey = parsedKvPair.getSingle(1)")
+                  val keyExpr = generateConvertCode(ftype.key, "rawKey")
+                  writer.writeLine("val rawValue = parsedKvPair.getSingle(2)")
+                  val valueExpr = generateConvertCode(ftype.key, "rawValue")
+                  writer.writeLine("this.${field.name}[$keyExpr] = $valueExpr")
+                }
+                writer.writeLine("}")
               }
             }
           }
@@ -245,12 +370,26 @@ object KMPCodeGen {
                     }
                   }
 
-                  else -> writer.writeLine("${field.name},")
+                  else -> {
+                    if (ftype.optional) {
+                      if (ftype.repeated) {
+                        writer.writeLine("${field.name}?.toList(),")
+                      } else {
+                        writer.writeLine("${field.name},")
+                      }
+                    } else {
+                      if (ftype.repeated) {
+                        writer.writeLine("${field.name}.toList(),")
+                      } else {
+                        writer.writeLine("${field.name},")
+                      }
+                    }
+                  }
                 }
               }
 
               is MessageFieldType.Map -> {
-                writer.writeLine("TODO()")
+                writer.writeLine("${field.name}.toMap(),")
               }
             }
           }
@@ -259,41 +398,89 @@ object KMPCodeGen {
       }
       writer.writeLine("}")
       writer.writeLine()
+      writer.addImport("com.giyeok.sugarproto.proto3kmp.MessageEncodingResult")
       writer.writeLine("override fun serialize(): MessageEncodingResult {")
       writer.indent {
-        writer.writeLine("val pairs = buildList<MessageEncodingPair> {")
+        writer.writeLine("val msg = this")
+        writer.addImport("com.giyeok.sugarproto.proto3kmp.MessageEncodingPair")
+        writer.writeLine("val pairs = buildList {")
         writer.indent {
+          fun generateAddPairCode(typ: ValueType, number: Int, value: String) {
+            when (typ) {
+              BoolType -> {
+                writer.writeLine("add(MessageEncodingPair($number, VarIntValue(if ($value) 1 else 0)))")
+              }
+
+              BytesType -> {
+                writer.writeLine("add(MessageEncodingPair($number, LenValue($value.size, $value)))")
+              }
+
+              is MessageType -> {
+                writer.writeLine("$value.serializeToByteArray().let { arr ->")
+                writer.indent {
+                  writer.writeLine("add(MessageEncodingPair($number, LenValue(arr.size, arr)))")
+                }
+                writer.writeLine("}")
+              }
+
+              is PackedRepeatedField -> TODO()
+              FloatType -> TODO()
+              DoubleType -> TODO()
+              is EnumType -> TODO()
+              is Int32Type -> {
+                val encodingType = encodeTypeOf(writer, typ.byteEncoding)
+                writer.writeLine("add(MessageEncodingPair($number, $encodingType($value)))")
+              }
+
+              is Int64Type -> {
+                val encodingType = encodeTypeOf(writer, typ.byteEncoding)
+                writer.writeLine("add(MessageEncodingPair($number, $encodingType($value)))")
+              }
+
+              StringType -> {
+                // TODO repeated, optional
+                writer.writeLine("$value.encodeToByteArray().let { value ->")
+                writer.indent {
+                  writer.writeLine("add(MessageEncodingPair($number, LenValue(value.size, value)))")
+                }
+                writer.writeLine("}")
+              }
+            }
+          }
+
           for (field in message.fields) {
             when (val ftype = field.fieldType) {
               is MessageFieldType.Value -> {
-                when (ftype.type) {
-                  BoolType -> TODO()
-                  BytesType -> TODO()
-                  is MessageType -> TODO()
-                  is PackedRepeatedField -> TODO()
-                  FloatType -> TODO()
-                  DoubleType -> TODO()
-                  is EnumType -> TODO()
-                  is Int32Type -> {
-                    val encodingType = encodeTypeOf(ftype.type.byteEncoding)
-                    writer.writeLine("add(MessageEncodingPair(${field.number}, $encodingType(this.${field.name})))")
+                if (ftype.repeated) {
+                  writer.writeLine("msg.${field.name}.forEach { value ->")
+                  writer.indent {
+                    generateAddPairCode(ftype.type, field.number, "value")
                   }
-
-                  is Int64Type -> {
-                    val encodingType = encodeTypeOf(ftype.type.byteEncoding)
-                    writer.writeLine("add(MessageEncodingPair(${field.number}, $encodingType(this.${field.name})))")
+                  writer.writeLine("}")
+                } else if (ftype.optional) {
+                  writer.writeLine("msg.${field.name}?.let { value ->")
+                  writer.indent {
+                    generateAddPairCode(ftype.type, field.number, "value")
                   }
-
-                  StringType -> {
-                    val enc = "${field.name}_"
-                    writer.writeLine("val $enc = this.${field.name}.encodeToByteArray()")
-                    writer.writeLine("add(MessageEncodingPair(${field.number}, LenValue($enc.size, $enc)))")
-                  }
+                  writer.writeLine("}")
+                } else {
+                  generateAddPairCode(ftype.type, field.number, "msg.${field.name}")
                 }
               }
 
               is MessageFieldType.Map -> {
-                writer.writeLine("// TODO map")
+                writer.writeLine("msg.${field.name}.forEach { (key, value) ->")
+                writer.indent {
+                  writer.writeLine("val kvPair = buildList {")
+                  writer.indent {
+                    generateAddPairCode(ftype.key, 1, "key")
+                    generateAddPairCode(ftype.key, 2, "value")
+                  }
+                  writer.writeLine("}")
+                  writer.writeLine("val kvPairEncoded = MessageEncodingResult(kvPair).toByteArray()")
+                  writer.writeLine("add(MessageEncodingPair(${field.number}, LenValue(kvPairEncoded.size, kvPairEncoded)))")
+                }
+                writer.writeLine("}")
               }
             }
           }
@@ -306,30 +493,51 @@ object KMPCodeGen {
     writer.writeLine("}")
   }
 
-  fun encodeTypeOf(typ: ProtoEncodingType): String = when (typ) {
-    ProtoEncodingType.VARINT -> "VarIntValue"
-    ProtoEncodingType.I32 -> "I32Value"
-    ProtoEncodingType.I64 -> "I64Value"
-    ProtoEncodingType.LEN -> "LenValue"
+  fun encodeTypeOf(writer: CodeWriter, typ: ProtoEncodingType): String = when (typ) {
+    ProtoEncodingType.VARINT -> {
+      writer.addImport("com.giyeok.sugarproto.proto3kmp.VarIntValue")
+      "VarIntValue"
+    }
+
+    ProtoEncodingType.I32 -> {
+      writer.addImport("com.giyeok.sugarproto.proto3kmp.I32Value")
+      "I32Value"
+    }
+
+    ProtoEncodingType.I64 -> {
+      writer.addImport("com.giyeok.sugarproto.proto3kmp.I64Value")
+      "I64Value"
+    }
+
+    ProtoEncodingType.LEN -> {
+      writer.addImport("com.giyeok.sugarproto.proto3kmp.LenValue")
+      "LenValue"
+    }
   }
 
   fun generateService(writer: CodeWriter, service: ServiceDef) {
     writer.writeLine("class ${service.name}Client(")
     writer.indent {
+      writer.addImport("io.ktor.client.HttpClient")
       writer.writeLine("channel: HttpClient,")
+      writer.writeLine("serverHost: String,")
+      writer.writeLine("serverPort: Int,")
     }
-    writer.writeLine("): GrpcService(channel) {")
+    writer.writeLine("): GeneratedGrpcService(channel, serverHost, serverPort) {")
+    writer.addImport("com.giyeok.sugarproto.proto3kmp.GeneratedGrpcService")
     writer.indent {
       writer.writeLine("companion object {")
       writer.indent {
         writer.writeLine("val serviceDescriptor: ServiceDescriptor = ServiceDescriptor(")
+        writer.addImport("com.giyeok.sugarproto.proto3kmp.ServiceDescriptor")
         writer.indent {
           writer.writeLine("\"${service.pkg}\",")
           writer.writeLine("\"${service.name}\",")
           writer.writeLine("listOf(")
+          writer.addImport("com.giyeok.sugarproto.proto3kmp.ServiceRpcDescriptor")
           writer.indent {
             for (rpc in service.rpcs) {
-              writer.writeLine("ServiceRpcDescriptor(\"${rpc.name}\"),")
+              writer.writeLine("ServiceRpcDescriptor(\"${rpc.name}\", ${rpc.streamReq}, \"${rpc.req.canonicalName}\", ${rpc.streamRes}, \"${rpc.res.canonicalName}\"),")
             }
           }
           writer.writeLine(")")
@@ -342,26 +550,9 @@ object KMPCodeGen {
         val name = rpc.name.replaceFirstChar { it.lowercase() }
         writer.writeLine("suspend fun $name(request: ${rpc.req.canonicalName}): ${rpc.res.canonicalName} {")
         writer.indent {
-          writer.writeLine("val serialized = request.serialize()")
-          writer.writeLine("val size = serialized.calculateSerializedSize()")
-          writer.writeLine("val bytes = ByteArray(size + 5)")
-          writer.writeLine("bytes[0] = 0")
-          writer.writeLine("bytes[1] = ((size shr 24) and 0xff).toByte()")
-          writer.writeLine("bytes[2] = ((size shr 16) and 0xff).toByte()")
-          writer.writeLine("bytes[3] = ((size shr 8) and 0xff).toByte()")
-          writer.writeLine("bytes[4] = (size and 0xff).toByte()")
-          writer.writeLine("serialized.writeTo(bytes, 5)")
-          writer.writeLine("val reqBuilder = HttpRequestBuilder {")
-          writer.writeLine("}")
-          writer.writeLine("reqBuilder.setBody(bytes)")
-          writer.writeLine("val response = channel.post(reqBuilder)")
-          writer.writeLine("val resBytes = response.bodyAsBytes()")
-          writer.writeLine("check(resBytes[0] == 0.toByte())")
-          writer.writeLine("val resSize = resBytes[1].toInt() and 0xff // TODO")
-          writer.writeLine("check(resBytes.size == resSize + 5)")
-          writer.writeLine("val resBuilder = ExampleGeneratedMessage.Builder()")
-          writer.writeLine("val pairs = parseBinary(resBytes, 5)")
-          writer.writeLine("resBuilder.setFromEncodingResult(pairs)")
+          writer.writeLine("val resPairs = unaryRequest(\"${service.canonicalName}/${rpc.name}\", request.serialize())")
+          writer.writeLine("val resBuilder = ${rpc.res.canonicalName}.Builder()")
+          writer.writeLine("resBuilder.setFromEncodingResult(resPairs)")
           writer.writeLine("return resBuilder.build()")
         }
         writer.writeLine("}")

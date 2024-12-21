@@ -329,6 +329,6 @@ proto3kmp {
 
   test = ktjvm.library(
     srcs = glob("proto3kmp/test/kotlin/**.kt"),
-    deps = [main, ...testDeps]
+    deps = [main, ...testDeps, pblib],
   )
 }

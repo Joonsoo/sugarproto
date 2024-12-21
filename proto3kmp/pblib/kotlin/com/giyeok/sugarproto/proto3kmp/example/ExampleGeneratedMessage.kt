@@ -13,7 +13,7 @@ data class ExampleGeneratedMessage(
         "abc", "ExampleGenerated", listOf(
           MessageField.Value(1, "field1", StringType),
           MessageField.Value(2, "field2", Int64Type(Int64Encoding.INT64)),
-          MessageField.Value(3, "field3", MessageType("abc", "ExampleGenerated")),
+          MessageField.Value(3, "field3", MessageType("abc.ExampleGenerated")),
         )
       )
 

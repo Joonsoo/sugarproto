@@ -23,9 +23,11 @@ class Proto3NameTraverser {
   }
 }
 
-class ProtoNames {
-
-}
+data class ProtoNames(
+  // canonical type name to file name
+  val messages: Map<String, String>,
+  val enums: Map<String, String>,
+)
 
 data class RequiredGens(
   val requiredTypes: Set<String>,

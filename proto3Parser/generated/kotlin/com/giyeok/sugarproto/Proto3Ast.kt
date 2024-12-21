@@ -92,7 +92,7 @@ data class FloatConstant(
 
 data class EnumType(
   val firstDot: Boolean,
-  val parent: List<Char>,
+  val parent: List<Ident>,
   val name: Ident,
   override val nodeId: Int,
   override val start: Int,
@@ -229,7 +229,7 @@ data class OptionName(
 
 data class MessageType(
   val firstDot: Boolean,
-  val parent: List<Char>,
+  val parent: List<Ident>,
   val name: Ident,
   override val nodeId: Int,
   override val start: Int,
@@ -1249,251 +1249,252 @@ else -> source[var323[0].first]
 }
 val var327 = unrollRepeat0(history, 285, 287, 6, 286, var323[1].first, var323[1].second).map { k ->
 val var328 = getSequenceElems(history, 288, listOf(133,149), k.first, k.second)
-source[var328[1].first]
+val var329 = matchIdent(var328[0].first, var328[0].second)
+var329
 }
-val var329 = matchMessageName(var323[2].first, var323[2].second)
-val var330 = MessageType(var326 != null, var327, var329, nextId(), beginGen, endGen)
-return var330
+val var330 = matchMessageName(var323[2].first, var323[2].second)
+val var331 = MessageType(var326 != null, var327, var330, nextId(), beginGen, endGen)
+return var331
 }
 
 fun matchBuiltinType(beginGen: Int, endGen: Int): BuiltinTypeEnum {
-val var331 = history[endGen].findByBeginGenOpt(248, 1, beginGen)
-val var332 = history[endGen].findByBeginGenOpt(250, 1, beginGen)
-val var333 = history[endGen].findByBeginGenOpt(252, 1, beginGen)
-val var334 = history[endGen].findByBeginGenOpt(255, 1, beginGen)
-val var335 = history[endGen].findByBeginGenOpt(259, 1, beginGen)
-val var336 = history[endGen].findByBeginGenOpt(261, 1, beginGen)
-val var337 = history[endGen].findByBeginGenOpt(263, 1, beginGen)
-val var338 = history[endGen].findByBeginGenOpt(265, 1, beginGen)
-val var339 = history[endGen].findByBeginGenOpt(267, 1, beginGen)
-val var340 = history[endGen].findByBeginGenOpt(269, 1, beginGen)
-val var341 = history[endGen].findByBeginGenOpt(271, 1, beginGen)
-val var342 = history[endGen].findByBeginGenOpt(273, 1, beginGen)
-val var343 = history[endGen].findByBeginGenOpt(275, 1, beginGen)
-val var344 = history[endGen].findByBeginGenOpt(277, 1, beginGen)
-val var345 = history[endGen].findByBeginGenOpt(279, 1, beginGen)
-check(hasSingleTrue(var331 != null, var332 != null, var333 != null, var334 != null, var335 != null, var336 != null, var337 != null, var338 != null, var339 != null, var340 != null, var341 != null, var342 != null, var343 != null, var344 != null, var345 != null))
-val var346 = when {
-var331 != null -> BuiltinTypeEnum.DOUBLE
-var332 != null -> BuiltinTypeEnum.FLOAT
-var333 != null -> BuiltinTypeEnum.INT32
-var334 != null -> BuiltinTypeEnum.INT64
-var335 != null -> BuiltinTypeEnum.UINT32
-var336 != null -> BuiltinTypeEnum.UINT64
-var337 != null -> BuiltinTypeEnum.SINT32
-var338 != null -> BuiltinTypeEnum.SINT64
-var339 != null -> BuiltinTypeEnum.FIXED32
-var340 != null -> BuiltinTypeEnum.FIXED64
-var341 != null -> BuiltinTypeEnum.SFIXED32
-var342 != null -> BuiltinTypeEnum.SFIXED64
-var343 != null -> BuiltinTypeEnum.BOOL
-var344 != null -> BuiltinTypeEnum.STRING
+val var332 = history[endGen].findByBeginGenOpt(248, 1, beginGen)
+val var333 = history[endGen].findByBeginGenOpt(250, 1, beginGen)
+val var334 = history[endGen].findByBeginGenOpt(252, 1, beginGen)
+val var335 = history[endGen].findByBeginGenOpt(255, 1, beginGen)
+val var336 = history[endGen].findByBeginGenOpt(259, 1, beginGen)
+val var337 = history[endGen].findByBeginGenOpt(261, 1, beginGen)
+val var338 = history[endGen].findByBeginGenOpt(263, 1, beginGen)
+val var339 = history[endGen].findByBeginGenOpt(265, 1, beginGen)
+val var340 = history[endGen].findByBeginGenOpt(267, 1, beginGen)
+val var341 = history[endGen].findByBeginGenOpt(269, 1, beginGen)
+val var342 = history[endGen].findByBeginGenOpt(271, 1, beginGen)
+val var343 = history[endGen].findByBeginGenOpt(273, 1, beginGen)
+val var344 = history[endGen].findByBeginGenOpt(275, 1, beginGen)
+val var345 = history[endGen].findByBeginGenOpt(277, 1, beginGen)
+val var346 = history[endGen].findByBeginGenOpt(279, 1, beginGen)
+check(hasSingleTrue(var332 != null, var333 != null, var334 != null, var335 != null, var336 != null, var337 != null, var338 != null, var339 != null, var340 != null, var341 != null, var342 != null, var343 != null, var344 != null, var345 != null, var346 != null))
+val var347 = when {
+var332 != null -> BuiltinTypeEnum.DOUBLE
+var333 != null -> BuiltinTypeEnum.FLOAT
+var334 != null -> BuiltinTypeEnum.INT32
+var335 != null -> BuiltinTypeEnum.INT64
+var336 != null -> BuiltinTypeEnum.UINT32
+var337 != null -> BuiltinTypeEnum.UINT64
+var338 != null -> BuiltinTypeEnum.SINT32
+var339 != null -> BuiltinTypeEnum.SINT64
+var340 != null -> BuiltinTypeEnum.FIXED32
+var341 != null -> BuiltinTypeEnum.FIXED64
+var342 != null -> BuiltinTypeEnum.SFIXED32
+var343 != null -> BuiltinTypeEnum.SFIXED64
+var344 != null -> BuiltinTypeEnum.BOOL
+var345 != null -> BuiltinTypeEnum.STRING
 else -> BuiltinTypeEnum.BYTES
 }
-return var346
+return var347
 }
 
 fun matchDecimalLit(beginGen: Int, endGen: Int): DecimalLit {
-val var347 = getSequenceElems(history, 186, listOf(187,188), beginGen, endGen)
-val var348 = unrollRepeat0(history, 188, 142, 6, 189, var347[1].first, var347[1].second).map { k ->
-val var349 = matchDecimalDigit(k.first, k.second)
-var349
+val var348 = getSequenceElems(history, 186, listOf(187,188), beginGen, endGen)
+val var349 = unrollRepeat0(history, 188, 142, 6, 189, var348[1].first, var348[1].second).map { k ->
+val var350 = matchDecimalDigit(k.first, k.second)
+var350
 }
-val var350 = DecimalLit(source[var347[0].first].toString() + var348.joinToString("") { it.toString() }, nextId(), beginGen, endGen)
-return var350
+val var351 = DecimalLit(source[var348[0].first].toString() + var349.joinToString("") { it.toString() }, nextId(), beginGen, endGen)
+return var351
 }
 
 fun matchRpc(beginGen: Int, endGen: Int): Rpc {
-val var351 = getSequenceElems(history, 406, listOf(407,4,411,4,161,412,4,282,4,162,4,419,4,161,412,4,282,4,162,4,423), beginGen, endGen)
-val var352 = matchRpcName(var351[2].first, var351[2].second)
-val var353 = history[var351[5].second].findByBeginGenOpt(102, 1, var351[5].first)
-val var354 = history[var351[5].second].findByBeginGenOpt(413, 1, var351[5].first)
-check(hasSingleTrue(var353 != null, var354 != null))
-val var355 = when {
-var353 != null -> null
+val var352 = getSequenceElems(history, 406, listOf(407,4,411,4,161,412,4,282,4,162,4,419,4,161,412,4,282,4,162,4,423), beginGen, endGen)
+val var353 = matchRpcName(var352[2].first, var352[2].second)
+val var354 = history[var352[5].second].findByBeginGenOpt(102, 1, var352[5].first)
+val var355 = history[var352[5].second].findByBeginGenOpt(413, 1, var352[5].first)
+check(hasSingleTrue(var354 != null, var355 != null))
+val var356 = when {
+var354 != null -> null
 else -> {
-val var356 = getSequenceElems(history, 414, listOf(4,415), var351[5].first, var351[5].second)
+val var357 = getSequenceElems(history, 414, listOf(4,415), var352[5].first, var352[5].second)
 "stream"
 }
 }
-val var357 = matchMessageType(var351[7].first, var351[7].second)
-val var358 = history[var351[14].second].findByBeginGenOpt(102, 1, var351[14].first)
-val var359 = history[var351[14].second].findByBeginGenOpt(413, 1, var351[14].first)
-check(hasSingleTrue(var358 != null, var359 != null))
-val var360 = when {
-var358 != null -> null
+val var358 = matchMessageType(var352[7].first, var352[7].second)
+val var359 = history[var352[14].second].findByBeginGenOpt(102, 1, var352[14].first)
+val var360 = history[var352[14].second].findByBeginGenOpt(413, 1, var352[14].first)
+check(hasSingleTrue(var359 != null, var360 != null))
+val var361 = when {
+var359 != null -> null
 else -> {
-val var361 = getSequenceElems(history, 414, listOf(4,415), var351[14].first, var351[14].second)
+val var362 = getSequenceElems(history, 414, listOf(4,415), var352[14].first, var352[14].second)
 "stream"
 }
 }
-val var362 = matchMessageType(var351[16].first, var351[16].second)
-val var363 = matchRpcEnding(var351[20].first, var351[20].second)
-val var364 = Rpc(var352, var355 != null, var357, var360 != null, var362, var363, nextId(), beginGen, endGen)
-return var364
-}
-
-fun matchRpcName(beginGen: Int, endGen: Int): Ident {
-val var365 = matchIdent(beginGen, endGen)
+val var363 = matchMessageType(var352[16].first, var352[16].second)
+val var364 = matchRpcEnding(var352[20].first, var352[20].second)
+val var365 = Rpc(var353, var356 != null, var358, var361 != null, var363, var364, nextId(), beginGen, endGen)
 return var365
 }
 
+fun matchRpcName(beginGen: Int, endGen: Int): Ident {
+val var366 = matchIdent(beginGen, endGen)
+return var366
+}
+
 fun matchOptionName(beginGen: Int, endGen: Int): OptionName {
-val var366 = getSequenceElems(history, 157, listOf(158,163), beginGen, endGen)
-val var367 = history[var366[0].second].findByBeginGenOpt(133, 1, var366[0].first)
-val var368 = history[var366[0].second].findByBeginGenOpt(159, 1, var366[0].first)
-check(hasSingleTrue(var367 != null, var368 != null))
-val var369 = when {
-var367 != null -> {
-val var370 = matchIdent(var366[0].first, var366[0].second)
-var370
+val var367 = getSequenceElems(history, 157, listOf(158,163), beginGen, endGen)
+val var368 = history[var367[0].second].findByBeginGenOpt(133, 1, var367[0].first)
+val var369 = history[var367[0].second].findByBeginGenOpt(159, 1, var367[0].first)
+check(hasSingleTrue(var368 != null, var369 != null))
+val var370 = when {
+var368 != null -> {
+val var371 = matchIdent(var367[0].first, var367[0].second)
+var371
 }
 else -> {
-val var371 = getSequenceElems(history, 160, listOf(161,4,131,4,162), var366[0].first, var366[0].second)
-val var372 = matchFullIdent(var371[2].first, var371[2].second)
-var372
+val var372 = getSequenceElems(history, 160, listOf(161,4,131,4,162), var367[0].first, var367[0].second)
+val var373 = matchFullIdent(var372[2].first, var372[2].second)
+var373
 }
 }
-val var373 = unrollRepeat0(history, 163, 165, 6, 164, var366[1].first, var366[1].second).map { k ->
-val var374 = getSequenceElems(history, 166, listOf(4,149,133), k.first, k.second)
-val var375 = matchIdent(var374[2].first, var374[2].second)
-var375
+val var374 = unrollRepeat0(history, 163, 165, 6, 164, var367[1].first, var367[1].second).map { k ->
+val var375 = getSequenceElems(history, 166, listOf(4,149,133), k.first, k.second)
+val var376 = matchIdent(var375[2].first, var375[2].second)
+var376
 }
-val var376 = OptionName(var369, var373, nextId(), beginGen, endGen)
-return var376
+val var377 = OptionName(var370, var374, nextId(), beginGen, endGen)
+return var377
 }
 
 fun matchRpcEnding(beginGen: Int, endGen: Int): List<OptionDef?> {
-val var377 = history[endGen].findByBeginGenOpt(67, 1, beginGen)
-val var378 = history[endGen].findByBeginGenOpt(424, 4, beginGen)
-check(hasSingleTrue(var377 != null, var378 != null))
-val var379 = when {
-var377 != null -> listOf()
+val var378 = history[endGen].findByBeginGenOpt(67, 1, beginGen)
+val var379 = history[endGen].findByBeginGenOpt(424, 4, beginGen)
+check(hasSingleTrue(var378 != null, var379 != null))
+val var380 = when {
+var378 != null -> listOf()
 else -> {
-val var380 = getSequenceElems(history, 424, listOf(225,425,4,333), beginGen, endGen)
-val var381 = unrollRepeat0(history, 425, 427, 6, 426, var380[1].first, var380[1].second).map { k ->
-val var382 = getSequenceElems(history, 428, listOf(4,429), k.first, k.second)
-val var383 = history[var382[1].second].findByBeginGenOpt(150, 1, var382[1].first)
-val var384 = history[var382[1].second].findByBeginGenOpt(332, 1, var382[1].first)
-check(hasSingleTrue(var383 != null, var384 != null))
-val var385 = when {
-var383 != null -> {
-val var386 = matchOption(var382[1].first, var382[1].second)
-var386
+val var381 = getSequenceElems(history, 424, listOf(225,425,4,333), beginGen, endGen)
+val var382 = unrollRepeat0(history, 425, 427, 6, 426, var381[1].first, var381[1].second).map { k ->
+val var383 = getSequenceElems(history, 428, listOf(4,429), k.first, k.second)
+val var384 = history[var383[1].second].findByBeginGenOpt(150, 1, var383[1].first)
+val var385 = history[var383[1].second].findByBeginGenOpt(332, 1, var383[1].first)
+check(hasSingleTrue(var384 != null, var385 != null))
+val var386 = when {
+var384 != null -> {
+val var387 = matchOption(var383[1].first, var383[1].second)
+var387
 }
 else -> null
 }
-var385
+var386
 }
-var381
+var382
 }
 }
-return var379
+return var380
 }
 
 fun matchFloatLit(beginGen: Int, endGen: Int): FloatLit {
-val var387 = history[endGen].findByBeginGenOpt(200, 4, beginGen)
-val var388 = history[endGen].findByBeginGenOpt(209, 2, beginGen)
-val var389 = history[endGen].findByBeginGenOpt(210, 3, beginGen)
-val var390 = history[endGen].findByBeginGenOpt(211, 1, beginGen)
-val var391 = history[endGen].findByBeginGenOpt(213, 1, beginGen)
-check(hasSingleTrue(var387 != null, var388 != null, var389 != null, var390 != null, var391 != null))
-val var392 = when {
-var387 != null -> {
-val var393 = getSequenceElems(history, 200, listOf(201,149,204,205), beginGen, endGen)
-val var394 = matchDecimals(var393[0].first, var393[0].second)
-val var396 = history[var393[2].second].findByBeginGenOpt(102, 1, var393[2].first)
-val var397 = history[var393[2].second].findByBeginGenOpt(201, 1, var393[2].first)
-check(hasSingleTrue(var396 != null, var397 != null))
-val var398 = when {
-var396 != null -> null
+val var388 = history[endGen].findByBeginGenOpt(200, 4, beginGen)
+val var389 = history[endGen].findByBeginGenOpt(209, 2, beginGen)
+val var390 = history[endGen].findByBeginGenOpt(210, 3, beginGen)
+val var391 = history[endGen].findByBeginGenOpt(211, 1, beginGen)
+val var392 = history[endGen].findByBeginGenOpt(213, 1, beginGen)
+check(hasSingleTrue(var388 != null, var389 != null, var390 != null, var391 != null, var392 != null))
+val var393 = when {
+var388 != null -> {
+val var394 = getSequenceElems(history, 200, listOf(201,149,204,205), beginGen, endGen)
+val var395 = matchDecimals(var394[0].first, var394[0].second)
+val var397 = history[var394[2].second].findByBeginGenOpt(102, 1, var394[2].first)
+val var398 = history[var394[2].second].findByBeginGenOpt(201, 1, var394[2].first)
+check(hasSingleTrue(var397 != null, var398 != null))
+val var399 = when {
+var397 != null -> null
 else -> {
-val var399 = matchDecimals(var393[2].first, var393[2].second)
-var399
+val var400 = matchDecimals(var394[2].first, var394[2].second)
+var400
 }
 }
-val var395 = var398
-val var400 = history[var393[3].second].findByBeginGenOpt(102, 1, var393[3].first)
-val var401 = history[var393[3].second].findByBeginGenOpt(206, 1, var393[3].first)
-check(hasSingleTrue(var400 != null, var401 != null))
-val var402 = when {
-var400 != null -> null
+val var396 = var399
+val var401 = history[var394[3].second].findByBeginGenOpt(102, 1, var394[3].first)
+val var402 = history[var394[3].second].findByBeginGenOpt(206, 1, var394[3].first)
+check(hasSingleTrue(var401 != null, var402 != null))
+val var403 = when {
+var401 != null -> null
 else -> {
-val var403 = matchExponent(var393[3].first, var393[3].second)
-var403
-}
-}
-val var404 = FloatLiteral(var394, (var395 ?: ""), var402, nextId(), beginGen, endGen)
+val var404 = matchExponent(var394[3].first, var394[3].second)
 var404
 }
-var388 != null -> {
-val var405 = getSequenceElems(history, 209, listOf(201,206), beginGen, endGen)
-val var406 = matchDecimals(var405[0].first, var405[0].second)
-val var407 = matchExponent(var405[1].first, var405[1].second)
-val var408 = FloatLiteral(var406, "", var407, nextId(), beginGen, endGen)
-var408
+}
+val var405 = FloatLiteral(var395, (var396 ?: ""), var403, nextId(), beginGen, endGen)
+var405
 }
 var389 != null -> {
-val var409 = getSequenceElems(history, 210, listOf(149,201,205), beginGen, endGen)
-val var410 = matchDecimals(var409[1].first, var409[1].second)
-val var411 = history[var409[2].second].findByBeginGenOpt(102, 1, var409[2].first)
-val var412 = history[var409[2].second].findByBeginGenOpt(206, 1, var409[2].first)
-check(hasSingleTrue(var411 != null, var412 != null))
-val var413 = when {
-var411 != null -> null
-else -> {
-val var414 = matchExponent(var409[2].first, var409[2].second)
-var414
-}
-}
-val var415 = FloatLiteral("", var410, var413, nextId(), beginGen, endGen)
-var415
+val var406 = getSequenceElems(history, 209, listOf(201,206), beginGen, endGen)
+val var407 = matchDecimals(var406[0].first, var406[0].second)
+val var408 = matchExponent(var406[1].first, var406[1].second)
+val var409 = FloatLiteral(var407, "", var408, nextId(), beginGen, endGen)
+var409
 }
 var390 != null -> {
-val var416 = Inf(nextId(), beginGen, endGen)
+val var410 = getSequenceElems(history, 210, listOf(149,201,205), beginGen, endGen)
+val var411 = matchDecimals(var410[1].first, var410[1].second)
+val var412 = history[var410[2].second].findByBeginGenOpt(102, 1, var410[2].first)
+val var413 = history[var410[2].second].findByBeginGenOpt(206, 1, var410[2].first)
+check(hasSingleTrue(var412 != null, var413 != null))
+val var414 = when {
+var412 != null -> null
+else -> {
+val var415 = matchExponent(var410[2].first, var410[2].second)
+var415
+}
+}
+val var416 = FloatLiteral("", var411, var414, nextId(), beginGen, endGen)
 var416
 }
-else -> {
-val var417 = NaN(nextId(), beginGen, endGen)
+var391 != null -> {
+val var417 = Inf(nextId(), beginGen, endGen)
 var417
 }
+else -> {
+val var418 = NaN(nextId(), beginGen, endGen)
+var418
 }
-return var392
+}
+return var393
 }
 
 fun matchExponent(beginGen: Int, endGen: Int): Exponent {
-val var418 = getSequenceElems(history, 207, listOf(208,176,201), beginGen, endGen)
-val var419 = history[var418[1].second].findByBeginGenOpt(102, 1, var418[1].first)
-val var420 = history[var418[1].second].findByBeginGenOpt(177, 1, var418[1].first)
-check(hasSingleTrue(var419 != null, var420 != null))
-val var421 = when {
-var419 != null -> null
+val var419 = getSequenceElems(history, 207, listOf(208,176,201), beginGen, endGen)
+val var420 = history[var419[1].second].findByBeginGenOpt(102, 1, var419[1].first)
+val var421 = history[var419[1].second].findByBeginGenOpt(177, 1, var419[1].first)
+check(hasSingleTrue(var420 != null, var421 != null))
+val var422 = when {
+var420 != null -> null
 else -> {
-val var422 = matchSign(var418[1].first, var418[1].second)
-var422
+val var423 = matchSign(var419[1].first, var419[1].second)
+var423
 }
 }
-val var423 = matchDecimals(var418[2].first, var418[2].second)
-val var424 = Exponent(var421, var423, nextId(), beginGen, endGen)
-return var424
+val var424 = matchDecimals(var419[2].first, var419[2].second)
+val var425 = Exponent(var422, var424, nextId(), beginGen, endGen)
+return var425
 }
 
 fun matchDecimals(beginGen: Int, endGen: Int): String {
-val var425 = unrollRepeat1(history, 202, 142, 142, 203, beginGen, endGen).map { k ->
-val var426 = matchDecimalDigit(k.first, k.second)
-var426
+val var426 = unrollRepeat1(history, 202, 142, 142, 203, beginGen, endGen).map { k ->
+val var427 = matchDecimalDigit(k.first, k.second)
+var427
 }
-return var425.joinToString("") { it.toString() }
+return var426.joinToString("") { it.toString() }
 }
 
 fun matchOctalLit(beginGen: Int, endGen: Int): OctalLit {
-val var427 = getSequenceElems(history, 191, listOf(184,192), beginGen, endGen)
-val var428 = unrollRepeat1(history, 192, 116, 116, 193, var427[1].first, var427[1].second).map { k ->
-val var429 = matchOctalDigit(k.first, k.second)
-var429
+val var428 = getSequenceElems(history, 191, listOf(184,192), beginGen, endGen)
+val var429 = unrollRepeat1(history, 192, 116, 116, 193, var428[1].first, var428[1].second).map { k ->
+val var430 = matchOctalDigit(k.first, k.second)
+var430
 }
-val var430 = OctalLit(var428.joinToString("") { it.toString() }, nextId(), beginGen, endGen)
-return var430
+val var431 = OctalLit(var429.joinToString("") { it.toString() }, nextId(), beginGen, endGen)
+return var431
 }
 
 }
