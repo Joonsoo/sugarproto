@@ -1,8 +1,8 @@
-package com.giyeok.sugarproto.proto3kmp
+package com.giyeok.sugarproto.proto3kmp.compiler
 
 import com.giyeok.sugarproto.proto3kmp.generated.Proto3KmpTestServiceGrpcKt
-import com.giyeok.sugarproto.proto3kmp.generated.Test.MyProtocolReq
-import com.giyeok.sugarproto.proto3kmp.generated.Test.MyProtocolRes
+import com.giyeok.sugarproto.proto3kmp.compiler.generated.Test.MyProtocolReq
+import com.giyeok.sugarproto.proto3kmp.compiler.generated.Test.MyProtocolRes
 import com.giyeok.sugarproto.proto3kmp.generated.myProtocolReq
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder
 import io.ktor.client.*

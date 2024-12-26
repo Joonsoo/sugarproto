@@ -1,6 +1,6 @@
-package com.giyeok.sugarproto.proto3kmp.generated
+package com.giyeok.sugarproto.proto3kmp.compiler.generated
 
-import com.giyeok.sugarproto.proto3kmp.generated.Proto3KmpTestServiceGrpc.getServiceDescriptor
+import com.giyeok.sugarproto.proto3kmp.compiler.generated.Proto3KmpTestServiceGrpc.getServiceDescriptor
 import io.grpc.CallOptions
 import io.grpc.CallOptions.DEFAULT
 import io.grpc.Channel
@@ -27,21 +27,21 @@ import kotlin.jvm.JvmStatic
  * com.giyeok.sugarproto.proto3kmp.generated.Proto3KmpTestService.
  */
 public object Proto3KmpTestServiceGrpcKt {
-  public const val SERVICE_NAME: String = Proto3KmpTestServiceGrpc.SERVICE_NAME
+  public const val SERVICE_NAME: String = com.giyeok.sugarproto.proto3kmp.compiler.generated.Proto3KmpTestServiceGrpc.SERVICE_NAME
 
   @JvmStatic
   public val serviceDescriptor: ServiceDescriptor
-    get() = Proto3KmpTestServiceGrpc.getServiceDescriptor()
+    get() = com.giyeok.sugarproto.proto3kmp.compiler.generated.Proto3KmpTestServiceGrpc.getServiceDescriptor()
 
-  public val myProtocolMethod: MethodDescriptor<Test.MyProtocolReq, Test.MyProtocolRes>
+  public val myProtocolMethod: MethodDescriptor<com.giyeok.sugarproto.proto3kmp.compiler.generated.Test.MyProtocolReq, com.giyeok.sugarproto.proto3kmp.compiler.generated.Test.MyProtocolRes>
     @JvmStatic
-    get() = Proto3KmpTestServiceGrpc.getMyProtocolMethod()
+    get() = com.giyeok.sugarproto.proto3kmp.compiler.generated.Proto3KmpTestServiceGrpc.getMyProtocolMethod()
 
   /**
    * A stub for issuing RPCs to a(n) com.giyeok.sugarproto.proto3kmp.generated.Proto3KmpTestService
    * service as suspending coroutines.
    */
-  @StubFor(Proto3KmpTestServiceGrpc::class)
+  @StubFor(com.giyeok.sugarproto.proto3kmp.compiler.generated.Proto3KmpTestServiceGrpc::class)
   public class Proto3KmpTestServiceCoroutineStub @JvmOverloads constructor(
     channel: Channel,
     callOptions: CallOptions = DEFAULT,
@@ -62,10 +62,10 @@ public object Proto3KmpTestServiceGrpcKt {
      *
      * @return The single response from the server.
      */
-    public suspend fun myProtocol(request: Test.MyProtocolReq, headers: Metadata = Metadata()):
-        Test.MyProtocolRes = unaryRpc(
+    public suspend fun myProtocol(request: com.giyeok.sugarproto.proto3kmp.compiler.generated.Test.MyProtocolReq, headers: Metadata = Metadata()):
+        com.giyeok.sugarproto.proto3kmp.compiler.generated.Test.MyProtocolRes = unaryRpc(
       channel,
-      Proto3KmpTestServiceGrpc.getMyProtocolMethod(),
+      com.giyeok.sugarproto.proto3kmp.compiler.generated.Proto3KmpTestServiceGrpc.getMyProtocolMethod(),
       request,
       callOptions,
       headers
@@ -91,14 +91,14 @@ public object Proto3KmpTestServiceGrpcKt {
      *
      * @param request The request from the client.
      */
-    public open suspend fun myProtocol(request: Test.MyProtocolReq): Test.MyProtocolRes = throw
+    public open suspend fun myProtocol(request: com.giyeok.sugarproto.proto3kmp.compiler.generated.Test.MyProtocolReq): com.giyeok.sugarproto.proto3kmp.compiler.generated.Test.MyProtocolRes = throw
         StatusException(UNIMPLEMENTED.withDescription("Method com.giyeok.sugarproto.proto3kmp.generated.Proto3KmpTestService.MyProtocol is unimplemented"))
 
     public final override fun bindService(): ServerServiceDefinition =
         builder(getServiceDescriptor())
       .addMethod(unaryServerMethodDefinition(
       context = this.context,
-      descriptor = Proto3KmpTestServiceGrpc.getMyProtocolMethod(),
+      descriptor = com.giyeok.sugarproto.proto3kmp.compiler.generated.Proto3KmpTestServiceGrpc.getMyProtocolMethod(),
       implementation = ::myProtocol
     )).build()
   }

@@ -1,4 +1,4 @@
-package com.giyeok.sugarproto.proto3kmp
+package com.giyeok.sugarproto.proto3kmp.compiler
 
 class CodeWriter {
   private var indentLevel = 0

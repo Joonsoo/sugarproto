@@ -3,11 +3,11 @@
 
 // Generated files should ignore deprecation warnings
 @file:Suppress("DEPRECATION")
-package com.giyeok.sugarproto.proto3kmp.generated;
+package com.giyeok.sugarproto.proto3kmp.compiler.generated;
 
 @kotlin.jvm.JvmName("-initializemyProtocolRes")
-public inline fun myProtocolRes(block: com.giyeok.sugarproto.proto3kmp.generated.MyProtocolResKt.Dsl.() -> kotlin.Unit): com.giyeok.sugarproto.proto3kmp.generated.Test.MyProtocolRes =
-  com.giyeok.sugarproto.proto3kmp.generated.MyProtocolResKt.Dsl._create(com.giyeok.sugarproto.proto3kmp.generated.Test.MyProtocolRes.newBuilder()).apply { block() }._build()
+public inline fun myProtocolRes(block: com.giyeok.sugarproto.proto3kmp.generated.MyProtocolResKt.Dsl.() -> kotlin.Unit): com.giyeok.sugarproto.proto3kmp.compiler.generated.Test.MyProtocolRes =
+  com.giyeok.sugarproto.proto3kmp.generated.MyProtocolResKt.Dsl._create(com.giyeok.sugarproto.proto3kmp.compiler.generated.Test.MyProtocolRes.newBuilder()).apply { block() }._build()
 /**
  * Protobuf type `com.giyeok.sugarproto.proto3kmp.generated.MyProtocolRes`
  */
@@ -15,17 +15,17 @@ public object MyProtocolResKt {
   @kotlin.OptIn(com.google.protobuf.kotlin.OnlyForUseByGeneratedProtoCode::class)
   @com.google.protobuf.kotlin.ProtoDslMarker
   public class Dsl private constructor(
-    private val _builder: com.giyeok.sugarproto.proto3kmp.generated.Test.MyProtocolRes.Builder
+    private val _builder: com.giyeok.sugarproto.proto3kmp.compiler.generated.Test.MyProtocolRes.Builder
   ) {
     public companion object {
       @kotlin.jvm.JvmSynthetic
       @kotlin.PublishedApi
-      internal fun _create(builder: com.giyeok.sugarproto.proto3kmp.generated.Test.MyProtocolRes.Builder): Dsl = Dsl(builder)
+      internal fun _create(builder: com.giyeok.sugarproto.proto3kmp.compiler.generated.Test.MyProtocolRes.Builder): Dsl = Dsl(builder)
     }
 
     @kotlin.jvm.JvmSynthetic
     @kotlin.PublishedApi
-    internal fun _build(): com.giyeok.sugarproto.proto3kmp.generated.Test.MyProtocolRes = _builder.build()
+    internal fun _build(): com.giyeok.sugarproto.proto3kmp.compiler.generated.Test.MyProtocolRes = _builder.build()
 
     /**
      * `string address = 1;`
@@ -47,6 +47,6 @@ public object MyProtocolResKt {
 }
 @kotlin.jvm.JvmSynthetic
 @com.google.errorprone.annotations.CheckReturnValue
-public inline fun com.giyeok.sugarproto.proto3kmp.generated.Test.MyProtocolRes.copy(block: com.giyeok.sugarproto.proto3kmp.generated.MyProtocolResKt.Dsl.() -> kotlin.Unit): com.giyeok.sugarproto.proto3kmp.generated.Test.MyProtocolRes =
+public inline fun com.giyeok.sugarproto.proto3kmp.compiler.generated.Test.MyProtocolRes.copy(block: com.giyeok.sugarproto.proto3kmp.generated.MyProtocolResKt.Dsl.() -> kotlin.Unit): com.giyeok.sugarproto.proto3kmp.compiler.generated.Test.MyProtocolRes =
   com.giyeok.sugarproto.proto3kmp.generated.MyProtocolResKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

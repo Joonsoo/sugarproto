@@ -3,5 +3,5 @@
 
 // Generated files should ignore deprecation warnings
 @file:Suppress("DEPRECATION")
-package com.giyeok.sugarproto.proto3kmp.generated;
+package com.giyeok.sugarproto.proto3kmp.compiler.generated;
 

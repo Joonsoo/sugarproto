@@ -327,8 +327,13 @@ proto3kmp {
     ]
   )
 
+  testGenerated = ktjvm.library(
+    srcs = glob("proto3kmp/test/generated/**.kt"),
+    deps = [pblib],
+  )
+
   test = ktjvm.library(
     srcs = glob("proto3kmp/test/kotlin/**.kt"),
-    deps = [main, ...testDeps, pblib],
+    deps = [main, ...testDeps, pblib, testGenerated],
   )
 }

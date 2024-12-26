@@ -1,7 +1,7 @@
-package com.giyeok.sugarproto.proto3kmp
+package com.giyeok.sugarproto.proto3kmp.compiler
 
 import com.giyeok.sugarproto.proto3kmp.generated.Proto3KmpTestServiceGrpcKt
-import com.giyeok.sugarproto.proto3kmp.generated.Test
+import com.giyeok.sugarproto.proto3kmp.compiler.generated.Test
 import com.giyeok.sugarproto.proto3kmp.generated.myProtocolRes
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder
 import io.ktor.server.engine.*
@@ -12,7 +12,7 @@ import java.util.concurrent.Executors
 
 class Proto3KmpTestServiceImpl: Proto3KmpTestServiceGrpcKt.Proto3KmpTestServiceCoroutineImplBase() {
   @OptIn(ExperimentalStdlibApi::class)
-  override suspend fun myProtocol(request: Test.MyProtocolReq): Test.MyProtocolRes {
+  override suspend fun myProtocol(request: com.giyeok.sugarproto.proto3kmp.compiler.generated.Test.MyProtocolReq): com.giyeok.sugarproto.proto3kmp.compiler.generated.Test.MyProtocolRes {
     println(request)
     return myProtocolRes {
       this.address = "hello world! ${request.toByteArray().toHexString()}"

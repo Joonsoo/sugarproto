@@ -14,13 +14,20 @@ abstract class GeneratedMessageBuilder<T: GeneratedMessage> {
 }
 
 data class MessageTypeDescriptor(
-  val pkg: String,
+  val protoPkg: String,
   val name: String,
   val fields: List<MessageField>,
 )
 
 sealed class MessageField {
-  data class Value(val tagNumber: Int, val name: String, val type: ValueType): MessageField()
+  data class Value(
+    val tagNumber: Int,
+    val name: String,
+    val type: ValueType,
+    val isRepeated: Boolean,
+    val isOptional: Boolean
+  ): MessageField()
+
   data class Map(
     val tagNumber: Int,
     val name: String,

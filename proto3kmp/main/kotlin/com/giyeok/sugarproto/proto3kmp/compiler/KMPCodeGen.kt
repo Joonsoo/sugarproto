@@ -1,6 +1,14 @@
-package com.giyeok.sugarproto.proto3kmp
+package com.giyeok.sugarproto.proto3kmp.compiler
 
-object KMPCodeGen {
+import com.giyeok.sugarproto.proto3kmp.*
+import java.io.File
+
+class KMPCodeGen(val compileResult: CompileResult) {
+  fun javaType(typeName: String): String =
+    compileResult.messages[typeName]?.canonicalJavaName
+      ?: compileResult.enums[typeName]?.canonicalJavaName
+      ?: throw IllegalArgumentException("Unknown type: $typeName")
+
   fun defCodeOf(type: ValueType): String = when (type) {
     BoolType -> "Boolean"
     is Int32Type -> "Int"
@@ -9,8 +17,8 @@ object KMPCodeGen {
     DoubleType -> "Double"
     BytesType -> "ByteArray"
     StringType -> "String"
-    is MessageType -> type.canonicalName
-    is EnumType -> type.canonicalName
+    is MessageType -> javaType(type.canonicalName)
+    is EnumType -> javaType(type.canonicalName)
     is PackedRepeatedField -> TODO()
   }
 
@@ -44,7 +52,7 @@ object KMPCodeGen {
         when (ftype.type) {
           BytesType -> TODO()
           is MessageType -> {
-            val bld = ftype.type.canonicalName + ".Builder"
+            val bld = javaType(ftype.type.canonicalName) + ".Builder"
             if (ftype.repeated) {
               BuilderFieldInfo("MutableList<$bld>", "mutableListOf()", true)
             } else if (ftype.optional) {
@@ -164,23 +172,22 @@ object KMPCodeGen {
         writer.writeLine("val descriptor: MessageTypeDescriptor = MessageTypeDescriptor(")
         writer.addImport("com.giyeok.sugarproto.proto3kmp.MessageTypeDescriptor")
         writer.indent {
-          writer.writeLine("\"${message.pkg}\",")
+          writer.writeLine("\"${message.protoPkg}\",")
           writer.writeLine("\"${message.name}\",")
           writer.writeLine("listOf(")
           writer.addImport("com.giyeok.sugarproto.proto3kmp.MessageField")
-          writer.addImport("com.giyeok.sugarproto.proto3kmp.MessageFieldType")
           writer.indent {
             for (field in message.fields) {
               when (val fieldType = field.fieldType) {
                 is MessageFieldType.Map -> {
                   val keyTypeDesc = descCodeOf(writer, fieldType.key)
                   val valueTypeDesc = descCodeOf(writer, fieldType.value)
-                  writer.writeLine("MessageField(${field.number}, \"${field.name}\", MessageFieldType.Map($keyTypeDesc, $valueTypeDesc)),")
+                  writer.writeLine("MessageField.Map(${field.number}, \"${field.name}\", $keyTypeDesc, $valueTypeDesc),")
                 }
 
                 is MessageFieldType.Value -> {
                   val typeDesc = descCodeOf(writer, fieldType.type)
-                  writer.writeLine("MessageField(${field.number}, \"${field.name}\", MessageFieldType.Value(${typeDesc}, ${fieldType.optional}, ${fieldType.repeated})),")
+                  writer.writeLine("MessageField.Value(${field.number}, \"${field.name}\", ${typeDesc}, ${fieldType.repeated}, ${fieldType.optional}),")
                 }
               }
             }
@@ -284,7 +291,7 @@ object KMPCodeGen {
                     writer.writeLine("${field.name}?.let {")
                     writer.indent {
                       writer.writeLine("check(${field.name} is LenValue)")
-                      writer.writeLine("val builder = ${ftype.type.canonicalName}.Builder()")
+                      writer.writeLine("val builder = ${javaType(ftype.type.canonicalName)}.Builder()")
                       writer.writeLine("builder.setFromSerializedByteArray(${field.name}.bytes)")
                       writer.writeLine("this.${field.name} = builder")
                     }
@@ -294,7 +301,7 @@ object KMPCodeGen {
                     writer.writeLine("encodingResult.getRepeated(${field.number}).forEach {")
                     writer.indent {
                       writer.writeLine("check(it is LenValue)")
-                      writer.writeLine("val builder = ${ftype.type.canonicalName}.Builder()")
+                      writer.writeLine("val builder = ${javaType(ftype.type.canonicalName)}.Builder()")
                       writer.writeLine("builder.setFromSerializedByteArray(it.bytes)")
                       writer.writeLine("this.${field.name}.add(builder)")
                     }
@@ -493,6 +500,10 @@ object KMPCodeGen {
     writer.writeLine("}")
   }
 
+  fun generateEnum(writer: CodeWriter, enum: EnumDef) {
+    TODO()
+  }
+
   fun encodeTypeOf(writer: CodeWriter, typ: ProtoEncodingType): String = when (typ) {
     ProtoEncodingType.VARINT -> {
       writer.addImport("com.giyeok.sugarproto.proto3kmp.VarIntValue")
@@ -531,7 +542,7 @@ object KMPCodeGen {
         writer.writeLine("val serviceDescriptor: ServiceDescriptor = ServiceDescriptor(")
         writer.addImport("com.giyeok.sugarproto.proto3kmp.ServiceDescriptor")
         writer.indent {
-          writer.writeLine("\"${service.pkg}\",")
+          writer.writeLine("\"${service.javaPkg}\",")
           writer.writeLine("\"${service.name}\",")
           writer.writeLine("listOf(")
           writer.addImport("com.giyeok.sugarproto.proto3kmp.ServiceRpcDescriptor")
@@ -548,10 +559,12 @@ object KMPCodeGen {
       writer.writeLine()
       for (rpc in service.rpcs) {
         val name = rpc.name.replaceFirstChar { it.lowercase() }
-        writer.writeLine("suspend fun $name(request: ${rpc.req.canonicalName}): ${rpc.res.canonicalName} {")
+        val req = javaType(rpc.req.canonicalName)
+        val res = javaType(rpc.res.canonicalName)
+        writer.writeLine("suspend fun $name(request: $req): $res {")
         writer.indent {
           writer.writeLine("val resPairs = unaryRequest(\"${service.canonicalName}/${rpc.name}\", request.serialize())")
-          writer.writeLine("val resBuilder = ${rpc.res.canonicalName}.Builder()")
+          writer.writeLine("val resBuilder = $res.Builder()")
           writer.writeLine("resBuilder.setFromEncodingResult(resPairs)")
           writer.writeLine("return resBuilder.build()")
         }
@@ -559,5 +572,60 @@ object KMPCodeGen {
       }
     }
     writer.writeLine("}")
+  }
+
+  fun File.resolve(paths: List<String>) = paths.fold(this) { m, i -> m.resolve(i) }
+
+  fun generateFiles(result: com.giyeok.sugarproto.proto3kmp.compiler.CompileResult, outputDir: File) {
+    check(outputDir.isDirectory && outputDir.exists())
+
+    for (service in result.services) {
+      val pkgDir = outputDir.resolve(service.javaPkg.split('.'))
+      if (!pkgDir.exists()) {
+        pkgDir.mkdirs()
+      }
+      val file = pkgDir.resolve("${service.name}.kt")
+      val codeWriter = CodeWriter()
+      generateService(codeWriter, service)
+
+      file.bufferedWriter().use { writer ->
+        if (service.javaPkg.isNotEmpty()) {
+          writer.write("package ${service.javaPkg}\n\n")
+        }
+        writer.write(codeWriter.toString())
+      }
+    }
+
+    for (message in result.messages.values) {
+      val pkgDir = outputDir.resolve(message.javaPkg.split('.'))
+      if (!pkgDir.exists()) {
+        pkgDir.mkdirs()
+      }
+      val file = pkgDir.resolve("${message.name}.kt")
+      val codeWriter = CodeWriter()
+      generateMessage(codeWriter, message)
+      file.bufferedWriter().use { writer ->
+        if (message.javaPkg.isNotEmpty()) {
+          writer.write("package ${message.javaPkg}\n\n")
+        }
+        writer.write(codeWriter.toString())
+      }
+    }
+
+    for (enum in result.enums.values) {
+      val pkgDir = outputDir.resolve(enum.javaPkg.split('.'))
+      if (!pkgDir.exists()) {
+        pkgDir.mkdirs()
+      }
+      val file = pkgDir.resolve("${enum.name}.kt")
+      val codeWriter = CodeWriter()
+      generateEnum(codeWriter, enum)
+      file.bufferedWriter().use { writer ->
+        if (enum.javaPkg.isNotEmpty()) {
+          writer.write("package ${enum.javaPkg}\n\n")
+        }
+        writer.write(codeWriter.toString())
+      }
+    }
   }
 }

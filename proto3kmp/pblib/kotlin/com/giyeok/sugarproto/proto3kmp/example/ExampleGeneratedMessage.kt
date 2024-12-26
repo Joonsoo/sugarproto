@@ -11,9 +11,9 @@ data class ExampleGeneratedMessage(
     val descriptor: MessageTypeDescriptor =
       MessageTypeDescriptor(
         "abc", "ExampleGenerated", listOf(
-          MessageField.Value(1, "field1", StringType),
-          MessageField.Value(2, "field2", Int64Type(Int64Encoding.INT64)),
-          MessageField.Value(3, "field3", MessageType("abc.ExampleGenerated")),
+          MessageField.Value(1, "field1", StringType, false, false),
+          MessageField.Value(2, "field2", Int64Type(Int64Encoding.INT64), false, false),
+          MessageField.Value(3, "field3", MessageType("abc.ExampleGenerated"), false, false),
         )
       )
 

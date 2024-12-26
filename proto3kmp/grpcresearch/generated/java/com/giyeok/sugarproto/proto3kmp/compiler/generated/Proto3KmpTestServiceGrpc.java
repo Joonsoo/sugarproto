@@ -1,4 +1,4 @@
-package com.giyeok.sugarproto.proto3kmp.generated;
+package com.giyeok.sugarproto.proto3kmp.compiler.generated;
 
 import static io.grpc.MethodDescriptor.generateFullMethodName;
 
@@ -15,29 +15,29 @@ public final class Proto3KmpTestServiceGrpc {
   public static final String SERVICE_NAME = "com.giyeok.sugarproto.proto3kmp.generated.Proto3KmpTestService";
 
   // Static method descriptors that strictly reflect the proto.
-  private static volatile io.grpc.MethodDescriptor<com.giyeok.sugarproto.proto3kmp.generated.Test.MyProtocolReq,
-      com.giyeok.sugarproto.proto3kmp.generated.Test.MyProtocolRes> getMyProtocolMethod;
+  private static volatile io.grpc.MethodDescriptor<Test.MyProtocolReq,
+      Test.MyProtocolRes> getMyProtocolMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "MyProtocol",
-      requestType = com.giyeok.sugarproto.proto3kmp.generated.Test.MyProtocolReq.class,
-      responseType = com.giyeok.sugarproto.proto3kmp.generated.Test.MyProtocolRes.class,
+      requestType = Test.MyProtocolReq.class,
+      responseType = Test.MyProtocolRes.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<com.giyeok.sugarproto.proto3kmp.generated.Test.MyProtocolReq,
-      com.giyeok.sugarproto.proto3kmp.generated.Test.MyProtocolRes> getMyProtocolMethod() {
-    io.grpc.MethodDescriptor<com.giyeok.sugarproto.proto3kmp.generated.Test.MyProtocolReq, com.giyeok.sugarproto.proto3kmp.generated.Test.MyProtocolRes> getMyProtocolMethod;
+  public static io.grpc.MethodDescriptor<Test.MyProtocolReq,
+      Test.MyProtocolRes> getMyProtocolMethod() {
+    io.grpc.MethodDescriptor<Test.MyProtocolReq, Test.MyProtocolRes> getMyProtocolMethod;
     if ((getMyProtocolMethod = Proto3KmpTestServiceGrpc.getMyProtocolMethod) == null) {
       synchronized (Proto3KmpTestServiceGrpc.class) {
         if ((getMyProtocolMethod = Proto3KmpTestServiceGrpc.getMyProtocolMethod) == null) {
           Proto3KmpTestServiceGrpc.getMyProtocolMethod = getMyProtocolMethod =
-              io.grpc.MethodDescriptor.<com.giyeok.sugarproto.proto3kmp.generated.Test.MyProtocolReq, com.giyeok.sugarproto.proto3kmp.generated.Test.MyProtocolRes>newBuilder()
+              io.grpc.MethodDescriptor.<Test.MyProtocolReq, Test.MyProtocolRes>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "MyProtocol"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  com.giyeok.sugarproto.proto3kmp.generated.Test.MyProtocolReq.getDefaultInstance()))
+                  Test.MyProtocolReq.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  com.giyeok.sugarproto.proto3kmp.generated.Test.MyProtocolRes.getDefaultInstance()))
+                  Test.MyProtocolRes.getDefaultInstance()))
               .setSchemaDescriptor(new Proto3KmpTestServiceMethodDescriptorSupplier("MyProtocol"))
               .build();
         }
@@ -96,8 +96,8 @@ public final class Proto3KmpTestServiceGrpc {
 
     /**
      */
-    public void myProtocol(com.giyeok.sugarproto.proto3kmp.generated.Test.MyProtocolReq request,
-        io.grpc.stub.StreamObserver<com.giyeok.sugarproto.proto3kmp.generated.Test.MyProtocolRes> responseObserver) {
+    public void myProtocol(Test.MyProtocolReq request,
+                           io.grpc.stub.StreamObserver<Test.MyProtocolRes> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getMyProtocolMethod(), responseObserver);
     }
 
@@ -107,8 +107,8 @@ public final class Proto3KmpTestServiceGrpc {
             getMyProtocolMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
-                com.giyeok.sugarproto.proto3kmp.generated.Test.MyProtocolReq,
-                com.giyeok.sugarproto.proto3kmp.generated.Test.MyProtocolRes>(
+                Test.MyProtocolReq,
+                Test.MyProtocolRes>(
                   this, METHODID_MY_PROTOCOL)))
           .build();
     }
@@ -130,8 +130,8 @@ public final class Proto3KmpTestServiceGrpc {
 
     /**
      */
-    public void myProtocol(com.giyeok.sugarproto.proto3kmp.generated.Test.MyProtocolReq request,
-        io.grpc.stub.StreamObserver<com.giyeok.sugarproto.proto3kmp.generated.Test.MyProtocolRes> responseObserver) {
+    public void myProtocol(Test.MyProtocolReq request,
+                           io.grpc.stub.StreamObserver<Test.MyProtocolRes> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getMyProtocolMethod(), getCallOptions()), request, responseObserver);
     }
@@ -153,7 +153,7 @@ public final class Proto3KmpTestServiceGrpc {
 
     /**
      */
-    public com.giyeok.sugarproto.proto3kmp.generated.Test.MyProtocolRes myProtocol(com.giyeok.sugarproto.proto3kmp.generated.Test.MyProtocolReq request) {
+    public Test.MyProtocolRes myProtocol(Test.MyProtocolReq request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getMyProtocolMethod(), getCallOptions(), request);
     }
@@ -175,8 +175,8 @@ public final class Proto3KmpTestServiceGrpc {
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<com.giyeok.sugarproto.proto3kmp.generated.Test.MyProtocolRes> myProtocol(
-        com.giyeok.sugarproto.proto3kmp.generated.Test.MyProtocolReq request) {
+    public com.google.common.util.concurrent.ListenableFuture<Test.MyProtocolRes> myProtocol(
+        Test.MyProtocolReq request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getMyProtocolMethod(), getCallOptions()), request);
     }
@@ -202,8 +202,8 @@ public final class Proto3KmpTestServiceGrpc {
     public void invoke(Req request, io.grpc.stub.StreamObserver<Resp> responseObserver) {
       switch (methodId) {
         case METHODID_MY_PROTOCOL:
-          serviceImpl.myProtocol((com.giyeok.sugarproto.proto3kmp.generated.Test.MyProtocolReq) request,
-              (io.grpc.stub.StreamObserver<com.giyeok.sugarproto.proto3kmp.generated.Test.MyProtocolRes>) responseObserver);
+          serviceImpl.myProtocol((Test.MyProtocolReq) request,
+              (io.grpc.stub.StreamObserver<Test.MyProtocolRes>) responseObserver);
           break;
         default:
           throw new AssertionError();
@@ -227,7 +227,7 @@ public final class Proto3KmpTestServiceGrpc {
 
     @java.lang.Override
     public com.google.protobuf.Descriptors.FileDescriptor getFileDescriptor() {
-      return com.giyeok.sugarproto.proto3kmp.generated.Test.getDescriptor();
+      return Test.getDescriptor();
     }
 
     @java.lang.Override

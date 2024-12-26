@@ -1,6 +1,7 @@
-package com.giyeok.sugarproto.proto3kmp
+package com.giyeok.sugarproto.proto3kmp.compiler
 
 import com.giyeok.sugarproto.Proto3Ast
+import com.giyeok.sugarproto.proto3kmp.*
 
 class Proto3ToKMPCompiler(val names: ProtoNames, val def: Proto3Ast.Proto3) {
   init {
@@ -8,23 +9,51 @@ class Proto3ToKMPCompiler(val names: ProtoNames, val def: Proto3Ast.Proto3) {
     check(pkgs.size <= 1)
   }
 
-  val pkg = def.defs.filterIsInstance<Proto3Ast.Package>()
+  val protoPkg = def.defs.filterIsInstance<Proto3Ast.Package>()
     .singleOrNull()
-  val pkgName = pkg?.name?.names?.joinToString(".") { it.name }
+  val protoPkgName = protoPkg?.name?.names?.joinToString(".") { it.name }
 
-  fun generateDefs(): CompileResult {
-    val messages = mutableListOf<MessageDef>()
+  val javaPkg = def.defs.filterIsInstance<Proto3Ast.OptionDef>()
+    .singleOrNull { it.name.scope.let { it is Proto3Ast.Ident && it.name == "java_package" } }
+    ?.value?.asStringValue() ?: protoPkgName
+
+  private fun Proto3Ast.Constant.asStringValue(): String = when (this) {
+    is Proto3Ast.BoolConstant -> TODO()
+    is Proto3Ast.FloatConstant -> TODO()
+    is Proto3Ast.FullIdent -> TODO()
+    is Proto3Ast.IntConstant -> TODO()
+    is Proto3Ast.StringConstant -> when (val lit = this.value) {
+      is Proto3Ast.DoubleQuoteStrLit -> lit.value.joinToString("") { c ->
+        when (c) {
+          is Proto3Ast.Character -> c.value.toString()
+          is Proto3Ast.CharEscape -> TODO()
+          is Proto3Ast.HexEscape -> TODO()
+          is Proto3Ast.OctalEscape -> TODO()
+        }
+      }
+
+      is Proto3Ast.SingleQuoteStrLit -> TODO()
+    }
+  }
+
+  private fun nameWithPkg(name: String): String =
+    if (protoPkg == null) name else "$protoPkgName.$name"
+
+  fun generateDefs(): FileCompileResult {
     val services = mutableListOf<ServiceDef>()
-    val enums = mutableListOf<EnumDef>()
+    val messages = mutableMapOf<String, MessageDef>()
+    val enums = mutableMapOf<String, EnumDef>()
 
     for (topLevelDef in def.defs.filterIsInstance<Proto3Ast.TopLevelDef>()) {
       when (topLevelDef) {
-        is Proto3Ast.EnumDef -> enums.add(compileEnum(topLevelDef))
-        is Proto3Ast.Message -> messages.add(compileMessage(topLevelDef))
         is Proto3Ast.Service -> services.add(compileService(topLevelDef))
+        is Proto3Ast.Message ->
+          messages[nameWithPkg(topLevelDef.name.name)] = compileMessage(topLevelDef)
+
+        is Proto3Ast.EnumDef -> enums[nameWithPkg(topLevelDef.name.name)] = compileEnum(topLevelDef)
       }
     }
-    return CompileResult(messages, services, enums)
+    return FileCompileResult(services, messages, enums)
   }
 
   fun compileEnum(enum: Proto3Ast.EnumDef): EnumDef {
@@ -84,7 +113,16 @@ class Proto3ToKMPCompiler(val names: ProtoNames, val def: Proto3Ast.Proto3) {
   }
 
   fun compileType(typ: Proto3Ast.MessageType): MessageType {
-    val canonicalName = (typ.parent + typ.name).joinToString(".") { it.name }
+    val canonicalName = if (typ.parent.isEmpty()) {
+      if (protoPkgName == null) {
+        typ.name.name
+      } else {
+        "$protoPkgName.${typ.name.name}"
+      }
+    } else {
+      (typ.parent.map { it.name } + typ.name.name).joinToString(".")
+    }
+    check(canonicalName in names.messages)
     return MessageType(canonicalName)
   }
 
@@ -159,7 +197,7 @@ class Proto3ToKMPCompiler(val names: ProtoNames, val def: Proto3Ast.Proto3) {
         is Proto3Ast.Reserved -> TODO()
       }
     }
-    return MessageDef(pkgName ?: "", msg.name.name, fields, oneofs)
+    return MessageDef(javaPkg ?: "", protoPkgName ?: "", msg.name.name, fields, oneofs)
   }
 
   fun compileService(service: Proto3Ast.Service): ServiceDef {
@@ -182,12 +220,14 @@ class Proto3ToKMPCompiler(val names: ProtoNames, val def: Proto3Ast.Proto3) {
         is Proto3Ast.OptionDef -> TODO()
       }
     }
-    return ServiceDef(pkgName ?: "", service.name.name, rpcs)
+    return ServiceDef(javaPkg ?: "", protoPkgName ?: "", service.name.name, rpcs)
   }
 }
 
-data class CompileResult(
-  val messages: List<MessageDef>,
+data class FileCompileResult(
   val services: List<ServiceDef>,
-  val enums: List<EnumDef>
-)
+  val messages: Map<String, MessageDef>,
+  val enums: Map<String, EnumDef>,
+) {
+  val requiredTypes: Set<String> get() = messages.values.flatMap { it.requiredTypes }.toSet()
+}
