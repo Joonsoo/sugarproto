@@ -2771,6 +2771,2478 @@ java.lang.String defaultValue) {
 
   }
 
+  public interface TimestampAndDurationsOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:TimestampAndDurations)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>repeated .SubMessage rep = 1;</code>
+     */
+    java.util.List<Test1.SubMessage> 
+        getRepList();
+    /**
+     * <code>repeated .SubMessage rep = 1;</code>
+     */
+    Test1.SubMessage getRep(int index);
+    /**
+     * <code>repeated .SubMessage rep = 1;</code>
+     */
+    int getRepCount();
+    /**
+     * <code>repeated .SubMessage rep = 1;</code>
+     */
+    java.util.List<? extends Test1.SubMessageOrBuilder> 
+        getRepOrBuilderList();
+    /**
+     * <code>repeated .SubMessage rep = 1;</code>
+     */
+    Test1.SubMessageOrBuilder getRepOrBuilder(
+        int index);
+
+    /**
+     * <code>repeated .google.protobuf.Timestamp rep_timestamp = 2;</code>
+     */
+    java.util.List<com.google.protobuf.Timestamp> 
+        getRepTimestampList();
+    /**
+     * <code>repeated .google.protobuf.Timestamp rep_timestamp = 2;</code>
+     */
+    com.google.protobuf.Timestamp getRepTimestamp(int index);
+    /**
+     * <code>repeated .google.protobuf.Timestamp rep_timestamp = 2;</code>
+     */
+    int getRepTimestampCount();
+    /**
+     * <code>repeated .google.protobuf.Timestamp rep_timestamp = 2;</code>
+     */
+    java.util.List<? extends com.google.protobuf.TimestampOrBuilder> 
+        getRepTimestampOrBuilderList();
+    /**
+     * <code>repeated .google.protobuf.Timestamp rep_timestamp = 2;</code>
+     */
+    com.google.protobuf.TimestampOrBuilder getRepTimestampOrBuilder(
+        int index);
+
+    /**
+     * <code>repeated .google.protobuf.Duration rep_duration = 3;</code>
+     */
+    java.util.List<com.google.protobuf.Duration> 
+        getRepDurationList();
+    /**
+     * <code>repeated .google.protobuf.Duration rep_duration = 3;</code>
+     */
+    com.google.protobuf.Duration getRepDuration(int index);
+    /**
+     * <code>repeated .google.protobuf.Duration rep_duration = 3;</code>
+     */
+    int getRepDurationCount();
+    /**
+     * <code>repeated .google.protobuf.Duration rep_duration = 3;</code>
+     */
+    java.util.List<? extends com.google.protobuf.DurationOrBuilder> 
+        getRepDurationOrBuilderList();
+    /**
+     * <code>repeated .google.protobuf.Duration rep_duration = 3;</code>
+     */
+    com.google.protobuf.DurationOrBuilder getRepDurationOrBuilder(
+        int index);
+
+    /**
+     * <code>repeated string rep_string = 4;</code>
+     * @return A list containing the repString.
+     */
+    java.util.List<java.lang.String>
+        getRepStringList();
+    /**
+     * <code>repeated string rep_string = 4;</code>
+     * @return The count of repString.
+     */
+    int getRepStringCount();
+    /**
+     * <code>repeated string rep_string = 4;</code>
+     * @param index The index of the element to return.
+     * @return The repString at the given index.
+     */
+    java.lang.String getRepString(int index);
+    /**
+     * <code>repeated string rep_string = 4;</code>
+     * @param index The index of the value to return.
+     * @return The bytes of the repString at the given index.
+     */
+    com.google.protobuf.ByteString
+        getRepStringBytes(int index);
+  }
+  /**
+   * Protobuf type {@code TimestampAndDurations}
+   */
+  public static final class TimestampAndDurations extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:TimestampAndDurations)
+      TimestampAndDurationsOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use TimestampAndDurations.newBuilder() to construct.
+    private TimestampAndDurations(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private TimestampAndDurations() {
+      rep_ = java.util.Collections.emptyList();
+      repTimestamp_ = java.util.Collections.emptyList();
+      repDuration_ = java.util.Collections.emptyList();
+      repString_ =
+          com.google.protobuf.LazyStringArrayList.emptyList();
+    }
+
+    @java.lang.Override
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new TimestampAndDurations();
+    }
+
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return Test1.internal_static_TimestampAndDurations_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return Test1.internal_static_TimestampAndDurations_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              Test1.TimestampAndDurations.class, Test1.TimestampAndDurations.Builder.class);
+    }
+
+    public static final int REP_FIELD_NUMBER = 1;
+    @SuppressWarnings("serial")
+    private java.util.List<Test1.SubMessage> rep_;
+    /**
+     * <code>repeated .SubMessage rep = 1;</code>
+     */
+    @java.lang.Override
+    public java.util.List<Test1.SubMessage> getRepList() {
+      return rep_;
+    }
+    /**
+     * <code>repeated .SubMessage rep = 1;</code>
+     */
+    @java.lang.Override
+    public java.util.List<? extends Test1.SubMessageOrBuilder> 
+        getRepOrBuilderList() {
+      return rep_;
+    }
+    /**
+     * <code>repeated .SubMessage rep = 1;</code>
+     */
+    @java.lang.Override
+    public int getRepCount() {
+      return rep_.size();
+    }
+    /**
+     * <code>repeated .SubMessage rep = 1;</code>
+     */
+    @java.lang.Override
+    public Test1.SubMessage getRep(int index) {
+      return rep_.get(index);
+    }
+    /**
+     * <code>repeated .SubMessage rep = 1;</code>
+     */
+    @java.lang.Override
+    public Test1.SubMessageOrBuilder getRepOrBuilder(
+        int index) {
+      return rep_.get(index);
+    }
+
+    public static final int REP_TIMESTAMP_FIELD_NUMBER = 2;
+    @SuppressWarnings("serial")
+    private java.util.List<com.google.protobuf.Timestamp> repTimestamp_;
+    /**
+     * <code>repeated .google.protobuf.Timestamp rep_timestamp = 2;</code>
+     */
+    @java.lang.Override
+    public java.util.List<com.google.protobuf.Timestamp> getRepTimestampList() {
+      return repTimestamp_;
+    }
+    /**
+     * <code>repeated .google.protobuf.Timestamp rep_timestamp = 2;</code>
+     */
+    @java.lang.Override
+    public java.util.List<? extends com.google.protobuf.TimestampOrBuilder> 
+        getRepTimestampOrBuilderList() {
+      return repTimestamp_;
+    }
+    /**
+     * <code>repeated .google.protobuf.Timestamp rep_timestamp = 2;</code>
+     */
+    @java.lang.Override
+    public int getRepTimestampCount() {
+      return repTimestamp_.size();
+    }
+    /**
+     * <code>repeated .google.protobuf.Timestamp rep_timestamp = 2;</code>
+     */
+    @java.lang.Override
+    public com.google.protobuf.Timestamp getRepTimestamp(int index) {
+      return repTimestamp_.get(index);
+    }
+    /**
+     * <code>repeated .google.protobuf.Timestamp rep_timestamp = 2;</code>
+     */
+    @java.lang.Override
+    public com.google.protobuf.TimestampOrBuilder getRepTimestampOrBuilder(
+        int index) {
+      return repTimestamp_.get(index);
+    }
+
+    public static final int REP_DURATION_FIELD_NUMBER = 3;
+    @SuppressWarnings("serial")
+    private java.util.List<com.google.protobuf.Duration> repDuration_;
+    /**
+     * <code>repeated .google.protobuf.Duration rep_duration = 3;</code>
+     */
+    @java.lang.Override
+    public java.util.List<com.google.protobuf.Duration> getRepDurationList() {
+      return repDuration_;
+    }
+    /**
+     * <code>repeated .google.protobuf.Duration rep_duration = 3;</code>
+     */
+    @java.lang.Override
+    public java.util.List<? extends com.google.protobuf.DurationOrBuilder> 
+        getRepDurationOrBuilderList() {
+      return repDuration_;
+    }
+    /**
+     * <code>repeated .google.protobuf.Duration rep_duration = 3;</code>
+     */
+    @java.lang.Override
+    public int getRepDurationCount() {
+      return repDuration_.size();
+    }
+    /**
+     * <code>repeated .google.protobuf.Duration rep_duration = 3;</code>
+     */
+    @java.lang.Override
+    public com.google.protobuf.Duration getRepDuration(int index) {
+      return repDuration_.get(index);
+    }
+    /**
+     * <code>repeated .google.protobuf.Duration rep_duration = 3;</code>
+     */
+    @java.lang.Override
+    public com.google.protobuf.DurationOrBuilder getRepDurationOrBuilder(
+        int index) {
+      return repDuration_.get(index);
+    }
+
+    public static final int REP_STRING_FIELD_NUMBER = 4;
+    @SuppressWarnings("serial")
+    private com.google.protobuf.LazyStringArrayList repString_ =
+        com.google.protobuf.LazyStringArrayList.emptyList();
+    /**
+     * <code>repeated string rep_string = 4;</code>
+     * @return A list containing the repString.
+     */
+    public com.google.protobuf.ProtocolStringList
+        getRepStringList() {
+      return repString_;
+    }
+    /**
+     * <code>repeated string rep_string = 4;</code>
+     * @return The count of repString.
+     */
+    public int getRepStringCount() {
+      return repString_.size();
+    }
+    /**
+     * <code>repeated string rep_string = 4;</code>
+     * @param index The index of the element to return.
+     * @return The repString at the given index.
+     */
+    public java.lang.String getRepString(int index) {
+      return repString_.get(index);
+    }
+    /**
+     * <code>repeated string rep_string = 4;</code>
+     * @param index The index of the value to return.
+     * @return The bytes of the repString at the given index.
+     */
+    public com.google.protobuf.ByteString
+        getRepStringBytes(int index) {
+      return repString_.getByteString(index);
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      for (int i = 0; i < rep_.size(); i++) {
+        output.writeMessage(1, rep_.get(i));
+      }
+      for (int i = 0; i < repTimestamp_.size(); i++) {
+        output.writeMessage(2, repTimestamp_.get(i));
+      }
+      for (int i = 0; i < repDuration_.size(); i++) {
+        output.writeMessage(3, repDuration_.get(i));
+      }
+      for (int i = 0; i < repString_.size(); i++) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 4, repString_.getRaw(i));
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      for (int i = 0; i < rep_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, rep_.get(i));
+      }
+      for (int i = 0; i < repTimestamp_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(2, repTimestamp_.get(i));
+      }
+      for (int i = 0; i < repDuration_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(3, repDuration_.get(i));
+      }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < repString_.size(); i++) {
+          dataSize += computeStringSizeNoTag(repString_.getRaw(i));
+        }
+        size += dataSize;
+        size += 1 * getRepStringList().size();
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof Test1.TimestampAndDurations)) {
+        return super.equals(obj);
+      }
+      Test1.TimestampAndDurations other = (Test1.TimestampAndDurations) obj;
+
+      if (!getRepList()
+          .equals(other.getRepList())) return false;
+      if (!getRepTimestampList()
+          .equals(other.getRepTimestampList())) return false;
+      if (!getRepDurationList()
+          .equals(other.getRepDurationList())) return false;
+      if (!getRepStringList()
+          .equals(other.getRepStringList())) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      if (getRepCount() > 0) {
+        hash = (37 * hash) + REP_FIELD_NUMBER;
+        hash = (53 * hash) + getRepList().hashCode();
+      }
+      if (getRepTimestampCount() > 0) {
+        hash = (37 * hash) + REP_TIMESTAMP_FIELD_NUMBER;
+        hash = (53 * hash) + getRepTimestampList().hashCode();
+      }
+      if (getRepDurationCount() > 0) {
+        hash = (37 * hash) + REP_DURATION_FIELD_NUMBER;
+        hash = (53 * hash) + getRepDurationList().hashCode();
+      }
+      if (getRepStringCount() > 0) {
+        hash = (37 * hash) + REP_STRING_FIELD_NUMBER;
+        hash = (53 * hash) + getRepStringList().hashCode();
+      }
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static Test1.TimestampAndDurations parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static Test1.TimestampAndDurations parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static Test1.TimestampAndDurations parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static Test1.TimestampAndDurations parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static Test1.TimestampAndDurations parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static Test1.TimestampAndDurations parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static Test1.TimestampAndDurations parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static Test1.TimestampAndDurations parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static Test1.TimestampAndDurations parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static Test1.TimestampAndDurations parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static Test1.TimestampAndDurations parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static Test1.TimestampAndDurations parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(Test1.TimestampAndDurations prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code TimestampAndDurations}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:TimestampAndDurations)
+        Test1.TimestampAndDurationsOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return Test1.internal_static_TimestampAndDurations_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return Test1.internal_static_TimestampAndDurations_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                Test1.TimestampAndDurations.class, Test1.TimestampAndDurations.Builder.class);
+      }
+
+      // Construct using Test1.TimestampAndDurations.newBuilder()
+      private Builder() {
+
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        bitField0_ = 0;
+        if (repBuilder_ == null) {
+          rep_ = java.util.Collections.emptyList();
+        } else {
+          rep_ = null;
+          repBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000001);
+        if (repTimestampBuilder_ == null) {
+          repTimestamp_ = java.util.Collections.emptyList();
+        } else {
+          repTimestamp_ = null;
+          repTimestampBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000002);
+        if (repDurationBuilder_ == null) {
+          repDuration_ = java.util.Collections.emptyList();
+        } else {
+          repDuration_ = null;
+          repDurationBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000004);
+        repString_ =
+            com.google.protobuf.LazyStringArrayList.emptyList();
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return Test1.internal_static_TimestampAndDurations_descriptor;
+      }
+
+      @java.lang.Override
+      public Test1.TimestampAndDurations getDefaultInstanceForType() {
+        return Test1.TimestampAndDurations.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public Test1.TimestampAndDurations build() {
+        Test1.TimestampAndDurations result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public Test1.TimestampAndDurations buildPartial() {
+        Test1.TimestampAndDurations result = new Test1.TimestampAndDurations(this);
+        buildPartialRepeatedFields(result);
+        if (bitField0_ != 0) { buildPartial0(result); }
+        onBuilt();
+        return result;
+      }
+
+      private void buildPartialRepeatedFields(Test1.TimestampAndDurations result) {
+        if (repBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) != 0)) {
+            rep_ = java.util.Collections.unmodifiableList(rep_);
+            bitField0_ = (bitField0_ & ~0x00000001);
+          }
+          result.rep_ = rep_;
+        } else {
+          result.rep_ = repBuilder_.build();
+        }
+        if (repTimestampBuilder_ == null) {
+          if (((bitField0_ & 0x00000002) != 0)) {
+            repTimestamp_ = java.util.Collections.unmodifiableList(repTimestamp_);
+            bitField0_ = (bitField0_ & ~0x00000002);
+          }
+          result.repTimestamp_ = repTimestamp_;
+        } else {
+          result.repTimestamp_ = repTimestampBuilder_.build();
+        }
+        if (repDurationBuilder_ == null) {
+          if (((bitField0_ & 0x00000004) != 0)) {
+            repDuration_ = java.util.Collections.unmodifiableList(repDuration_);
+            bitField0_ = (bitField0_ & ~0x00000004);
+          }
+          result.repDuration_ = repDuration_;
+        } else {
+          result.repDuration_ = repDurationBuilder_.build();
+        }
+      }
+
+      private void buildPartial0(Test1.TimestampAndDurations result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000008) != 0)) {
+          repString_.makeImmutable();
+          result.repString_ = repString_;
+        }
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof Test1.TimestampAndDurations) {
+          return mergeFrom((Test1.TimestampAndDurations)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(Test1.TimestampAndDurations other) {
+        if (other == Test1.TimestampAndDurations.getDefaultInstance()) return this;
+        if (repBuilder_ == null) {
+          if (!other.rep_.isEmpty()) {
+            if (rep_.isEmpty()) {
+              rep_ = other.rep_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+            } else {
+              ensureRepIsMutable();
+              rep_.addAll(other.rep_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.rep_.isEmpty()) {
+            if (repBuilder_.isEmpty()) {
+              repBuilder_.dispose();
+              repBuilder_ = null;
+              rep_ = other.rep_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+              repBuilder_ = 
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getRepFieldBuilder() : null;
+            } else {
+              repBuilder_.addAllMessages(other.rep_);
+            }
+          }
+        }
+        if (repTimestampBuilder_ == null) {
+          if (!other.repTimestamp_.isEmpty()) {
+            if (repTimestamp_.isEmpty()) {
+              repTimestamp_ = other.repTimestamp_;
+              bitField0_ = (bitField0_ & ~0x00000002);
+            } else {
+              ensureRepTimestampIsMutable();
+              repTimestamp_.addAll(other.repTimestamp_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.repTimestamp_.isEmpty()) {
+            if (repTimestampBuilder_.isEmpty()) {
+              repTimestampBuilder_.dispose();
+              repTimestampBuilder_ = null;
+              repTimestamp_ = other.repTimestamp_;
+              bitField0_ = (bitField0_ & ~0x00000002);
+              repTimestampBuilder_ = 
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getRepTimestampFieldBuilder() : null;
+            } else {
+              repTimestampBuilder_.addAllMessages(other.repTimestamp_);
+            }
+          }
+        }
+        if (repDurationBuilder_ == null) {
+          if (!other.repDuration_.isEmpty()) {
+            if (repDuration_.isEmpty()) {
+              repDuration_ = other.repDuration_;
+              bitField0_ = (bitField0_ & ~0x00000004);
+            } else {
+              ensureRepDurationIsMutable();
+              repDuration_.addAll(other.repDuration_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.repDuration_.isEmpty()) {
+            if (repDurationBuilder_.isEmpty()) {
+              repDurationBuilder_.dispose();
+              repDurationBuilder_ = null;
+              repDuration_ = other.repDuration_;
+              bitField0_ = (bitField0_ & ~0x00000004);
+              repDurationBuilder_ = 
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getRepDurationFieldBuilder() : null;
+            } else {
+              repDurationBuilder_.addAllMessages(other.repDuration_);
+            }
+          }
+        }
+        if (!other.repString_.isEmpty()) {
+          if (repString_.isEmpty()) {
+            repString_ = other.repString_;
+            bitField0_ |= 0x00000008;
+          } else {
+            ensureRepStringIsMutable();
+            repString_.addAll(other.repString_);
+          }
+          onChanged();
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 10: {
+                Test1.SubMessage m =
+                    input.readMessage(
+                        Test1.SubMessage.parser(),
+                        extensionRegistry);
+                if (repBuilder_ == null) {
+                  ensureRepIsMutable();
+                  rep_.add(m);
+                } else {
+                  repBuilder_.addMessage(m);
+                }
+                break;
+              } // case 10
+              case 18: {
+                com.google.protobuf.Timestamp m =
+                    input.readMessage(
+                        com.google.protobuf.Timestamp.parser(),
+                        extensionRegistry);
+                if (repTimestampBuilder_ == null) {
+                  ensureRepTimestampIsMutable();
+                  repTimestamp_.add(m);
+                } else {
+                  repTimestampBuilder_.addMessage(m);
+                }
+                break;
+              } // case 18
+              case 26: {
+                com.google.protobuf.Duration m =
+                    input.readMessage(
+                        com.google.protobuf.Duration.parser(),
+                        extensionRegistry);
+                if (repDurationBuilder_ == null) {
+                  ensureRepDurationIsMutable();
+                  repDuration_.add(m);
+                } else {
+                  repDurationBuilder_.addMessage(m);
+                }
+                break;
+              } // case 26
+              case 34: {
+                java.lang.String s = input.readStringRequireUtf8();
+                ensureRepStringIsMutable();
+                repString_.add(s);
+                break;
+              } // case 34
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.unwrapIOException();
+        } finally {
+          onChanged();
+        } // finally
+        return this;
+      }
+      private int bitField0_;
+
+      private java.util.List<Test1.SubMessage> rep_ =
+        java.util.Collections.emptyList();
+      private void ensureRepIsMutable() {
+        if (!((bitField0_ & 0x00000001) != 0)) {
+          rep_ = new java.util.ArrayList<Test1.SubMessage>(rep_);
+          bitField0_ |= 0x00000001;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          Test1.SubMessage, Test1.SubMessage.Builder, Test1.SubMessageOrBuilder> repBuilder_;
+
+      /**
+       * <code>repeated .SubMessage rep = 1;</code>
+       */
+      public java.util.List<Test1.SubMessage> getRepList() {
+        if (repBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(rep_);
+        } else {
+          return repBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .SubMessage rep = 1;</code>
+       */
+      public int getRepCount() {
+        if (repBuilder_ == null) {
+          return rep_.size();
+        } else {
+          return repBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .SubMessage rep = 1;</code>
+       */
+      public Test1.SubMessage getRep(int index) {
+        if (repBuilder_ == null) {
+          return rep_.get(index);
+        } else {
+          return repBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .SubMessage rep = 1;</code>
+       */
+      public Builder setRep(
+          int index, Test1.SubMessage value) {
+        if (repBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureRepIsMutable();
+          rep_.set(index, value);
+          onChanged();
+        } else {
+          repBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .SubMessage rep = 1;</code>
+       */
+      public Builder setRep(
+          int index, Test1.SubMessage.Builder builderForValue) {
+        if (repBuilder_ == null) {
+          ensureRepIsMutable();
+          rep_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          repBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .SubMessage rep = 1;</code>
+       */
+      public Builder addRep(Test1.SubMessage value) {
+        if (repBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureRepIsMutable();
+          rep_.add(value);
+          onChanged();
+        } else {
+          repBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .SubMessage rep = 1;</code>
+       */
+      public Builder addRep(
+          int index, Test1.SubMessage value) {
+        if (repBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureRepIsMutable();
+          rep_.add(index, value);
+          onChanged();
+        } else {
+          repBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .SubMessage rep = 1;</code>
+       */
+      public Builder addRep(
+          Test1.SubMessage.Builder builderForValue) {
+        if (repBuilder_ == null) {
+          ensureRepIsMutable();
+          rep_.add(builderForValue.build());
+          onChanged();
+        } else {
+          repBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .SubMessage rep = 1;</code>
+       */
+      public Builder addRep(
+          int index, Test1.SubMessage.Builder builderForValue) {
+        if (repBuilder_ == null) {
+          ensureRepIsMutable();
+          rep_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          repBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .SubMessage rep = 1;</code>
+       */
+      public Builder addAllRep(
+          java.lang.Iterable<? extends Test1.SubMessage> values) {
+        if (repBuilder_ == null) {
+          ensureRepIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, rep_);
+          onChanged();
+        } else {
+          repBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .SubMessage rep = 1;</code>
+       */
+      public Builder clearRep() {
+        if (repBuilder_ == null) {
+          rep_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+          onChanged();
+        } else {
+          repBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .SubMessage rep = 1;</code>
+       */
+      public Builder removeRep(int index) {
+        if (repBuilder_ == null) {
+          ensureRepIsMutable();
+          rep_.remove(index);
+          onChanged();
+        } else {
+          repBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .SubMessage rep = 1;</code>
+       */
+      public Test1.SubMessage.Builder getRepBuilder(
+          int index) {
+        return getRepFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .SubMessage rep = 1;</code>
+       */
+      public Test1.SubMessageOrBuilder getRepOrBuilder(
+          int index) {
+        if (repBuilder_ == null) {
+          return rep_.get(index);  } else {
+          return repBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .SubMessage rep = 1;</code>
+       */
+      public java.util.List<? extends Test1.SubMessageOrBuilder> 
+           getRepOrBuilderList() {
+        if (repBuilder_ != null) {
+          return repBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(rep_);
+        }
+      }
+      /**
+       * <code>repeated .SubMessage rep = 1;</code>
+       */
+      public Test1.SubMessage.Builder addRepBuilder() {
+        return getRepFieldBuilder().addBuilder(
+            Test1.SubMessage.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .SubMessage rep = 1;</code>
+       */
+      public Test1.SubMessage.Builder addRepBuilder(
+          int index) {
+        return getRepFieldBuilder().addBuilder(
+            index, Test1.SubMessage.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .SubMessage rep = 1;</code>
+       */
+      public java.util.List<Test1.SubMessage.Builder> 
+           getRepBuilderList() {
+        return getRepFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          Test1.SubMessage, Test1.SubMessage.Builder, Test1.SubMessageOrBuilder> 
+          getRepFieldBuilder() {
+        if (repBuilder_ == null) {
+          repBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              Test1.SubMessage, Test1.SubMessage.Builder, Test1.SubMessageOrBuilder>(
+                  rep_,
+                  ((bitField0_ & 0x00000001) != 0),
+                  getParentForChildren(),
+                  isClean());
+          rep_ = null;
+        }
+        return repBuilder_;
+      }
+
+      private java.util.List<com.google.protobuf.Timestamp> repTimestamp_ =
+        java.util.Collections.emptyList();
+      private void ensureRepTimestampIsMutable() {
+        if (!((bitField0_ & 0x00000002) != 0)) {
+          repTimestamp_ = new java.util.ArrayList<com.google.protobuf.Timestamp>(repTimestamp_);
+          bitField0_ |= 0x00000002;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          com.google.protobuf.Timestamp, com.google.protobuf.Timestamp.Builder, com.google.protobuf.TimestampOrBuilder> repTimestampBuilder_;
+
+      /**
+       * <code>repeated .google.protobuf.Timestamp rep_timestamp = 2;</code>
+       */
+      public java.util.List<com.google.protobuf.Timestamp> getRepTimestampList() {
+        if (repTimestampBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(repTimestamp_);
+        } else {
+          return repTimestampBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .google.protobuf.Timestamp rep_timestamp = 2;</code>
+       */
+      public int getRepTimestampCount() {
+        if (repTimestampBuilder_ == null) {
+          return repTimestamp_.size();
+        } else {
+          return repTimestampBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .google.protobuf.Timestamp rep_timestamp = 2;</code>
+       */
+      public com.google.protobuf.Timestamp getRepTimestamp(int index) {
+        if (repTimestampBuilder_ == null) {
+          return repTimestamp_.get(index);
+        } else {
+          return repTimestampBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .google.protobuf.Timestamp rep_timestamp = 2;</code>
+       */
+      public Builder setRepTimestamp(
+          int index, com.google.protobuf.Timestamp value) {
+        if (repTimestampBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureRepTimestampIsMutable();
+          repTimestamp_.set(index, value);
+          onChanged();
+        } else {
+          repTimestampBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .google.protobuf.Timestamp rep_timestamp = 2;</code>
+       */
+      public Builder setRepTimestamp(
+          int index, com.google.protobuf.Timestamp.Builder builderForValue) {
+        if (repTimestampBuilder_ == null) {
+          ensureRepTimestampIsMutable();
+          repTimestamp_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          repTimestampBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .google.protobuf.Timestamp rep_timestamp = 2;</code>
+       */
+      public Builder addRepTimestamp(com.google.protobuf.Timestamp value) {
+        if (repTimestampBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureRepTimestampIsMutable();
+          repTimestamp_.add(value);
+          onChanged();
+        } else {
+          repTimestampBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .google.protobuf.Timestamp rep_timestamp = 2;</code>
+       */
+      public Builder addRepTimestamp(
+          int index, com.google.protobuf.Timestamp value) {
+        if (repTimestampBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureRepTimestampIsMutable();
+          repTimestamp_.add(index, value);
+          onChanged();
+        } else {
+          repTimestampBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .google.protobuf.Timestamp rep_timestamp = 2;</code>
+       */
+      public Builder addRepTimestamp(
+          com.google.protobuf.Timestamp.Builder builderForValue) {
+        if (repTimestampBuilder_ == null) {
+          ensureRepTimestampIsMutable();
+          repTimestamp_.add(builderForValue.build());
+          onChanged();
+        } else {
+          repTimestampBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .google.protobuf.Timestamp rep_timestamp = 2;</code>
+       */
+      public Builder addRepTimestamp(
+          int index, com.google.protobuf.Timestamp.Builder builderForValue) {
+        if (repTimestampBuilder_ == null) {
+          ensureRepTimestampIsMutable();
+          repTimestamp_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          repTimestampBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .google.protobuf.Timestamp rep_timestamp = 2;</code>
+       */
+      public Builder addAllRepTimestamp(
+          java.lang.Iterable<? extends com.google.protobuf.Timestamp> values) {
+        if (repTimestampBuilder_ == null) {
+          ensureRepTimestampIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, repTimestamp_);
+          onChanged();
+        } else {
+          repTimestampBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .google.protobuf.Timestamp rep_timestamp = 2;</code>
+       */
+      public Builder clearRepTimestamp() {
+        if (repTimestampBuilder_ == null) {
+          repTimestamp_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000002);
+          onChanged();
+        } else {
+          repTimestampBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .google.protobuf.Timestamp rep_timestamp = 2;</code>
+       */
+      public Builder removeRepTimestamp(int index) {
+        if (repTimestampBuilder_ == null) {
+          ensureRepTimestampIsMutable();
+          repTimestamp_.remove(index);
+          onChanged();
+        } else {
+          repTimestampBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .google.protobuf.Timestamp rep_timestamp = 2;</code>
+       */
+      public com.google.protobuf.Timestamp.Builder getRepTimestampBuilder(
+          int index) {
+        return getRepTimestampFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .google.protobuf.Timestamp rep_timestamp = 2;</code>
+       */
+      public com.google.protobuf.TimestampOrBuilder getRepTimestampOrBuilder(
+          int index) {
+        if (repTimestampBuilder_ == null) {
+          return repTimestamp_.get(index);  } else {
+          return repTimestampBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .google.protobuf.Timestamp rep_timestamp = 2;</code>
+       */
+      public java.util.List<? extends com.google.protobuf.TimestampOrBuilder> 
+           getRepTimestampOrBuilderList() {
+        if (repTimestampBuilder_ != null) {
+          return repTimestampBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(repTimestamp_);
+        }
+      }
+      /**
+       * <code>repeated .google.protobuf.Timestamp rep_timestamp = 2;</code>
+       */
+      public com.google.protobuf.Timestamp.Builder addRepTimestampBuilder() {
+        return getRepTimestampFieldBuilder().addBuilder(
+            com.google.protobuf.Timestamp.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .google.protobuf.Timestamp rep_timestamp = 2;</code>
+       */
+      public com.google.protobuf.Timestamp.Builder addRepTimestampBuilder(
+          int index) {
+        return getRepTimestampFieldBuilder().addBuilder(
+            index, com.google.protobuf.Timestamp.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .google.protobuf.Timestamp rep_timestamp = 2;</code>
+       */
+      public java.util.List<com.google.protobuf.Timestamp.Builder> 
+           getRepTimestampBuilderList() {
+        return getRepTimestampFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          com.google.protobuf.Timestamp, com.google.protobuf.Timestamp.Builder, com.google.protobuf.TimestampOrBuilder> 
+          getRepTimestampFieldBuilder() {
+        if (repTimestampBuilder_ == null) {
+          repTimestampBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              com.google.protobuf.Timestamp, com.google.protobuf.Timestamp.Builder, com.google.protobuf.TimestampOrBuilder>(
+                  repTimestamp_,
+                  ((bitField0_ & 0x00000002) != 0),
+                  getParentForChildren(),
+                  isClean());
+          repTimestamp_ = null;
+        }
+        return repTimestampBuilder_;
+      }
+
+      private java.util.List<com.google.protobuf.Duration> repDuration_ =
+        java.util.Collections.emptyList();
+      private void ensureRepDurationIsMutable() {
+        if (!((bitField0_ & 0x00000004) != 0)) {
+          repDuration_ = new java.util.ArrayList<com.google.protobuf.Duration>(repDuration_);
+          bitField0_ |= 0x00000004;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          com.google.protobuf.Duration, com.google.protobuf.Duration.Builder, com.google.protobuf.DurationOrBuilder> repDurationBuilder_;
+
+      /**
+       * <code>repeated .google.protobuf.Duration rep_duration = 3;</code>
+       */
+      public java.util.List<com.google.protobuf.Duration> getRepDurationList() {
+        if (repDurationBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(repDuration_);
+        } else {
+          return repDurationBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .google.protobuf.Duration rep_duration = 3;</code>
+       */
+      public int getRepDurationCount() {
+        if (repDurationBuilder_ == null) {
+          return repDuration_.size();
+        } else {
+          return repDurationBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .google.protobuf.Duration rep_duration = 3;</code>
+       */
+      public com.google.protobuf.Duration getRepDuration(int index) {
+        if (repDurationBuilder_ == null) {
+          return repDuration_.get(index);
+        } else {
+          return repDurationBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .google.protobuf.Duration rep_duration = 3;</code>
+       */
+      public Builder setRepDuration(
+          int index, com.google.protobuf.Duration value) {
+        if (repDurationBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureRepDurationIsMutable();
+          repDuration_.set(index, value);
+          onChanged();
+        } else {
+          repDurationBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .google.protobuf.Duration rep_duration = 3;</code>
+       */
+      public Builder setRepDuration(
+          int index, com.google.protobuf.Duration.Builder builderForValue) {
+        if (repDurationBuilder_ == null) {
+          ensureRepDurationIsMutable();
+          repDuration_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          repDurationBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .google.protobuf.Duration rep_duration = 3;</code>
+       */
+      public Builder addRepDuration(com.google.protobuf.Duration value) {
+        if (repDurationBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureRepDurationIsMutable();
+          repDuration_.add(value);
+          onChanged();
+        } else {
+          repDurationBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .google.protobuf.Duration rep_duration = 3;</code>
+       */
+      public Builder addRepDuration(
+          int index, com.google.protobuf.Duration value) {
+        if (repDurationBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureRepDurationIsMutable();
+          repDuration_.add(index, value);
+          onChanged();
+        } else {
+          repDurationBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .google.protobuf.Duration rep_duration = 3;</code>
+       */
+      public Builder addRepDuration(
+          com.google.protobuf.Duration.Builder builderForValue) {
+        if (repDurationBuilder_ == null) {
+          ensureRepDurationIsMutable();
+          repDuration_.add(builderForValue.build());
+          onChanged();
+        } else {
+          repDurationBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .google.protobuf.Duration rep_duration = 3;</code>
+       */
+      public Builder addRepDuration(
+          int index, com.google.protobuf.Duration.Builder builderForValue) {
+        if (repDurationBuilder_ == null) {
+          ensureRepDurationIsMutable();
+          repDuration_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          repDurationBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .google.protobuf.Duration rep_duration = 3;</code>
+       */
+      public Builder addAllRepDuration(
+          java.lang.Iterable<? extends com.google.protobuf.Duration> values) {
+        if (repDurationBuilder_ == null) {
+          ensureRepDurationIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, repDuration_);
+          onChanged();
+        } else {
+          repDurationBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .google.protobuf.Duration rep_duration = 3;</code>
+       */
+      public Builder clearRepDuration() {
+        if (repDurationBuilder_ == null) {
+          repDuration_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000004);
+          onChanged();
+        } else {
+          repDurationBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .google.protobuf.Duration rep_duration = 3;</code>
+       */
+      public Builder removeRepDuration(int index) {
+        if (repDurationBuilder_ == null) {
+          ensureRepDurationIsMutable();
+          repDuration_.remove(index);
+          onChanged();
+        } else {
+          repDurationBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .google.protobuf.Duration rep_duration = 3;</code>
+       */
+      public com.google.protobuf.Duration.Builder getRepDurationBuilder(
+          int index) {
+        return getRepDurationFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .google.protobuf.Duration rep_duration = 3;</code>
+       */
+      public com.google.protobuf.DurationOrBuilder getRepDurationOrBuilder(
+          int index) {
+        if (repDurationBuilder_ == null) {
+          return repDuration_.get(index);  } else {
+          return repDurationBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .google.protobuf.Duration rep_duration = 3;</code>
+       */
+      public java.util.List<? extends com.google.protobuf.DurationOrBuilder> 
+           getRepDurationOrBuilderList() {
+        if (repDurationBuilder_ != null) {
+          return repDurationBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(repDuration_);
+        }
+      }
+      /**
+       * <code>repeated .google.protobuf.Duration rep_duration = 3;</code>
+       */
+      public com.google.protobuf.Duration.Builder addRepDurationBuilder() {
+        return getRepDurationFieldBuilder().addBuilder(
+            com.google.protobuf.Duration.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .google.protobuf.Duration rep_duration = 3;</code>
+       */
+      public com.google.protobuf.Duration.Builder addRepDurationBuilder(
+          int index) {
+        return getRepDurationFieldBuilder().addBuilder(
+            index, com.google.protobuf.Duration.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .google.protobuf.Duration rep_duration = 3;</code>
+       */
+      public java.util.List<com.google.protobuf.Duration.Builder> 
+           getRepDurationBuilderList() {
+        return getRepDurationFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          com.google.protobuf.Duration, com.google.protobuf.Duration.Builder, com.google.protobuf.DurationOrBuilder> 
+          getRepDurationFieldBuilder() {
+        if (repDurationBuilder_ == null) {
+          repDurationBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              com.google.protobuf.Duration, com.google.protobuf.Duration.Builder, com.google.protobuf.DurationOrBuilder>(
+                  repDuration_,
+                  ((bitField0_ & 0x00000004) != 0),
+                  getParentForChildren(),
+                  isClean());
+          repDuration_ = null;
+        }
+        return repDurationBuilder_;
+      }
+
+      private com.google.protobuf.LazyStringArrayList repString_ =
+          com.google.protobuf.LazyStringArrayList.emptyList();
+      private void ensureRepStringIsMutable() {
+        if (!repString_.isModifiable()) {
+          repString_ = new com.google.protobuf.LazyStringArrayList(repString_);
+        }
+        bitField0_ |= 0x00000008;
+      }
+      /**
+       * <code>repeated string rep_string = 4;</code>
+       * @return A list containing the repString.
+       */
+      public com.google.protobuf.ProtocolStringList
+          getRepStringList() {
+        repString_.makeImmutable();
+        return repString_;
+      }
+      /**
+       * <code>repeated string rep_string = 4;</code>
+       * @return The count of repString.
+       */
+      public int getRepStringCount() {
+        return repString_.size();
+      }
+      /**
+       * <code>repeated string rep_string = 4;</code>
+       * @param index The index of the element to return.
+       * @return The repString at the given index.
+       */
+      public java.lang.String getRepString(int index) {
+        return repString_.get(index);
+      }
+      /**
+       * <code>repeated string rep_string = 4;</code>
+       * @param index The index of the value to return.
+       * @return The bytes of the repString at the given index.
+       */
+      public com.google.protobuf.ByteString
+          getRepStringBytes(int index) {
+        return repString_.getByteString(index);
+      }
+      /**
+       * <code>repeated string rep_string = 4;</code>
+       * @param index The index to set the value at.
+       * @param value The repString to set.
+       * @return This builder for chaining.
+       */
+      public Builder setRepString(
+          int index, java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        ensureRepStringIsMutable();
+        repString_.set(index, value);
+        bitField0_ |= 0x00000008;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string rep_string = 4;</code>
+       * @param value The repString to add.
+       * @return This builder for chaining.
+       */
+      public Builder addRepString(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        ensureRepStringIsMutable();
+        repString_.add(value);
+        bitField0_ |= 0x00000008;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string rep_string = 4;</code>
+       * @param values The repString to add.
+       * @return This builder for chaining.
+       */
+      public Builder addAllRepString(
+          java.lang.Iterable<java.lang.String> values) {
+        ensureRepStringIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, repString_);
+        bitField0_ |= 0x00000008;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string rep_string = 4;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearRepString() {
+        repString_ =
+          com.google.protobuf.LazyStringArrayList.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000008);;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string rep_string = 4;</code>
+       * @param value The bytes of the repString to add.
+       * @return This builder for chaining.
+       */
+      public Builder addRepStringBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        ensureRepStringIsMutable();
+        repString_.add(value);
+        bitField0_ |= 0x00000008;
+        onChanged();
+        return this;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:TimestampAndDurations)
+    }
+
+    // @@protoc_insertion_point(class_scope:TimestampAndDurations)
+    private static final Test1.TimestampAndDurations DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new Test1.TimestampAndDurations();
+    }
+
+    public static Test1.TimestampAndDurations getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<TimestampAndDurations>
+        PARSER = new com.google.protobuf.AbstractParser<TimestampAndDurations>() {
+      @java.lang.Override
+      public TimestampAndDurations parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
+      }
+    };
+
+    public static com.google.protobuf.Parser<TimestampAndDurations> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<TimestampAndDurations> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public Test1.TimestampAndDurations getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface SubMessageOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:SubMessage)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>.google.protobuf.Timestamp timestamp = 1;</code>
+     * @return Whether the timestamp field is set.
+     */
+    boolean hasTimestamp();
+    /**
+     * <code>.google.protobuf.Timestamp timestamp = 1;</code>
+     * @return The timestamp.
+     */
+    com.google.protobuf.Timestamp getTimestamp();
+    /**
+     * <code>.google.protobuf.Timestamp timestamp = 1;</code>
+     */
+    com.google.protobuf.TimestampOrBuilder getTimestampOrBuilder();
+
+    /**
+     * <code>.google.protobuf.Duration duration = 2;</code>
+     * @return Whether the duration field is set.
+     */
+    boolean hasDuration();
+    /**
+     * <code>.google.protobuf.Duration duration = 2;</code>
+     * @return The duration.
+     */
+    com.google.protobuf.Duration getDuration();
+    /**
+     * <code>.google.protobuf.Duration duration = 2;</code>
+     */
+    com.google.protobuf.DurationOrBuilder getDurationOrBuilder();
+  }
+  /**
+   * Protobuf type {@code SubMessage}
+   */
+  public static final class SubMessage extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:SubMessage)
+      SubMessageOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use SubMessage.newBuilder() to construct.
+    private SubMessage(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private SubMessage() {
+    }
+
+    @java.lang.Override
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new SubMessage();
+    }
+
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return Test1.internal_static_SubMessage_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return Test1.internal_static_SubMessage_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              Test1.SubMessage.class, Test1.SubMessage.Builder.class);
+    }
+
+    public static final int TIMESTAMP_FIELD_NUMBER = 1;
+    private com.google.protobuf.Timestamp timestamp_;
+    /**
+     * <code>.google.protobuf.Timestamp timestamp = 1;</code>
+     * @return Whether the timestamp field is set.
+     */
+    @java.lang.Override
+    public boolean hasTimestamp() {
+      return timestamp_ != null;
+    }
+    /**
+     * <code>.google.protobuf.Timestamp timestamp = 1;</code>
+     * @return The timestamp.
+     */
+    @java.lang.Override
+    public com.google.protobuf.Timestamp getTimestamp() {
+      return timestamp_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : timestamp_;
+    }
+    /**
+     * <code>.google.protobuf.Timestamp timestamp = 1;</code>
+     */
+    @java.lang.Override
+    public com.google.protobuf.TimestampOrBuilder getTimestampOrBuilder() {
+      return timestamp_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : timestamp_;
+    }
+
+    public static final int DURATION_FIELD_NUMBER = 2;
+    private com.google.protobuf.Duration duration_;
+    /**
+     * <code>.google.protobuf.Duration duration = 2;</code>
+     * @return Whether the duration field is set.
+     */
+    @java.lang.Override
+    public boolean hasDuration() {
+      return duration_ != null;
+    }
+    /**
+     * <code>.google.protobuf.Duration duration = 2;</code>
+     * @return The duration.
+     */
+    @java.lang.Override
+    public com.google.protobuf.Duration getDuration() {
+      return duration_ == null ? com.google.protobuf.Duration.getDefaultInstance() : duration_;
+    }
+    /**
+     * <code>.google.protobuf.Duration duration = 2;</code>
+     */
+    @java.lang.Override
+    public com.google.protobuf.DurationOrBuilder getDurationOrBuilder() {
+      return duration_ == null ? com.google.protobuf.Duration.getDefaultInstance() : duration_;
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (timestamp_ != null) {
+        output.writeMessage(1, getTimestamp());
+      }
+      if (duration_ != null) {
+        output.writeMessage(2, getDuration());
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (timestamp_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, getTimestamp());
+      }
+      if (duration_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(2, getDuration());
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof Test1.SubMessage)) {
+        return super.equals(obj);
+      }
+      Test1.SubMessage other = (Test1.SubMessage) obj;
+
+      if (hasTimestamp() != other.hasTimestamp()) return false;
+      if (hasTimestamp()) {
+        if (!getTimestamp()
+            .equals(other.getTimestamp())) return false;
+      }
+      if (hasDuration() != other.hasDuration()) return false;
+      if (hasDuration()) {
+        if (!getDuration()
+            .equals(other.getDuration())) return false;
+      }
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      if (hasTimestamp()) {
+        hash = (37 * hash) + TIMESTAMP_FIELD_NUMBER;
+        hash = (53 * hash) + getTimestamp().hashCode();
+      }
+      if (hasDuration()) {
+        hash = (37 * hash) + DURATION_FIELD_NUMBER;
+        hash = (53 * hash) + getDuration().hashCode();
+      }
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static Test1.SubMessage parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static Test1.SubMessage parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static Test1.SubMessage parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static Test1.SubMessage parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static Test1.SubMessage parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static Test1.SubMessage parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static Test1.SubMessage parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static Test1.SubMessage parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static Test1.SubMessage parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static Test1.SubMessage parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static Test1.SubMessage parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static Test1.SubMessage parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(Test1.SubMessage prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code SubMessage}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:SubMessage)
+        Test1.SubMessageOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return Test1.internal_static_SubMessage_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return Test1.internal_static_SubMessage_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                Test1.SubMessage.class, Test1.SubMessage.Builder.class);
+      }
+
+      // Construct using Test1.SubMessage.newBuilder()
+      private Builder() {
+
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        bitField0_ = 0;
+        timestamp_ = null;
+        if (timestampBuilder_ != null) {
+          timestampBuilder_.dispose();
+          timestampBuilder_ = null;
+        }
+        duration_ = null;
+        if (durationBuilder_ != null) {
+          durationBuilder_.dispose();
+          durationBuilder_ = null;
+        }
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return Test1.internal_static_SubMessage_descriptor;
+      }
+
+      @java.lang.Override
+      public Test1.SubMessage getDefaultInstanceForType() {
+        return Test1.SubMessage.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public Test1.SubMessage build() {
+        Test1.SubMessage result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public Test1.SubMessage buildPartial() {
+        Test1.SubMessage result = new Test1.SubMessage(this);
+        if (bitField0_ != 0) { buildPartial0(result); }
+        onBuilt();
+        return result;
+      }
+
+      private void buildPartial0(Test1.SubMessage result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.timestamp_ = timestampBuilder_ == null
+              ? timestamp_
+              : timestampBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          result.duration_ = durationBuilder_ == null
+              ? duration_
+              : durationBuilder_.build();
+        }
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof Test1.SubMessage) {
+          return mergeFrom((Test1.SubMessage)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(Test1.SubMessage other) {
+        if (other == Test1.SubMessage.getDefaultInstance()) return this;
+        if (other.hasTimestamp()) {
+          mergeTimestamp(other.getTimestamp());
+        }
+        if (other.hasDuration()) {
+          mergeDuration(other.getDuration());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 10: {
+                input.readMessage(
+                    getTimestampFieldBuilder().getBuilder(),
+                    extensionRegistry);
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 10
+              case 18: {
+                input.readMessage(
+                    getDurationFieldBuilder().getBuilder(),
+                    extensionRegistry);
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 18
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.unwrapIOException();
+        } finally {
+          onChanged();
+        } // finally
+        return this;
+      }
+      private int bitField0_;
+
+      private com.google.protobuf.Timestamp timestamp_;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          com.google.protobuf.Timestamp, com.google.protobuf.Timestamp.Builder, com.google.protobuf.TimestampOrBuilder> timestampBuilder_;
+      /**
+       * <code>.google.protobuf.Timestamp timestamp = 1;</code>
+       * @return Whether the timestamp field is set.
+       */
+      public boolean hasTimestamp() {
+        return ((bitField0_ & 0x00000001) != 0);
+      }
+      /**
+       * <code>.google.protobuf.Timestamp timestamp = 1;</code>
+       * @return The timestamp.
+       */
+      public com.google.protobuf.Timestamp getTimestamp() {
+        if (timestampBuilder_ == null) {
+          return timestamp_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : timestamp_;
+        } else {
+          return timestampBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>.google.protobuf.Timestamp timestamp = 1;</code>
+       */
+      public Builder setTimestamp(com.google.protobuf.Timestamp value) {
+        if (timestampBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          timestamp_ = value;
+        } else {
+          timestampBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.google.protobuf.Timestamp timestamp = 1;</code>
+       */
+      public Builder setTimestamp(
+          com.google.protobuf.Timestamp.Builder builderForValue) {
+        if (timestampBuilder_ == null) {
+          timestamp_ = builderForValue.build();
+        } else {
+          timestampBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.google.protobuf.Timestamp timestamp = 1;</code>
+       */
+      public Builder mergeTimestamp(com.google.protobuf.Timestamp value) {
+        if (timestampBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) != 0) &&
+            timestamp_ != null &&
+            timestamp_ != com.google.protobuf.Timestamp.getDefaultInstance()) {
+            getTimestampBuilder().mergeFrom(value);
+          } else {
+            timestamp_ = value;
+          }
+        } else {
+          timestampBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.google.protobuf.Timestamp timestamp = 1;</code>
+       */
+      public Builder clearTimestamp() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        timestamp_ = null;
+        if (timestampBuilder_ != null) {
+          timestampBuilder_.dispose();
+          timestampBuilder_ = null;
+        }
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.google.protobuf.Timestamp timestamp = 1;</code>
+       */
+      public com.google.protobuf.Timestamp.Builder getTimestampBuilder() {
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return getTimestampFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>.google.protobuf.Timestamp timestamp = 1;</code>
+       */
+      public com.google.protobuf.TimestampOrBuilder getTimestampOrBuilder() {
+        if (timestampBuilder_ != null) {
+          return timestampBuilder_.getMessageOrBuilder();
+        } else {
+          return timestamp_ == null ?
+              com.google.protobuf.Timestamp.getDefaultInstance() : timestamp_;
+        }
+      }
+      /**
+       * <code>.google.protobuf.Timestamp timestamp = 1;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          com.google.protobuf.Timestamp, com.google.protobuf.Timestamp.Builder, com.google.protobuf.TimestampOrBuilder> 
+          getTimestampFieldBuilder() {
+        if (timestampBuilder_ == null) {
+          timestampBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              com.google.protobuf.Timestamp, com.google.protobuf.Timestamp.Builder, com.google.protobuf.TimestampOrBuilder>(
+                  getTimestamp(),
+                  getParentForChildren(),
+                  isClean());
+          timestamp_ = null;
+        }
+        return timestampBuilder_;
+      }
+
+      private com.google.protobuf.Duration duration_;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          com.google.protobuf.Duration, com.google.protobuf.Duration.Builder, com.google.protobuf.DurationOrBuilder> durationBuilder_;
+      /**
+       * <code>.google.protobuf.Duration duration = 2;</code>
+       * @return Whether the duration field is set.
+       */
+      public boolean hasDuration() {
+        return ((bitField0_ & 0x00000002) != 0);
+      }
+      /**
+       * <code>.google.protobuf.Duration duration = 2;</code>
+       * @return The duration.
+       */
+      public com.google.protobuf.Duration getDuration() {
+        if (durationBuilder_ == null) {
+          return duration_ == null ? com.google.protobuf.Duration.getDefaultInstance() : duration_;
+        } else {
+          return durationBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>.google.protobuf.Duration duration = 2;</code>
+       */
+      public Builder setDuration(com.google.protobuf.Duration value) {
+        if (durationBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          duration_ = value;
+        } else {
+          durationBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.google.protobuf.Duration duration = 2;</code>
+       */
+      public Builder setDuration(
+          com.google.protobuf.Duration.Builder builderForValue) {
+        if (durationBuilder_ == null) {
+          duration_ = builderForValue.build();
+        } else {
+          durationBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.google.protobuf.Duration duration = 2;</code>
+       */
+      public Builder mergeDuration(com.google.protobuf.Duration value) {
+        if (durationBuilder_ == null) {
+          if (((bitField0_ & 0x00000002) != 0) &&
+            duration_ != null &&
+            duration_ != com.google.protobuf.Duration.getDefaultInstance()) {
+            getDurationBuilder().mergeFrom(value);
+          } else {
+            duration_ = value;
+          }
+        } else {
+          durationBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.google.protobuf.Duration duration = 2;</code>
+       */
+      public Builder clearDuration() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        duration_ = null;
+        if (durationBuilder_ != null) {
+          durationBuilder_.dispose();
+          durationBuilder_ = null;
+        }
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.google.protobuf.Duration duration = 2;</code>
+       */
+      public com.google.protobuf.Duration.Builder getDurationBuilder() {
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return getDurationFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>.google.protobuf.Duration duration = 2;</code>
+       */
+      public com.google.protobuf.DurationOrBuilder getDurationOrBuilder() {
+        if (durationBuilder_ != null) {
+          return durationBuilder_.getMessageOrBuilder();
+        } else {
+          return duration_ == null ?
+              com.google.protobuf.Duration.getDefaultInstance() : duration_;
+        }
+      }
+      /**
+       * <code>.google.protobuf.Duration duration = 2;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          com.google.protobuf.Duration, com.google.protobuf.Duration.Builder, com.google.protobuf.DurationOrBuilder> 
+          getDurationFieldBuilder() {
+        if (durationBuilder_ == null) {
+          durationBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              com.google.protobuf.Duration, com.google.protobuf.Duration.Builder, com.google.protobuf.DurationOrBuilder>(
+                  getDuration(),
+                  getParentForChildren(),
+                  isClean());
+          duration_ = null;
+        }
+        return durationBuilder_;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:SubMessage)
+    }
+
+    // @@protoc_insertion_point(class_scope:SubMessage)
+    private static final Test1.SubMessage DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new Test1.SubMessage();
+    }
+
+    public static Test1.SubMessage getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<SubMessage>
+        PARSER = new com.google.protobuf.AbstractParser<SubMessage>() {
+      @java.lang.Override
+      public SubMessage parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
+      }
+    };
+
+    public static com.google.protobuf.Parser<SubMessage> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<SubMessage> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public Test1.SubMessage getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
   public interface GreetingOrBuilder extends
       // @@protoc_insertion_point(interface_extends:Greeting)
       com.google.protobuf.MessageOrBuilder {
@@ -3448,6 +5920,16 @@ java.lang.String defaultValue) {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_Hello_NamesMapEntry_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_TimestampAndDurations_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_TimestampAndDurations_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_SubMessage_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_SubMessage_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_Greeting_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
@@ -3472,8 +5954,15 @@ java.lang.String defaultValue) {
       "map\030\007 \003(\0132\024.Hello.NamesMapEntry\022\033\n\010greet" +
       "ing\030\010 \001(\0132\t.Greeting\022\034\n\tgreetings\030\t \003(\0132" +
       "\t.Greeting\032/\n\rNamesMapEntry\022\013\n\003key\030\001 \001(\t" +
-      "\022\r\n\005value\030\002 \001(\t:\0028\001\".\n\010Greeting\022\020\n\010greet" +
-      "ing\030\001 \001(\t\022\020\n\010farewell\030\002 \001(\tb\006proto3"
+      "\022\r\n\005value\030\002 \001(\t:\0028\001\"\251\001\n\025TimestampAndDura" +
+      "tions\022\030\n\003rep\030\001 \003(\0132\013.SubMessage\0221\n\rrep_t" +
+      "imestamp\030\002 \003(\0132\032.google.protobuf.Timesta" +
+      "mp\022/\n\014rep_duration\030\003 \003(\0132\031.google.protob" +
+      "uf.Duration\022\022\n\nrep_string\030\004 \003(\t\"h\n\nSubMe" +
+      "ssage\022-\n\ttimestamp\030\001 \001(\0132\032.google.protob" +
+      "uf.Timestamp\022+\n\010duration\030\002 \001(\0132\031.google." +
+      "protobuf.Duration\".\n\010Greeting\022\020\n\010greetin" +
+      "g\030\001 \001(\t\022\020\n\010farewell\030\002 \001(\tb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -3493,8 +5982,20 @@ java.lang.String defaultValue) {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_Hello_NamesMapEntry_descriptor,
         new java.lang.String[] { "Key", "Value", });
-    internal_static_Greeting_descriptor =
+    internal_static_TimestampAndDurations_descriptor =
       getDescriptor().getMessageTypes().get(1);
+    internal_static_TimestampAndDurations_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_TimestampAndDurations_descriptor,
+        new java.lang.String[] { "Rep", "RepTimestamp", "RepDuration", "RepString", });
+    internal_static_SubMessage_descriptor =
+      getDescriptor().getMessageTypes().get(2);
+    internal_static_SubMessage_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_SubMessage_descriptor,
+        new java.lang.String[] { "Timestamp", "Duration", });
+    internal_static_Greeting_descriptor =
+      getDescriptor().getMessageTypes().get(3);
     internal_static_Greeting_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_Greeting_descriptor,

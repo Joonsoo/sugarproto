@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package com.giyeok.bibix.runner;
 
-import "repo.proto";
+import "bibix/repo.proto";
 import "google/protobuf/duration.proto";
 
 option java_outer_classname = "RunConfigProto";
