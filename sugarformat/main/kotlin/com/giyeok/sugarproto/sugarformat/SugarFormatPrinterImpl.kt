@@ -1,6 +1,7 @@
 package com.giyeok.sugarproto.sugarformat
 
 import com.google.protobuf.*
+import com.google.protobuf.Descriptors.Descriptor
 import com.google.protobuf.Descriptors.FieldDescriptor
 
 class SugarFormatPrinterImpl(val writer: CodeWriter) {
@@ -15,16 +16,45 @@ class SugarFormatPrinterImpl(val writer: CodeWriter) {
       field.isMapField -> TODO()
       field.isRepeated -> {
         check(value is List<*>)
-        if (isListItem) {
-          writer.indent {
-            value.forEach { elem ->
-              printMessageFieldValue(field, elem!!, true)
-            }
+        if (field.type != FieldDescriptor.Type.MESSAGE) {
+          writer.writeLine("${field.name}:")
+          for (e in value) {
+            val valueLines = printStringOf(field.type, e!!)
+            check(valueLines.size == 1)
+            writer.writeLine("- ${valueLines.first()}")
           }
         } else {
-          writer.writeLine("${field.name}:")
-          value.forEach { elem ->
-            printMessageFieldValue(field, elem!!, true)
+          when (field.messageType.fullName) {
+            "google.protobuf.Timestamp" -> {
+              writer.writeLine("${field.name}:")
+              for (e in value) {
+                check(e is Timestamp)
+                writer.writeLine("- ${timestampStringOf(e)}")
+              }
+            }
+
+            "google.protobuf.Duration" -> {
+              writer.writeLine("${field.name}:")
+              for (e in value) {
+                check(e is Duration)
+                writer.writeLine("- ${durationStringOf(e)}")
+              }
+            }
+
+            else -> {
+              if (isListItem) {
+                writer.indent {
+                  value.forEach { elem ->
+                    printMessageFieldValue(field, elem!!, true)
+                  }
+                }
+              } else {
+                writer.writeLine("${field.name}:")
+                value.forEach { elem ->
+                  printMessageFieldValue(field, elem!!, true)
+                }
+              }
+            }
           }
         }
       }
@@ -42,7 +72,7 @@ class SugarFormatPrinterImpl(val writer: CodeWriter) {
           "google.protobuf.Timestamp" -> {
             check(value is Timestamp)
             if (isListItem) {
-              writer.writeLine("- ${timestampStringOf(value)}")
+              writer.writeLine("- ${field.name}: ${timestampStringOf(value)}")
             } else {
               writer.writeLine("${field.name}: ${timestampStringOf(value)}")
             }
@@ -51,7 +81,7 @@ class SugarFormatPrinterImpl(val writer: CodeWriter) {
           "google.protobuf.Duration" -> {
             val duration = value as Duration
             if (isListItem) {
-              writer.writeLine("- ${durationStringOf(duration)}")
+              writer.writeLine("- ${field.name}: ${durationStringOf(duration)}")
             } else {
               writer.writeLine("${field.name}: ${durationStringOf(duration)}")
             }

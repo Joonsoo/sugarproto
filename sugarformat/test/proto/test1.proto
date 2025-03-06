@@ -18,6 +18,18 @@ message Hello {
   repeated Greeting greetings = 9;
 }
 
+message TimestampAndDurations {
+  repeated SubMessage rep = 1;
+  repeated google.protobuf.Timestamp rep_timestamp = 2;
+  repeated google.protobuf.Duration rep_duration = 3;
+  repeated string rep_string = 4;
+}
+
+message SubMessage {
+  google.protobuf.Timestamp timestamp = 1;
+  google.protobuf.Duration duration = 2;
+}
+
 message Greeting {
   string greeting = 1;
   string farewell = 2;

@@ -191,7 +191,12 @@ class SugarFormatParserImpl(val st: ItemStructure) {
       is ParsedValueBuilder.MapValueBuilder -> TODO()
       is ParsedValueBuilder.MessageValueBuilder -> {
         when (value) {
-          is SugarFormatAst.ObjectOrMapValue -> TODO()
+          is SugarFormatAst.ObjectOrMapValue -> {
+            for ((key, fieldValue) in value.pairs) {
+              setFieldValue(fieldBuilder.followPath(key.path), fieldValue)
+            }
+          }
+
           is SugarFormatAst.RepeatedValue -> TODO()
           is SugarFormatAst.NameValue -> TODO()
           is SugarFormatAst.DecValue -> TODO()

@@ -63,6 +63,46 @@ class SugarFormatTest {
   }
 
   @Test
+  fun testRepeatedTimestamps() {
+    val source = """
+      rep_timestamp:
+      - 2023-11-06T09:15Z
+      - 2023-11-06T09:15Z
+      - 2023-11-06T09:15Z
+      - 2023-11-06T09:15Z
+      rep_duration:
+      - 30h30.00144s
+      - 60h30.00144s
+      - 90h30.00144s
+    """.trimIndent()
+
+    test(source, Test1.Hello::newBuilder)
+  }
+
+  @Test
+  fun testEmptyList() {
+    val source = """
+      hello: []
+      greetings: []
+    """.trimIndent()
+
+    test(source, Test1.Hello::newBuilder)
+  }
+
+  @Test
+  fun testSingularList() {
+    val source = """
+      hello:
+      - "world"
+      greetings:
+      - greeting: "안녕하세요"
+        farewell: "안녕히 가세요"
+    """.trimIndent()
+
+    test(source, Test1.Hello::newBuilder)
+  }
+
+  @Test
   fun testPhoclubServerConfig() {
     val source = """
       port: 1234
@@ -77,6 +117,18 @@ class SugarFormatTest {
         secret_access_key: "secret"
         upload_expire_time: 30h
         download_expire_time: 20m
+    """.trimIndent()
+
+    test(source, PhoclubConfig.ServerConfig::newBuilder)
+  }
+
+  @Test
+  fun testSimpleMessage() {
+    val source = """
+      port: 1234
+      firebase_credential_file_path: "abc"
+      event_assigner_threads_count: 4
+      dev_database: { location: "password", username: "location", password: "username" }
     """.trimIndent()
 
     test(source, PhoclubConfig.ServerConfig::newBuilder)

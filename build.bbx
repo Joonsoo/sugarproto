@@ -152,11 +152,12 @@ sugarformat {
       main,
       ...testDeps,
       testProto.javalib,
+      maven.artifact("com.google.truth.extensions", "truth-proto-extension", "1.4.4"),
     ],
   )
 
   testProto {
-    schema = protobuf.schema(glob("sugarformat/test/proto/**/*.proto"))
+    schema = protobuf.schema(glob("sugarformat/test/proto/**.proto"))
     protoJava = protobuf.java(schema)
 
     javalib = java.library(

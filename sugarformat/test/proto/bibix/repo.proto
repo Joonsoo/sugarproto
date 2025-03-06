@@ -4,8 +4,8 @@ package com.giyeok.bibix.repo;
 
 option java_outer_classname = "BibixRepoProto";
 
-import "ids.proto";
-import "values.proto";
+import "bibix/ids.proto";
+import "bibix/values.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 
