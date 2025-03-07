@@ -1,7 +1,6 @@
 package com.giyeok.sugarproto.sugarformat
 
 import com.google.protobuf.*
-import com.google.protobuf.Descriptors.Descriptor
 import com.google.protobuf.Descriptors.FieldDescriptor
 
 class SugarFormatPrinterImpl(val writer: CodeWriter) {

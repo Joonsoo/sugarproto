@@ -34,3 +34,30 @@ message Greeting {
   string greeting = 1;
   string farewell = 2;
 }
+
+message PullRequestActionLogs {
+  repeated PullRequestActionLog logs = 1;
+}
+
+message PullRequestActionLog {
+  google.protobuf.Timestamp timestamp = 1;
+  oneof pull_request_action_log {
+    string before_split = 2;
+    string after_split = 3;
+  }
+}
+
+message IntTypes {
+  int32 a = 1;
+  int64 b = 2;
+  uint32 c = 3;
+  uint64 d = 4;
+  sint32 e = 5;
+  sint64 f = 6;
+  fixed32 g = 7;
+  fixed64 h = 8;
+  float i = 9;
+  double j = 10;
+  bool k = 11;
+  bool l = 12;
+}

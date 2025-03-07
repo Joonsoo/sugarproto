@@ -56,4 +56,21 @@ class RepeatTest {
     val y = SugarFormat.merge(p, Test1.TimestampAndDurations.newBuilder()).build()
     assertThat(x.build()).isEqualTo(y)
   }
+
+  @Test
+  fun test2() {
+    val x = Test1.PullRequestActionLogs.newBuilder()
+    val b1 = x.addLogsBuilder()
+    b1.timestamp = Timestamps.fromSeconds(1000)
+    b1.beforeSplit = "hello"
+
+    val b2 = x.addLogsBuilder()
+    b2.afterSplit = "world"
+
+    val p = SugarFormat.print(x)
+    println(p)
+
+    val y = SugarFormat.merge(p, Test1.PullRequestActionLogs.newBuilder()).build()
+    assertThat(x.build()).isEqualTo(y)
+  }
 }

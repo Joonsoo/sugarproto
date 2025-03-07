@@ -34,9 +34,9 @@ fun setFieldValue(
   }
 }
 
-fun SugarFormatAst.ScalarValue.toProtoValue(type: Descriptors.FieldDescriptor.Type): Any =
+fun SugarFormatAst.ScalarValue.toProtoValue(type: FieldDescriptor.Type): Any =
   when (type) {
-    Descriptors.FieldDescriptor.Type.DOUBLE -> when (this) {
+    FieldDescriptor.Type.DOUBLE -> when (this) {
       is SugarFormatAst.DecValue ->
         doubleValueFrom(this.sgn, this.integral, this.frac, this.exponent)
 
@@ -44,7 +44,7 @@ fun SugarFormatAst.ScalarValue.toProtoValue(type: Descriptors.FieldDescriptor.Ty
       else -> throw IllegalStateException()
     }
 
-    Descriptors.FieldDescriptor.Type.FLOAT -> when (this) {
+    FieldDescriptor.Type.FLOAT -> when (this) {
       is SugarFormatAst.DecValue ->
         doubleValueFrom(this.sgn, this.integral, this.frac, this.exponent).toFloat()
 
@@ -52,7 +52,7 @@ fun SugarFormatAst.ScalarValue.toProtoValue(type: Descriptors.FieldDescriptor.Ty
       else -> throw IllegalStateException()
     }
 
-    Descriptors.FieldDescriptor.Type.INT32 -> when (this) {
+    FieldDescriptor.Type.INT32 -> when (this) {
       is SugarFormatAst.DecValue -> {
         check(this.frac == null)
         check(this.exponent == null)
@@ -72,7 +72,7 @@ fun SugarFormatAst.ScalarValue.toProtoValue(type: Descriptors.FieldDescriptor.Ty
       else -> throw IllegalStateException()
     }
 
-    Descriptors.FieldDescriptor.Type.INT64 -> when (this) {
+    FieldDescriptor.Type.INT64 -> when (this) {
       is SugarFormatAst.DecValue -> TODO()
       is SugarFormatAst.HexValue -> TODO()
       is SugarFormatAst.OctValue -> TODO()
@@ -80,11 +80,11 @@ fun SugarFormatAst.ScalarValue.toProtoValue(type: Descriptors.FieldDescriptor.Ty
       else -> throw IllegalStateException()
     }
 
-    Descriptors.FieldDescriptor.Type.UINT64 -> TODO()
-    Descriptors.FieldDescriptor.Type.FIXED64 -> TODO()
-    Descriptors.FieldDescriptor.Type.FIXED32 -> TODO()
-    Descriptors.FieldDescriptor.Type.BOOL -> TODO()
-    Descriptors.FieldDescriptor.Type.STRING -> when (this) {
+    FieldDescriptor.Type.UINT64 -> TODO()
+    FieldDescriptor.Type.FIXED64 -> TODO()
+    FieldDescriptor.Type.FIXED32 -> TODO()
+    FieldDescriptor.Type.BOOL -> TODO()
+    FieldDescriptor.Type.STRING -> when (this) {
       is SugarFormatAst.StringValue -> stringValueFrom(this)
       is SugarFormatAst.NameValue -> this.value
       is SugarFormatAst.DurationValue -> TODO()
@@ -94,15 +94,15 @@ fun SugarFormatAst.ScalarValue.toProtoValue(type: Descriptors.FieldDescriptor.Ty
       is SugarFormatAst.TimestampValue -> TODO()
     }
 
-    Descriptors.FieldDescriptor.Type.GROUP -> TODO()
-    Descriptors.FieldDescriptor.Type.MESSAGE -> TODO()
-    Descriptors.FieldDescriptor.Type.BYTES -> TODO()
-    Descriptors.FieldDescriptor.Type.UINT32 -> TODO()
-    Descriptors.FieldDescriptor.Type.ENUM -> TODO()
-    Descriptors.FieldDescriptor.Type.SFIXED32 -> TODO()
-    Descriptors.FieldDescriptor.Type.SFIXED64 -> TODO()
-    Descriptors.FieldDescriptor.Type.SINT32 -> TODO()
-    Descriptors.FieldDescriptor.Type.SINT64 -> TODO()
+    FieldDescriptor.Type.GROUP -> TODO()
+    FieldDescriptor.Type.MESSAGE -> TODO()
+    FieldDescriptor.Type.BYTES -> TODO()
+    FieldDescriptor.Type.UINT32 -> TODO()
+    FieldDescriptor.Type.ENUM -> TODO()
+    FieldDescriptor.Type.SFIXED32 -> TODO()
+    FieldDescriptor.Type.SFIXED64 -> TODO()
+    FieldDescriptor.Type.SINT32 -> TODO()
+    FieldDescriptor.Type.SINT64 -> TODO()
   }
 
 private fun doubleValueFrom(
@@ -201,6 +201,9 @@ fun SugarFormatAst.DurationValue.toProtoValue(): Duration {
 }
 
 fun String.canOmitQuotes(): Boolean {
+  if (this == "true" || this == "false") {
+    return false
+  }
   if (!this.all { chr -> chr in '0'..'9' || chr in 'a'..'z' || chr in 'A'..'Z' || chr == '_' }) {
     return false
   }
@@ -221,29 +224,33 @@ fun printStringOf(type: FieldDescriptor.Type, value: Any): List<String> = when (
     }
   }
 
-  Descriptors.FieldDescriptor.Type.INT32, Descriptors.FieldDescriptor.Type.INT64,
-  Descriptors.FieldDescriptor.Type.ENUM -> listOf("$value")
-
-  Descriptors.FieldDescriptor.Type.DOUBLE -> TODO()
-  Descriptors.FieldDescriptor.Type.FLOAT -> TODO()
-  Descriptors.FieldDescriptor.Type.UINT64 -> TODO()
-  Descriptors.FieldDescriptor.Type.FIXED64 -> TODO()
-  Descriptors.FieldDescriptor.Type.FIXED32 -> TODO()
-  Descriptors.FieldDescriptor.Type.BOOL -> TODO()
-  Descriptors.FieldDescriptor.Type.GROUP -> TODO()
-  Descriptors.FieldDescriptor.Type.MESSAGE -> TODO()
   Descriptors.FieldDescriptor.Type.BYTES -> {
     check(value is ByteString)
     // TODO utf8로 바꿀 수 있으면 일반 스트링으로
-    val base64 = Base64.getEncoder().withoutPadding().encodeToString(value.toByteArray())
+    val valueBytes = value.toByteArray()
+    val base64 = Base64.getEncoder().withoutPadding().encodeToString(valueBytes)
     listOf("b\"${base64}\"")
   }
 
-  Descriptors.FieldDescriptor.Type.UINT32 -> TODO()
-  Descriptors.FieldDescriptor.Type.SFIXED32 -> TODO()
-  Descriptors.FieldDescriptor.Type.SFIXED64 -> TODO()
-  Descriptors.FieldDescriptor.Type.SINT32 -> TODO()
-  Descriptors.FieldDescriptor.Type.SINT64 -> TODO()
+  Descriptors.FieldDescriptor.Type.INT32, Descriptors.FieldDescriptor.Type.INT64,
+  Descriptors.FieldDescriptor.Type.ENUM -> listOf("$value")
+
+  Descriptors.FieldDescriptor.Type.FLOAT,
+  Descriptors.FieldDescriptor.Type.DOUBLE -> listOf("$value")
+
+  Descriptors.FieldDescriptor.Type.UINT32,
+  Descriptors.FieldDescriptor.Type.UINT64,
+  Descriptors.FieldDescriptor.Type.SFIXED32,
+  Descriptors.FieldDescriptor.Type.SFIXED64,
+  Descriptors.FieldDescriptor.Type.SINT32,
+  Descriptors.FieldDescriptor.Type.SINT64,
+  Descriptors.FieldDescriptor.Type.FIXED32,
+  Descriptors.FieldDescriptor.Type.FIXED64 -> listOf("$value")
+
+  Descriptors.FieldDescriptor.Type.BOOL -> listOf("$value")
+
+  Descriptors.FieldDescriptor.Type.GROUP,
+  Descriptors.FieldDescriptor.Type.MESSAGE -> TODO()
 }
 
 fun timestampStringOf(ts: Timestamp): String {
