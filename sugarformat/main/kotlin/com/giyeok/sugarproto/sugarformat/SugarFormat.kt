@@ -23,7 +23,11 @@ object SugarFormat {
 
   fun <T: Message.Builder> merge(sufText: String, builder: T): T {
     val ast = SugarFormatParser.parse(sufText)
-    val parsed = SugarFormatParserImpl(ItemStructure(ast)).parse(builder.descriptorForType)
+    if (ast.isEmpty()) {
+      return builder
+    }
+    val parsed = SugarFormatParserImpl(ItemStructure(ast))
+      .parse(builder.descriptorForType)
     parsed.mergeTo(builder)
     return builder
   }

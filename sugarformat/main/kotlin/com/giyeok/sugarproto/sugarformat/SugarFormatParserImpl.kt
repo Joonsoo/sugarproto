@@ -2,7 +2,6 @@ package com.giyeok.sugarproto.sugarformat
 
 import com.giyeok.sugarproto.SugarFormatAst
 import com.giyeok.sugarproto.sugarformat.ParsedValueBuilder.Companion.messageValueBuilderFor
-import com.google.protobuf.ByteString
 import com.google.protobuf.Descriptors.Descriptor
 import com.google.protobuf.Descriptors.FieldDescriptor
 import com.google.protobuf.Duration
@@ -80,6 +79,39 @@ class SugarFormatParserImpl(val st: ItemStructure) {
     }
   }
 
+  fun floatTextFromDec(ast: SugarFormatAst.DecValue): String {
+    val builder = StringBuilder()
+    if (ast.sgn != null) {
+      builder.append(ast.sgn)
+    }
+    builder.append(ast.integral)
+    if (ast.frac != null) {
+      builder.append(".")
+      builder.append(ast.frac)
+    }
+    ast.exponent?.let { exp ->
+      builder.append("e")
+      exp.sgn?.let {
+        builder.append(it)
+      }
+      builder.append(exp.value)
+    }
+    return builder.toString()
+  }
+
+  // FieldDescriptor.Type.INT32 -> TODO()
+  // FieldDescriptor.Type.UINT32 -> TODO()
+  // FieldDescriptor.Type.SINT32 -> TODO()
+  // FieldDescriptor.Type.FIXED32 -> TODO()
+  // FieldDescriptor.Type.SFIXED32 -> TODO()
+  // FieldDescriptor.Type.INT64 -> TODO()
+  // FieldDescriptor.Type.UINT64 -> TODO()
+  // FieldDescriptor.Type.SINT64 -> TODO()
+  // FieldDescriptor.Type.FIXED64 -> TODO()
+  // FieldDescriptor.Type.SFIXED64 -> TODO()
+  // FieldDescriptor.Type.FLOAT -> TODO()
+  // FieldDescriptor.Type.DOUBLE -> TODO()
+
   fun setFieldValue(fieldBuilder: ParsedValueBuilder, value: SugarFormatAst.Value) {
     when (fieldBuilder) {
       is ParsedValueBuilder.SingularValueBuilder -> {
@@ -95,27 +127,39 @@ class SugarFormatParserImpl(val st: ItemStructure) {
                 fieldBuilder.value = bytesValueFrom(value)
               }
 
-              FieldDescriptor.Type.DOUBLE -> TODO()
-              FieldDescriptor.Type.FLOAT -> TODO()
-              FieldDescriptor.Type.INT64 -> TODO()
-              FieldDescriptor.Type.UINT64 -> TODO()
-              FieldDescriptor.Type.INT32 -> TODO()
-              FieldDescriptor.Type.FIXED64 -> TODO()
-              FieldDescriptor.Type.FIXED32 -> TODO()
+              FieldDescriptor.Type.FLOAT -> {
+                fieldBuilder.value = stringValueFrom(value).toFloat()
+              }
+
+              FieldDescriptor.Type.DOUBLE -> {
+                fieldBuilder.value = stringValueFrom(value).toDouble()
+              }
+
+              FieldDescriptor.Type.INT32,
+              FieldDescriptor.Type.UINT32,
+              FieldDescriptor.Type.SINT32,
+              FieldDescriptor.Type.FIXED32,
+              FieldDescriptor.Type.SFIXED32 -> {
+                fieldBuilder.value = stringValueFrom(value).toInt()
+              }
+
+              FieldDescriptor.Type.INT64,
+              FieldDescriptor.Type.UINT64,
+              FieldDescriptor.Type.SINT64,
+              FieldDescriptor.Type.FIXED64,
+              FieldDescriptor.Type.SFIXED64 -> {
+                fieldBuilder.value = stringValueFrom(value).toLong()
+              }
+
               FieldDescriptor.Type.BOOL -> TODO()
               FieldDescriptor.Type.GROUP -> TODO()
               FieldDescriptor.Type.MESSAGE -> TODO()
-              FieldDescriptor.Type.UINT32 -> TODO()
               FieldDescriptor.Type.ENUM -> TODO()
-              FieldDescriptor.Type.SFIXED32 -> TODO()
-              FieldDescriptor.Type.SFIXED64 -> TODO()
-              FieldDescriptor.Type.SINT32 -> TODO()
-              FieldDescriptor.Type.SINT64 -> TODO()
             }
           }
 
           is SugarFormatAst.NameValue -> {
-            when (fieldBuilder.fieldDesc.type) {
+            when (val t = fieldBuilder.fieldDesc.type) {
               FieldDescriptor.Type.STRING -> {
                 fieldBuilder.value = value.value
               }
@@ -127,62 +171,123 @@ class SugarFormatParserImpl(val st: ItemStructure) {
                 fieldBuilder.value = enumValue
               }
 
-              FieldDescriptor.Type.DOUBLE -> TODO()
-              FieldDescriptor.Type.FLOAT -> TODO()
-              FieldDescriptor.Type.INT64 -> TODO()
-              FieldDescriptor.Type.UINT64 -> TODO()
-              FieldDescriptor.Type.INT32 -> TODO()
-              FieldDescriptor.Type.FIXED64 -> TODO()
-              FieldDescriptor.Type.FIXED32 -> TODO()
-              FieldDescriptor.Type.BOOL -> TODO()
+              FieldDescriptor.Type.BOOL -> {
+                when (value.value) {
+                  "true" -> fieldBuilder.value = true
+                  "false" -> fieldBuilder.value = false
+                  else -> throw IllegalArgumentException("true or false only")
+                }
+              }
+
+              FieldDescriptor.Type.INT32,
+              FieldDescriptor.Type.UINT32,
+              FieldDescriptor.Type.SINT32,
+              FieldDescriptor.Type.FIXED32,
+              FieldDescriptor.Type.SFIXED32,
+              FieldDescriptor.Type.INT64,
+              FieldDescriptor.Type.UINT64,
+              FieldDescriptor.Type.SINT64,
+              FieldDescriptor.Type.FIXED64,
+              FieldDescriptor.Type.SFIXED64,
+              FieldDescriptor.Type.FLOAT,
+              FieldDescriptor.Type.DOUBLE -> throw IllegalStateException("Cannot assign a name to $t type")
+
               FieldDescriptor.Type.GROUP -> TODO()
               FieldDescriptor.Type.MESSAGE -> TODO()
               FieldDescriptor.Type.BYTES -> TODO()
-              FieldDescriptor.Type.UINT32 -> TODO()
-              FieldDescriptor.Type.SFIXED32 -> TODO()
-              FieldDescriptor.Type.SFIXED64 -> TODO()
-              FieldDescriptor.Type.SINT32 -> TODO()
-              FieldDescriptor.Type.SINT64 -> TODO()
             }
           }
 
-          is SugarFormatAst.ObjectOrMapValue -> TODO()
-          is SugarFormatAst.RepeatedValue -> TODO()
+          is SugarFormatAst.ObjectOrMapValue -> throw IllegalStateException()
+          is SugarFormatAst.RepeatedValue -> throw IllegalStateException()
           is SugarFormatAst.DurationValue -> TODO()
           is SugarFormatAst.DecValue -> {
             when (fieldBuilder.fieldDesc.type) {
-              FieldDescriptor.Type.INT32 -> {
-                // TODO sgn
+              FieldDescriptor.Type.INT32,
+              FieldDescriptor.Type.UINT32,
+              FieldDescriptor.Type.SINT32,
+              FieldDescriptor.Type.FIXED32,
+              FieldDescriptor.Type.SFIXED32 -> {
                 check(value.frac == null && value.exponent == null)
-                fieldBuilder.value = value.integral.toInt()
+                val v = if (value.sgn == '-') {
+                  -value.integral.toInt()
+                } else {
+                  value.integral.toInt()
+                }
+                fieldBuilder.value = v
               }
 
-              FieldDescriptor.Type.INT64 -> {
-                // TODO sgn
+              FieldDescriptor.Type.INT64,
+              FieldDescriptor.Type.UINT64,
+              FieldDescriptor.Type.SINT64,
+              FieldDescriptor.Type.FIXED64,
+              FieldDescriptor.Type.SFIXED64 -> {
                 check(value.frac == null && value.exponent == null)
-                fieldBuilder.value = value.integral.toLong()
+                val v = if (value.sgn == '-') {
+                  -value.integral.toLong()
+                } else {
+                  value.integral.toLong()
+                }
+                fieldBuilder.value = v
               }
 
-              FieldDescriptor.Type.DOUBLE -> TODO()
-              FieldDescriptor.Type.FLOAT -> TODO()
-              FieldDescriptor.Type.UINT64 -> TODO()
-              FieldDescriptor.Type.FIXED64 -> TODO()
-              FieldDescriptor.Type.FIXED32 -> TODO()
+              FieldDescriptor.Type.FLOAT -> {
+                val str = floatTextFromDec(value)
+                fieldBuilder.value = str.toFloat()
+              }
+
+              FieldDescriptor.Type.DOUBLE -> {
+                val str = floatTextFromDec(value)
+                fieldBuilder.value = str.toDouble()
+              }
+
               FieldDescriptor.Type.BOOL -> TODO()
               FieldDescriptor.Type.STRING -> TODO()
               FieldDescriptor.Type.GROUP -> TODO()
               FieldDescriptor.Type.MESSAGE -> TODO()
               FieldDescriptor.Type.BYTES -> TODO()
-              FieldDescriptor.Type.UINT32 -> TODO()
               FieldDescriptor.Type.ENUM -> TODO()
-              FieldDescriptor.Type.SFIXED32 -> TODO()
-              FieldDescriptor.Type.SFIXED64 -> TODO()
-              FieldDescriptor.Type.SINT32 -> TODO()
-              FieldDescriptor.Type.SINT64 -> TODO()
             }
           }
 
-          is SugarFormatAst.HexValue -> TODO()
+          is SugarFormatAst.HexValue -> {
+            when (fieldBuilder.fieldDesc.type) {
+              FieldDescriptor.Type.INT32,
+              FieldDescriptor.Type.UINT32,
+              FieldDescriptor.Type.SINT32,
+              FieldDescriptor.Type.FIXED32,
+              FieldDescriptor.Type.SFIXED32 -> {
+                fieldBuilder.value = if (value.sgn == '-') {
+                  -value.value.toInt(16)
+                } else {
+                  value.value.toInt(16)
+                }
+              }
+
+              FieldDescriptor.Type.INT64,
+              FieldDescriptor.Type.UINT64,
+              FieldDescriptor.Type.SINT64,
+              FieldDescriptor.Type.FIXED64,
+              FieldDescriptor.Type.SFIXED64 -> {
+                fieldBuilder.value = if (value.sgn == '-') {
+                  -value.value.toInt(16)
+                } else {
+                  value.value.toInt(16)
+                }
+              }
+
+              FieldDescriptor.Type.FLOAT -> TODO()
+              FieldDescriptor.Type.DOUBLE -> TODO()
+
+              FieldDescriptor.Type.BOOL -> TODO()
+              FieldDescriptor.Type.STRING -> TODO()
+              FieldDescriptor.Type.GROUP -> TODO()
+              FieldDescriptor.Type.MESSAGE -> TODO()
+              FieldDescriptor.Type.BYTES -> TODO()
+              FieldDescriptor.Type.ENUM -> TODO()
+            }
+          }
+
           is SugarFormatAst.OctValue -> TODO()
           is SugarFormatAst.TimestampValue -> TODO()
         }
@@ -210,13 +315,13 @@ class SugarFormatParserImpl(val st: ItemStructure) {
 
       is ParsedValueBuilder.RepeatedValueBuilder -> {
         when (value) {
-          is SugarFormatAst.ObjectOrMapValue -> TODO()
           is SugarFormatAst.RepeatedValue -> {
             value.elems.forEach { elem ->
               setFieldValue(fieldBuilder.addElemBuilder(), elem)
             }
           }
 
+          is SugarFormatAst.ObjectOrMapValue -> TODO()
           is SugarFormatAst.DurationValue -> TODO()
           is SugarFormatAst.NameValue -> TODO()
           is SugarFormatAst.DecValue -> TODO()

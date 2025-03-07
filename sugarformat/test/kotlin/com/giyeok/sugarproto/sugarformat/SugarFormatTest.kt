@@ -5,6 +5,7 @@ import Test1
 import com.giyeok.bibix.repo.BibixRepoProto.BibixTargetLogs
 import com.giyeok.bibix.repo.BibixRepoProto.TargetState
 import com.giyeok.bibix.runner.RunConfigProto.RunConfig
+import com.google.common.truth.Truth.assertThat
 import com.google.protobuf.Message
 import org.junit.jupiter.api.Test
 
@@ -23,7 +24,11 @@ class SugarFormatTest {
 
     println("=====")
 
-    println(SugarFormat.print(parsed))
+    val printed = SugarFormat.print(parsed)
+
+    val parsedAgain = SugarFormat.merge(printed, builderFunc()).build()
+    val printedAgain = SugarFormat.print(parsedAgain)
+    assertThat(printed).isEqualTo(printedAgain)
   }
 
   @Test
@@ -180,5 +185,129 @@ class SugarFormatTest {
     """.trimIndent()
 
     test(source, BibixTargetLogs::newBuilder)
+  }
+
+  @Test
+  fun testIntTypes() {
+    val x1 = Test1.IntTypes.newBuilder()
+    x1.a = 123123
+    x1.b = 123123
+    x1.c = 123123
+    x1.d = 123123
+    x1.e = 123123
+    x1.f = 123123
+    x1.g = 123123
+    x1.h = 123123
+    x1.i = 123123.0f
+    x1.j = 123123.0
+    x1.k = true
+    x1.l = false
+
+    val p1 = SugarFormat.print(x1)
+    println(p1)
+
+    val x2 = Test1.IntTypes.newBuilder()
+    x2.a = -123123
+    x2.b = -123123
+    x2.c = -123123
+    x2.d = -123123
+    x2.e = -123123
+    x2.f = -123123
+    x2.g = -123123
+    x2.h = -123123
+    x2.i = -123123.0f
+    x2.j = -123123.0
+    x2.k = true
+    x2.l = false
+
+    val p2 = SugarFormat.print(x2)
+    println(p2)
+
+    val y1 = SugarFormat.merge(
+      """
+      a: 321321
+      b: 321321
+      c: 321321
+      d: 321321
+      e: 321321
+      f: 321321
+      g: 321321
+      h: 321321
+      i: 321321
+      j: 321321
+      k: true
+      l: false
+    """.trimIndent(), Test1.IntTypes.newBuilder()
+    ).build()
+    assertThat(y1.a).isEqualTo(321321)
+    assertThat(y1.b).isEqualTo(321321)
+    assertThat(y1.c).isEqualTo(321321)
+    assertThat(y1.d).isEqualTo(321321)
+    assertThat(y1.e).isEqualTo(321321)
+    assertThat(y1.f).isEqualTo(321321)
+    assertThat(y1.g).isEqualTo(321321)
+    assertThat(y1.h).isEqualTo(321321)
+    assertThat(y1.i).isEqualTo(321321.0f)
+    assertThat(y1.j).isEqualTo(321321.0)
+    assertThat(y1.k).isTrue()
+    assertThat(y1.l).isFalse()
+
+    val y2 = SugarFormat.merge(
+      """
+      a: -321321
+      b: -321321
+      c: -321321
+      d: -321321
+      e: -321321
+      f: -321321
+      g: -321321
+      h: -321321
+      i: -321321.123e-2
+      j: -321321.123e-2
+      k: true
+      l: false
+    """.trimIndent(), Test1.IntTypes.newBuilder()
+    ).build()
+    assertThat(y2.a).isEqualTo(-321321)
+    assertThat(y2.b).isEqualTo(-321321)
+    assertThat(y2.c).isEqualTo(-321321)
+    assertThat(y2.d).isEqualTo(-321321)
+    assertThat(y2.e).isEqualTo(-321321)
+    assertThat(y2.f).isEqualTo(-321321)
+    assertThat(y2.g).isEqualTo(-321321)
+    assertThat(y2.h).isEqualTo(-321321)
+    assertThat(y2.i).isEqualTo(-3213.21123f)
+    assertThat(y2.j).isEqualTo(-3213.21123)
+    assertThat(y2.k).isTrue()
+    assertThat(y2.l).isFalse()
+
+    val y3 = SugarFormat.merge(
+      """
+      a: "321321"
+      b: "321321"
+      c: "321321"
+      d: "321321"
+      e: "321321"
+      f: "321321"
+      g: "321321"
+      h: "321321"
+      i: "321321.0"
+      j: "321321.0"
+      k: true
+      l: false
+    """.trimIndent(), Test1.IntTypes.newBuilder()
+    ).build()
+    assertThat(y3.a).isEqualTo(321321)
+    assertThat(y3.b).isEqualTo(321321)
+    assertThat(y3.c).isEqualTo(321321)
+    assertThat(y3.d).isEqualTo(321321)
+    assertThat(y3.e).isEqualTo(321321)
+    assertThat(y3.f).isEqualTo(321321)
+    assertThat(y3.g).isEqualTo(321321)
+    assertThat(y3.h).isEqualTo(321321)
+    assertThat(y3.i).isEqualTo(321321.0f)
+    assertThat(y3.j).isEqualTo(321321.0)
+    assertThat(y3.k).isTrue()
+    assertThat(y3.l).isFalse()
   }
 }
