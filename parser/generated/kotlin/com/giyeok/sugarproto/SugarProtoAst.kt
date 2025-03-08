@@ -13,6 +13,7 @@ class SugarProtoAst(
     val nodeId: Int
     val start: Int
     val end: Int
+    fun toShortString(): String
   }
 
 data class IndexedType(
@@ -22,14 +23,18 @@ data class IndexedType(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): Type, AstNode
+): Type, AstNode {
+  override fun toShortString(): String = "IndexedType(elemType=${elemType}, keyExpr=${keyExpr}, keyType=${keyType})"
+}
 
 data class DecimalLiteral(
   val value: String,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): IntLiteral, AstNode
+): IntLiteral, AstNode {
+  override fun toShortString(): String = "DecimalLiteral(value=${value})"
+}
 
 data class OnTheFlyEnumType(
   val name: Ident?,
@@ -37,7 +42,9 @@ data class OnTheFlyEnumType(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): Type, AstNode
+): Type, AstNode {
+  override fun toShortString(): String = "OnTheFlyEnumType(name=${name}, fields=${fields})"
+}
 
 sealed interface OneOfMemberDef: AstNode
 
@@ -49,7 +56,9 @@ data class RpcTypeWhere(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): AstNode
+): AstNode {
+  override fun toShortString(): String = "RpcTypeWhere(name=${name}, typ=${typ})"
+}
 
 data class ServiceDef(
   val name: Ident,
@@ -57,42 +66,54 @@ data class ServiceDef(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): TopLevelDef, AstNode
+): TopLevelDef, AstNode {
+  override fun toShortString(): String = "ServiceDef(name=${name}, members=${members})"
+}
 
 data class TargetElem(
 
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): KeyExpr, AstNode
+): KeyExpr, AstNode {
+  override fun toShortString(): String = "TargetElem()"
+}
 
 data class StringLiteralSingle(
   val value: List<CharValue>,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): AstNode
+): AstNode {
+  override fun toShortString(): String = "StringLiteralSingle(value=${value})"
+}
 
 data class FullIdent(
   val names: List<Ident>,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): Constant, AstNode
+): Constant, AstNode {
+  override fun toShortString(): String = "FullIdent(names=${names})"
+}
 
 data class SetType(
   val elemType: Type,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): Type, AstNode
+): Type, AstNode {
+  override fun toShortString(): String = "SetType(elemType=${elemType})"
+}
 
 data class Inf(
 
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): AbstractFloatLiteral, AstNode
+): AbstractFloatLiteral, AstNode {
+  override fun toShortString(): String = "Inf()"
+}
 
 sealed interface EnumMemberDef: AstNode
 
@@ -101,14 +122,18 @@ data class MultiName(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): TypeName, AstNode
+): TypeName, AstNode {
+  override fun toShortString(): String = "MultiName(names=${names})"
+}
 
 data class SingleName(
   val name: String,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): TypeName, AstNode
+): TypeName, AstNode {
+  override fun toShortString(): String = "SingleName(name=${name})"
+}
 
 data class EnumFieldDef(
   val minusTag: Boolean,
@@ -118,7 +143,9 @@ data class EnumFieldDef(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): EnumMemberDef, AstNode
+): EnumMemberDef, AstNode {
+  override fun toShortString(): String = "EnumFieldDef(minusTag=${minusTag}, tag=${tag}, name=${name}, options=${options})"
+}
 
 sealed interface Constant: AstNode
 
@@ -127,21 +154,27 @@ data class Nan(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): AbstractFloatLiteral, AstNode
+): AbstractFloatLiteral, AstNode {
+  override fun toShortString(): String = "Nan()"
+}
 
 data class ZeroIntLiteral(
 
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): IntLiteral, AstNode
+): IntLiteral, AstNode {
+  override fun toShortString(): String = "ZeroIntLiteral()"
+}
 
 data class LineComment(
   val content: String,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): Comment, AstNode
+): Comment, AstNode {
+  override fun toShortString(): String = "LineComment(content=${content})"
+}
 
 data class RpcDef(
   val name: Ident,
@@ -152,7 +185,9 @@ data class RpcDef(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): ServiceMember, AstNode
+): ServiceMember, AstNode {
+  override fun toShortString(): String = "RpcDef(name=${name}, inType=${inType}, outType=${outType}, wheres=${wheres}, options=${options})"
+}
 
 sealed interface ReservedItem: AstNode
 
@@ -161,7 +196,9 @@ data class CommonFieldDef(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): SealedMemberDef, AstNode
+): SealedMemberDef, AstNode {
+  override fun toShortString(): String = "CommonFieldDef(field=${field})"
+}
 
 data class ServiceMemberWS(
   val comments: List<Comment?>,
@@ -169,7 +206,9 @@ data class ServiceMemberWS(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): AstNode
+): AstNode {
+  override fun toShortString(): String = "ServiceMemberWS(comments=${comments}, member=${member})"
+}
 
 sealed interface TypeName: Type, AstNode
 
@@ -181,7 +220,9 @@ data class OneOfDef(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): MessageMemberDef, AstNode
+): MessageMemberDef, AstNode {
+  override fun toShortString(): String = "OneOfDef(name=${name}, members=${members})"
+}
 
 data class FieldOption(
   val name: OptionName,
@@ -189,7 +230,9 @@ data class FieldOption(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): AstNode
+): AstNode {
+  override fun toShortString(): String = "FieldOption(name=${name}, value=${value})"
+}
 
 data class KotlinFromOtherPackage(
   val protoPkg: FullIdent,
@@ -198,7 +241,9 @@ data class KotlinFromOtherPackage(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): KotlinOption, AstNode
+): KotlinOption, AstNode {
+  override fun toShortString(): String = "KotlinFromOtherPackage(protoPkg=${protoPkg}, kotlinPkg=${kotlinPkg}, uses=${uses})"
+}
 
 sealed interface ServiceMember: AstNode
 
@@ -209,7 +254,9 @@ data class FloatLiteral(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): AbstractFloatLiteral, AstNode
+): AbstractFloatLiteral, AstNode {
+  override fun toShortString(): String = "FloatLiteral(intPart=${intPart}, fracPart=${fracPart}, exp=${exp})"
+}
 
 data class SealedMemberDefWS(
   val comments: List<Comment?>,
@@ -217,7 +264,9 @@ data class SealedMemberDefWS(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): AstNode
+): AstNode {
+  override fun toShortString(): String = "SealedMemberDefWS(comments=${comments}, def=${def})"
+}
 
 data class EnumMemberDefWS(
   val comments: List<Comment?>,
@@ -225,7 +274,9 @@ data class EnumMemberDefWS(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): AstNode
+): AstNode {
+  override fun toShortString(): String = "EnumMemberDefWS(comments=${comments}, def=${def})"
+}
 
 data class ImportDef(
   val deep: Boolean,
@@ -233,14 +284,18 @@ data class ImportDef(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): AstNode
+): AstNode {
+  override fun toShortString(): String = "ImportDef(deep=${deep}, target=${target})"
+}
 
 data class KotlinOptions(
   val options: List<KotlinOption>,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): AstNode
+): AstNode {
+  override fun toShortString(): String = "KotlinOptions(options=${options})"
+}
 
 data class OptionDef(
   val name: OptionName,
@@ -248,7 +303,9 @@ data class OptionDef(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): EnumMemberDef, MessageMemberDef, OneOfMemberDef, ServiceMember, AstNode
+): EnumMemberDef, MessageMemberDef, OneOfMemberDef, ServiceMember, AstNode {
+  override fun toShortString(): String = "OptionDef(name=${name}, value=${value})"
+}
 
 data class CompilationUnit(
   val pkgDef: FullIdent?,
@@ -259,42 +316,54 @@ data class CompilationUnit(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): AstNode
+): AstNode {
+  override fun toShortString(): String = "CompilationUnit(pkgDef=${pkgDef}, imports=${imports}, options=${options}, kotlinOptions=${kotlinOptions}, defs=${defs})"
+}
 
 data class BoolLiteral(
   val value: BoolValueEnum,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): Constant, AstNode
+): Constant, AstNode {
+  override fun toShortString(): String = "BoolLiteral(value=${value})"
+}
 
 data class CharEscape(
   val code: Char,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): CharValue, AstNode
+): CharValue, AstNode {
+  override fun toShortString(): String = "CharEscape(code=${code})"
+}
 
 data class RepeatedType(
   val elemType: Type,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): Type, AstNode
+): Type, AstNode {
+  override fun toShortString(): String = "RepeatedType(elemType=${elemType})"
+}
 
 data class StringLiteral(
   val singles: List<StringLiteralSingle>,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): Constant, AstNode
+): Constant, AstNode {
+  override fun toShortString(): String = "StringLiteral(singles=${singles})"
+}
 
 data class StreamType(
   val elemType: Type,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): Type, AstNode
+): Type, AstNode {
+  override fun toShortString(): String = "StreamType(elemType=${elemType})"
+}
 
 data class OnTheFlyMessageType(
   val name: Ident?,
@@ -303,7 +372,9 @@ data class OnTheFlyMessageType(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): Type, AstNode
+): Type, AstNode {
+  override fun toShortString(): String = "OnTheFlyMessageType(name=${name}, extends=${extends}, fields=${fields})"
+}
 
 data class KotlinUse(
   val kind: TypeKind,
@@ -311,28 +382,36 @@ data class KotlinUse(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): AstNode
+): AstNode {
+  override fun toShortString(): String = "KotlinUse(kind=${kind}, name=${name})"
+}
 
 data class ReservedDef(
   val ranges: List<ReservedItem>,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): MessageMemberDef, AstNode
+): MessageMemberDef, AstNode {
+  override fun toShortString(): String = "ReservedDef(ranges=${ranges})"
+}
 
 data class Max(
 
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): ReservedRangeEnd, AstNode
+): ReservedRangeEnd, AstNode {
+  override fun toShortString(): String = "Max()"
+}
 
 data class BlockComment(
   val content: String,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): Comment, AstNode
+): Comment, AstNode {
+  override fun toShortString(): String = "BlockComment(content=${content})"
+}
 
 data class OptionName(
   val name: FullIdent,
@@ -340,7 +419,9 @@ data class OptionName(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): AstNode
+): AstNode {
+  override fun toShortString(): String = "OptionName(name=${name}, trailings=${trailings})"
+}
 
 sealed interface AbstractFloatLiteral: Constant, AstNode
 
@@ -350,7 +431,9 @@ data class MessageMemberDefWS(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): AstNode
+): AstNode {
+  override fun toShortString(): String = "MessageMemberDefWS(comments=${comments}, def=${def})"
+}
 
 data class MessageDef(
   val name: Ident,
@@ -359,7 +442,9 @@ data class MessageDef(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): MessageMemberDef, TopLevelDef, AstNode
+): MessageMemberDef, TopLevelDef, AstNode {
+  override fun toShortString(): String = "MessageDef(name=${name}, extends=${extends}, members=${members})"
+}
 
 data class TopLevelDefWS(
   val comments: List<Comment?>,
@@ -367,21 +452,27 @@ data class TopLevelDefWS(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): AstNode
+): AstNode {
+  override fun toShortString(): String = "TopLevelDefWS(comments=${comments}, def=${def})"
+}
 
 data class UnicodeLongEscape(
   val code: String,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): CharValue, AstNode
+): CharValue, AstNode {
+  override fun toShortString(): String = "UnicodeLongEscape(code=${code})"
+}
 
 data class PlainChar(
   val value: Char,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): CharValue, AstNode
+): CharValue, AstNode {
+  override fun toShortString(): String = "PlainChar(value=${value})"
+}
 
 data class EnumDef(
   val name: Ident,
@@ -389,7 +480,9 @@ data class EnumDef(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): MessageMemberDef, TopLevelDef, AstNode
+): MessageMemberDef, TopLevelDef, AstNode {
+  override fun toShortString(): String = "EnumDef(name=${name}, members=${members})"
+}
 
 sealed interface CharValue: AstNode
 
@@ -400,7 +493,9 @@ data class RpcTypeWheres(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): AstNode
+): AstNode {
+  override fun toShortString(): String = "RpcTypeWheres(wheres=${wheres})"
+}
 
 data class OnTheFlySealedMessageType(
   val name: Ident?,
@@ -408,14 +503,18 @@ data class OnTheFlySealedMessageType(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): Type, AstNode
+): Type, AstNode {
+  override fun toShortString(): String = "OnTheFlySealedMessageType(name=${name}, fields=${fields})"
+}
 
 data class FieldOptions(
   val options: List<FieldOption>,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): AstNode
+): AstNode {
+  override fun toShortString(): String = "FieldOptions(options=${options})"
+}
 
 data class ReservedRange(
   val reservedStart: IntLiteral,
@@ -423,7 +522,9 @@ data class ReservedRange(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): ReservedItem, AstNode
+): ReservedItem, AstNode {
+  override fun toShortString(): String = "ReservedRange(reservedStart=${reservedStart}, reservedEnd=${reservedEnd})"
+}
 
 sealed interface MessageMemberDef: AstNode
 
@@ -432,7 +533,9 @@ data class OctalLiteral(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): IntLiteral, AstNode
+): IntLiteral, AstNode {
+  override fun toShortString(): String = "OctalLiteral(value=${value})"
+}
 
 sealed interface KotlinOption: AstNode
 
@@ -441,21 +544,27 @@ data class PrimitiveType(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): Type, AstNode
+): Type, AstNode {
+  override fun toShortString(): String = "PrimitiveType(typ=${typ})"
+}
 
 data class KotlinPackage(
   val name: FullIdent,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): KotlinOption, AstNode
+): KotlinOption, AstNode {
+  override fun toShortString(): String = "KotlinPackage(name=${name})"
+}
 
 data class OptionalType(
   val elemType: Type,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): Type, AstNode
+): Type, AstNode {
+  override fun toShortString(): String = "OptionalType(elemType=${elemType})"
+}
 
 data class Exponent(
   val sign: Char?,
@@ -463,14 +572,18 @@ data class Exponent(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): AstNode
+): AstNode {
+  override fun toShortString(): String = "Exponent(sign=${sign}, exp=${exp})"
+}
 
 data class HexLiteral(
   val value: String,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): IntLiteral, AstNode
+): IntLiteral, AstNode {
+  override fun toShortString(): String = "HexLiteral(value=${value})"
+}
 
 data class SealedDef(
   val name: Ident,
@@ -478,7 +591,9 @@ data class SealedDef(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): TopLevelDef, AstNode
+): TopLevelDef, AstNode {
+  override fun toShortString(): String = "SealedDef(name=${name}, members=${members})"
+}
 
 data class FieldDef(
   val useVal: Boolean,
@@ -489,7 +604,9 @@ data class FieldDef(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): MessageMemberDef, OneOfMemberDef, SealedMemberDef, AstNode
+): MessageMemberDef, OneOfMemberDef, SealedMemberDef, AstNode {
+  override fun toShortString(): String = "FieldDef(useVal=${useVal}, tag=${tag}, name=${name}, typ=${typ}, options=${options})"
+}
 
 data class OneOfMembersDefWS(
   val comments: List<Comment?>,
@@ -497,7 +614,9 @@ data class OneOfMembersDefWS(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): AstNode
+): AstNode {
+  override fun toShortString(): String = "OneOfMembersDefWS(comments=${comments}, def=${def})"
+}
 
 sealed interface Comment: AstNode
 
@@ -508,21 +627,27 @@ data class OctEscape(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): CharValue, AstNode
+): CharValue, AstNode {
+  override fun toShortString(): String = "OctEscape(code=${code})"
+}
 
 data class UnicodeEscape(
   val value: String,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): CharValue, AstNode
+): CharValue, AstNode {
+  override fun toShortString(): String = "UnicodeEscape(value=${value})"
+}
 
 data class Ident(
   val name: String,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): ReservedItem, AstNode
+): ReservedItem, AstNode {
+  override fun toShortString(): String = "Ident(name=${name})"
+}
 
 sealed interface TopLevelDef: AstNode
 
@@ -531,7 +656,9 @@ data class HexEscape(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): CharValue, AstNode
+): CharValue, AstNode {
+  override fun toShortString(): String = "HexEscape(value=${value})"
+}
 
 sealed interface Type: AstNode
 
@@ -541,7 +668,9 @@ data class MapType(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): Type, AstNode
+): Type, AstNode {
+  override fun toShortString(): String = "MapType(keyType=${keyType}, valueType=${valueType})"
+}
 
 data class MemberAccess(
   val expr: KeyExpr,
@@ -549,7 +678,9 @@ data class MemberAccess(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): KeyExpr, AstNode
+): KeyExpr, AstNode {
+  override fun toShortString(): String = "MemberAccess(expr=${expr}, name=${name})"
+}
 enum class BoolValueEnum { FALSE, TRUE }
 enum class PrimitiveTypeEnum { BOOL, BYTES, DOUBLE, FIXED32, FIXED64, FLOAT, INT32, INT64, SFIXED32, SFIXED64, SINT32, SINT64, STRING, UINT32, UINT64 }
 enum class TypeKind { ENUM, MESSAGE, SEALED }

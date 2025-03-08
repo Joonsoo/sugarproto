@@ -13,6 +13,7 @@ class SugarFormatDurationAst(
     val nodeId: Int
     val start: Int
     val end: Int
+    fun toShortString(): String
   }
 
 data class Duration(
@@ -23,7 +24,9 @@ data class Duration(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): AstNode
+): AstNode {
+  override fun toShortString(): String = "Duration(days=${days}, hours=${hours}, minutes=${minutes}, seconds=${seconds})"
+}
 
 data class Seconds(
   val integral: String,
@@ -31,7 +34,9 @@ data class Seconds(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): AstNode
+): AstNode {
+  override fun toShortString(): String = "Seconds(integral=${integral}, frac=${frac})"
+}
 
 
 fun matchStart(): Duration {

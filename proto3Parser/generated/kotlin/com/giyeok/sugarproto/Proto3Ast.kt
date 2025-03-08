@@ -13,6 +13,7 @@ class Proto3Ast(
     val nodeId: Int
     val start: Int
     val end: Int
+    fun toShortString(): String
   }
 
 data class MapField(
@@ -24,7 +25,9 @@ data class MapField(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): MessageBodyElem, AstNode
+): MessageBodyElem, AstNode {
+  override fun toShortString(): String = "MapField(keyType=${keyType}, valueType=${valueType}, mapName=${mapName}, number=${number}, options=${options})"
+}
 
 data class OneofField(
   val typ: Type,
@@ -34,7 +37,9 @@ data class OneofField(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): OneOfElem, AstNode
+): OneOfElem, AstNode {
+  override fun toShortString(): String = "OneofField(typ=${typ}, name=${name}, number=${number}, options=${options})"
+}
 
 data class OneofDef(
   val name: Ident,
@@ -42,7 +47,9 @@ data class OneofDef(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): MessageBodyElem, AstNode
+): MessageBodyElem, AstNode {
+  override fun toShortString(): String = "OneofDef(name=${name}, elems=${elems})"
+}
 
 sealed interface OneOfElem: AstNode
 
@@ -51,14 +58,18 @@ data class OctalEscape(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): CharValue, AstNode
+): CharValue, AstNode {
+  override fun toShortString(): String = "OctalEscape(value=${value})"
+}
 
 data class Ranges(
   val values: List<Range>,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): ReservedBody, AstNode
+): ReservedBody, AstNode {
+  override fun toShortString(): String = "Ranges(values=${values})"
+}
 
 data class EnumDef(
   val name: Ident,
@@ -66,21 +77,27 @@ data class EnumDef(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): MessageBodyElem, TopLevelDef, AstNode
+): MessageBodyElem, TopLevelDef, AstNode {
+  override fun toShortString(): String = "EnumDef(name=${name}, body=${body})"
+}
 
 data class RangeEndValue(
   val value: IntLit,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): RangeEnd, AstNode
+): RangeEnd, AstNode {
+  override fun toShortString(): String = "RangeEndValue(value=${value})"
+}
 
 data class SingleQuoteStrLit(
   val value: List<CharValue>,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): StrLit, AstNode
+): StrLit, AstNode {
+  override fun toShortString(): String = "SingleQuoteStrLit(value=${value})"
+}
 
 data class FloatConstant(
   val sign: Sign?,
@@ -88,7 +105,9 @@ data class FloatConstant(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): Constant, AstNode
+): Constant, AstNode {
+  override fun toShortString(): String = "FloatConstant(sign=${sign}, value=${value})"
+}
 
 data class EnumType(
   val firstDot: Boolean,
@@ -97,42 +116,54 @@ data class EnumType(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): AstNode
+): AstNode {
+  override fun toShortString(): String = "EnumType(firstDot=${firstDot}, parent=${parent}, name=${name})"
+}
 
 data class StringConstant(
   val value: StrLit,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): Constant, AstNode
+): Constant, AstNode {
+  override fun toShortString(): String = "StringConstant(value=${value})"
+}
 
 data class Proto3(
   val defs: List<ProtoDefElem>,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): AstNode
+): AstNode {
+  override fun toShortString(): String = "Proto3(defs=${defs})"
+}
 
 data class NaN(
 
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): FloatLit, AstNode
+): FloatLit, AstNode {
+  override fun toShortString(): String = "NaN()"
+}
 
 data class FullIdent(
   val names: List<Ident>,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): Constant, OptionScope, AstNode
+): Constant, OptionScope, AstNode {
+  override fun toShortString(): String = "FullIdent(names=${names})"
+}
 
 data class Inf(
 
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): FloatLit, AstNode
+): FloatLit, AstNode {
+  override fun toShortString(): String = "Inf()"
+}
 
 sealed interface IntLit: AstNode
 
@@ -141,7 +172,9 @@ data class RangeEndMax(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): RangeEnd, AstNode
+): RangeEnd, AstNode {
+  override fun toShortString(): String = "RangeEndMax()"
+}
 
 data class EnumFieldDef(
   val name: Ident,
@@ -151,7 +184,9 @@ data class EnumFieldDef(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): EnumBodyElem, AstNode
+): EnumBodyElem, AstNode {
+  override fun toShortString(): String = "EnumFieldDef(name=${name}, minus=${minus}, value=${value}, options=${options})"
+}
 
 sealed interface Constant: AstNode
 
@@ -161,7 +196,9 @@ data class FieldOption(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): AstNode
+): AstNode {
+  override fun toShortString(): String = "FieldOption(name=${name}, value=${value})"
+}
 
 data class FloatLiteral(
   val integral: String,
@@ -170,7 +207,9 @@ data class FloatLiteral(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): FloatLit, AstNode
+): FloatLit, AstNode {
+  override fun toShortString(): String = "FloatLiteral(integral=${integral}, fractional=${fractional}, exponent=${exponent})"
+}
 
 data class OptionDef(
   val name: OptionName,
@@ -178,14 +217,18 @@ data class OptionDef(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): EnumBodyElem, MessageBodyElem, OneOfElem, ProtoDefElem, ServiceBodyElem, AstNode
+): EnumBodyElem, MessageBodyElem, OneOfElem, ProtoDefElem, ServiceBodyElem, AstNode {
+  override fun toShortString(): String = "OptionDef(name=${name}, value=${value})"
+}
 
 data class HexLit(
   val value: String,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): IntLit, AstNode
+): IntLit, AstNode {
+  override fun toShortString(): String = "HexLit(value=${value})"
+}
 
 sealed interface ProtoDefElem: AstNode
 
@@ -196,7 +239,9 @@ data class CharEscape(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): CharValue, AstNode
+): CharValue, AstNode {
+  override fun toShortString(): String = "CharEscape(value=${value})"
+}
 
 sealed interface EnumBodyElem: AstNode
 
@@ -210,14 +255,18 @@ data class Rpc(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): ServiceBodyElem, AstNode
+): ServiceBodyElem, AstNode {
+  override fun toShortString(): String = "Rpc(name=${name}, isInputStream=${isInputStream}, inputType=${inputType}, isOutputStream=${isOutputStream}, outputType=${outputType}, options=${options})"
+}
 
 data class FieldNames(
   val names: List<Ident>,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): ReservedBody, AstNode
+): ReservedBody, AstNode {
+  override fun toShortString(): String = "FieldNames(names=${names})"
+}
 
 data class OptionName(
   val scope: OptionScope,
@@ -225,7 +274,9 @@ data class OptionName(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): AstNode
+): AstNode {
+  override fun toShortString(): String = "OptionName(scope=${scope}, name=${name})"
+}
 
 data class MessageType(
   val firstDot: Boolean,
@@ -234,14 +285,18 @@ data class MessageType(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): AstNode
+): AstNode {
+  override fun toShortString(): String = "MessageType(firstDot=${firstDot}, parent=${parent}, name=${name})"
+}
 
 data class EmptyStatement(
 
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): EnumBodyElem, MessageBodyElem, OneOfElem, ProtoDefElem, ServiceBodyElem, AstNode
+): EnumBodyElem, MessageBodyElem, OneOfElem, ProtoDefElem, ServiceBodyElem, AstNode {
+  override fun toShortString(): String = "EmptyStatement()"
+}
 
 data class Service(
   val name: Ident,
@@ -249,14 +304,18 @@ data class Service(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): TopLevelDef, AstNode
+): TopLevelDef, AstNode {
+  override fun toShortString(): String = "Service(name=${name}, body=${body})"
+}
 
 data class Character(
   val value: Char,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): CharValue, AstNode
+): CharValue, AstNode {
+  override fun toShortString(): String = "Character(value=${value})"
+}
 
 data class IntConstant(
   val sign: Sign?,
@@ -264,21 +323,27 @@ data class IntConstant(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): Constant, AstNode
+): Constant, AstNode {
+  override fun toShortString(): String = "IntConstant(sign=${sign}, value=${value})"
+}
 
 data class MessageOrEnumType(
   val name: MessageType,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): Type, AstNode
+): Type, AstNode {
+  override fun toShortString(): String = "MessageOrEnumType(name=${name})"
+}
 
 data class DecimalLit(
   val value: String,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): IntLit, AstNode
+): IntLit, AstNode {
+  override fun toShortString(): String = "DecimalLit(value=${value})"
+}
 
 data class Field(
   val modifier: FieldModifier?,
@@ -289,14 +354,18 @@ data class Field(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): MessageBodyElem, AstNode
+): MessageBodyElem, AstNode {
+  override fun toShortString(): String = "Field(modifier=${modifier}, typ=${typ}, name=${name}, fieldNumber=${fieldNumber}, options=${options})"
+}
 
 data class Package(
   val name: FullIdent,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): ProtoDefElem, AstNode
+): ProtoDefElem, AstNode {
+  override fun toShortString(): String = "Package(name=${name})"
+}
 
 sealed interface ReservedBody: AstNode
 
@@ -310,7 +379,9 @@ data class Import(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): ProtoDefElem, AstNode
+): ProtoDefElem, AstNode {
+  override fun toShortString(): String = "Import(importType=${importType}, target=${target})"
+}
 
 sealed interface RangeEnd: AstNode
 
@@ -319,7 +390,9 @@ data class BoolConstant(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): Constant, AstNode
+): Constant, AstNode {
+  override fun toShortString(): String = "BoolConstant(value=${value})"
+}
 
 sealed interface MessageBodyElem: AstNode
 
@@ -331,14 +404,18 @@ data class Message(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): MessageBodyElem, TopLevelDef, AstNode
+): MessageBodyElem, TopLevelDef, AstNode {
+  override fun toShortString(): String = "Message(name=${name}, body=${body})"
+}
 
 data class Reserved(
   val value: ReservedBody,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): MessageBodyElem, AstNode
+): MessageBodyElem, AstNode {
+  override fun toShortString(): String = "Reserved(value=${value})"
+}
 
 sealed interface CharValue: AstNode
 
@@ -347,7 +424,9 @@ data class DoubleQuoteStrLit(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): StrLit, AstNode
+): StrLit, AstNode {
+  override fun toShortString(): String = "DoubleQuoteStrLit(value=${value})"
+}
 
 data class Exponent(
   val sign: Sign?,
@@ -355,14 +434,18 @@ data class Exponent(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): AstNode
+): AstNode {
+  override fun toShortString(): String = "Exponent(sign=${sign}, value=${value})"
+}
 
 data class Ident(
   val name: String,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): OptionScope, AstNode
+): OptionScope, AstNode {
+  override fun toShortString(): String = "Ident(name=${name})"
+}
 
 data class EnumValueOption(
   val name: OptionName,
@@ -370,14 +453,18 @@ data class EnumValueOption(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): AstNode
+): AstNode {
+  override fun toShortString(): String = "EnumValueOption(name=${name}, value=${value})"
+}
 
 data class BuiltinType(
   val typ: BuiltinTypeEnum,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): Type, AstNode
+): Type, AstNode {
+  override fun toShortString(): String = "BuiltinType(typ=${typ})"
+}
 
 sealed interface TopLevelDef: ProtoDefElem, AstNode
 
@@ -386,7 +473,9 @@ data class OctalLit(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): IntLit, AstNode
+): IntLit, AstNode {
+  override fun toShortString(): String = "OctalLit(value=${value})"
+}
 
 sealed interface Type: AstNode
 
@@ -396,14 +485,18 @@ data class Range(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): AstNode
+): AstNode {
+  override fun toShortString(): String = "Range(rangeStart=${rangeStart}, rangeEnd=${rangeEnd})"
+}
 
 data class HexEscape(
   val value: String,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): CharValue, AstNode
+): CharValue, AstNode {
+  override fun toShortString(): String = "HexEscape(value=${value})"
+}
 enum class BoolLit { FALSE, TRUE }
 enum class BuiltinTypeEnum { BOOL, BYTES, DOUBLE, FIXED32, FIXED64, FLOAT, INT32, INT64, SFIXED32, SFIXED64, SINT32, SINT64, STRING, UINT32, UINT64 }
 enum class FieldModifier { OPTIONAL, REPEATED }

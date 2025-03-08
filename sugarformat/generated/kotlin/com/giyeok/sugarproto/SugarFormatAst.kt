@@ -13,6 +13,7 @@ class SugarFormatAst(
     val nodeId: Int
     val start: Int
     val end: Int
+    fun toShortString(): String
   }
 
 data class HexCode(
@@ -20,14 +21,18 @@ data class HexCode(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): StringElem, AstNode
+): StringElem, AstNode {
+  override fun toShortString(): String = "HexCode(code=${code})"
+}
 
 data class Header(
 
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): ItemValue, AstNode
+): ItemValue, AstNode {
+  override fun toShortString(): String = "Header()"
+}
 
 sealed interface Timezone: AstNode
 
@@ -37,14 +42,18 @@ data class ListFieldItem(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): ListItem, AstNode
+): ListItem, AstNode {
+  override fun toShortString(): String = "ListFieldItem(innerIndent=${innerIndent}, item=${item})"
+}
 
 data class NameKey(
   val name: String,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): KeyValue, AstNode
+): KeyValue, AstNode {
+  override fun toShortString(): String = "NameKey(name=${name})"
+}
 
 data class OctValue(
   val sgn: Char?,
@@ -52,14 +61,18 @@ data class OctValue(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): NumberValue, AstNode
+): NumberValue, AstNode {
+  override fun toShortString(): String = "OctValue(sgn=${sgn}, value=${value})"
+}
 
 data class NameValue(
   val value: String,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): ScalarValue, AstNode
+): ScalarValue, AstNode {
+  override fun toShortString(): String = "NameValue(value=${value})"
+}
 
 data class HexValue(
   val sgn: Char?,
@@ -67,14 +80,18 @@ data class HexValue(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): NumberValue, AstNode
+): NumberValue, AstNode {
+  override fun toShortString(): String = "HexValue(sgn=${sgn}, value=${value})"
+}
 
 data class ListValueItem(
   val value: Value,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): ListItem, AstNode
+): ListItem, AstNode {
+  override fun toShortString(): String = "ListValueItem(value=${value})"
+}
 
 sealed interface NumberValue: KeyValue, ScalarValue, AstNode
 
@@ -85,7 +102,9 @@ data class Date(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): AstNode
+): AstNode {
+  override fun toShortString(): String = "Date(year=${year}, month=${month}, day=${day})"
+}
 
 sealed interface KeyValue: AstNode
 
@@ -95,7 +114,9 @@ data class Seconds(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): AstNode
+): AstNode {
+  override fun toShortString(): String = "Seconds(integral=${integral}, frac=${frac})"
+}
 
 sealed interface ListItem: Item, AstNode
 
@@ -105,7 +126,9 @@ data class StringValue(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): ScalarValue, AstNode
+): ScalarValue, AstNode {
+  override fun toShortString(): String = "StringValue(type=${type}, fracs=${fracs})"
+}
 
 sealed interface ScalarValue: Value, AstNode
 
@@ -114,7 +137,9 @@ data class StringFrac(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): KeyValue, AstNode
+): KeyValue, AstNode {
+  override fun toShortString(): String = "StringFrac(elems=${elems})"
+}
 
 data class TimeOffset(
   val hour: String,
@@ -122,7 +147,9 @@ data class TimeOffset(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): Timezone, AstNode
+): Timezone, AstNode {
+  override fun toShortString(): String = "TimeOffset(hour=${hour}, minute=${minute})"
+}
 
 data class IndentItem(
   val indent: String,
@@ -130,35 +157,45 @@ data class IndentItem(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): AstNode
+): AstNode {
+  override fun toShortString(): String = "IndentItem(indent=${indent}, item=${item})"
+}
 
 data class ItemPath(
   val path: List<KeyValue>,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): AstNode
+): AstNode {
+  override fun toShortString(): String = "ItemPath(path=${path})"
+}
 
 data class OctCode(
   val code: String,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): StringElem, AstNode
+): StringElem, AstNode {
+  override fun toShortString(): String = "OctCode(code=${code})"
+}
 
 data class RepeatedValue(
   val elems: List<Value>,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): Value, AstNode
+): Value, AstNode {
+  override fun toShortString(): String = "RepeatedValue(elems=${elems})"
+}
 
 data class Unicode(
   val code: String,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): StringElem, AstNode
+): StringElem, AstNode {
+  override fun toShortString(): String = "Unicode(code=${code})"
+}
 
 sealed interface StringElem: AstNode
 
@@ -172,7 +209,9 @@ data class DecValue(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): NumberValue, AstNode
+): NumberValue, AstNode {
+  override fun toShortString(): String = "DecValue(sgn=${sgn}, integral=${integral}, frac=${frac}, exponent=${exponent})"
+}
 
 data class DurationValue(
   val days: String?,
@@ -182,7 +221,9 @@ data class DurationValue(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): ScalarValue, AstNode
+): ScalarValue, AstNode {
+  override fun toShortString(): String = "DurationValue(days=${days}, hours=${hours}, minutes=${minutes}, seconds=${seconds})"
+}
 
 data class SingleItem(
   val key: ItemPath,
@@ -190,7 +231,9 @@ data class SingleItem(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): Item, AstNode
+): Item, AstNode {
+  override fun toShortString(): String = "SingleItem(key=${key}, value=${value})"
+}
 
 data class KeyValuePair(
   val key: ItemPath,
@@ -198,21 +241,27 @@ data class KeyValuePair(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): AstNode
+): AstNode {
+  override fun toShortString(): String = "KeyValuePair(key=${key}, value=${value})"
+}
 
 data class PlainText(
   val value: String,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): StringElem, AstNode
+): StringElem, AstNode {
+  override fun toShortString(): String = "PlainText(value=${value})"
+}
 
 data class NamedTimezone(
   val name: String,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): Timezone, AstNode
+): Timezone, AstNode {
+  override fun toShortString(): String = "NamedTimezone(name=${name})"
+}
 
 data class TimestampValue(
   val date: Date,
@@ -221,14 +270,18 @@ data class TimestampValue(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): ScalarValue, AstNode
+): ScalarValue, AstNode {
+  override fun toShortString(): String = "TimestampValue(date=${date}, time=${time}, timezone=${timezone})"
+}
 
 data class EscapeCode(
   val code: Char,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): StringElem, AstNode
+): StringElem, AstNode {
+  override fun toShortString(): String = "EscapeCode(code=${code})"
+}
 
 sealed interface Item: AstNode
 
@@ -240,7 +293,9 @@ data class Exponent(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): AstNode
+): AstNode {
+  override fun toShortString(): String = "Exponent(sgn=${sgn}, value=${value})"
+}
 
 data class Time(
   val hour: String,
@@ -250,14 +305,18 @@ data class Time(
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): AstNode
+): AstNode {
+  override fun toShortString(): String = "Time(hour=${hour}, minute=${minute}, second=${second}, secondFrac=${secondFrac})"
+}
 
 data class ObjectOrMapValue(
   val pairs: List<KeyValuePair>,
   override val nodeId: Int,
   override val start: Int,
   override val end: Int,
-): Value, AstNode
+): Value, AstNode {
+  override fun toShortString(): String = "ObjectOrMapValue(pairs=${pairs})"
+}
 enum class StringTypeAnnot { Base64, Hex }
 
 fun matchStart(): List<IndentItem> {

@@ -4,14 +4,13 @@ import com.giyeok.sugarproto.Proto3Ast
 import java.io.File
 
 class Compiler(val mainProto: File, val includePaths: List<File>) {
-  val names =
-    com.giyeok.sugarproto.proto3kmp.compiler.ProtoNames.Companion.readFrom(mainProto, includePaths)
+  val names = ProtoNames.Companion.readFrom(mainProto, includePaths)
 
-  fun compile(): com.giyeok.sugarproto.proto3kmp.compiler.CompileResult {
-    val messages = mutableMapOf<String, com.giyeok.sugarproto.proto3kmp.compiler.MessageDef>()
-    val enums = mutableMapOf<String, com.giyeok.sugarproto.proto3kmp.compiler.EnumDef>()
+  fun compile(): CompileResult {
+    val messages = mutableMapOf<String, MessageDef>()
+    val enums = mutableMapOf<String, EnumDef>()
 
-    val compile1 = com.giyeok.sugarproto.proto3kmp.compiler.Proto3ToKMPCompiler(
+    val compile1 = Proto3ToKMPCompiler(
       names,
       names.mainFile
     ).generateDefs()
@@ -25,7 +24,7 @@ class Compiler(val mainProto: File, val includePaths: List<File>) {
       for (type in toCompile) {
         val msg = names.messages[type]
         if (msg != null) {
-          val compiled = com.giyeok.sugarproto.proto3kmp.compiler.Proto3ToKMPCompiler(
+          val compiled = Proto3ToKMPCompiler(
             names,
             names.files.getValue(msg.sourceFile)
           )
@@ -36,7 +35,7 @@ class Compiler(val mainProto: File, val includePaths: List<File>) {
         } else {
           val enum = names.enums[type]
           checkNotNull(enum)
-          enums[type] = com.giyeok.sugarproto.proto3kmp.compiler.Proto3ToKMPCompiler(
+          enums[type] = Proto3ToKMPCompiler(
             names,
             names.files.getValue(enum.sourceFile)
           )
@@ -46,7 +45,7 @@ class Compiler(val mainProto: File, val includePaths: List<File>) {
       }
     }
 
-    return com.giyeok.sugarproto.proto3kmp.compiler.CompileResult(
+    return CompileResult(
       compile1.services,
       messages,
       enums
@@ -55,7 +54,7 @@ class Compiler(val mainProto: File, val includePaths: List<File>) {
 }
 
 data class CompileResult(
-  val services: List<com.giyeok.sugarproto.proto3kmp.compiler.ServiceDef>,
-  val messages: Map<String, com.giyeok.sugarproto.proto3kmp.compiler.MessageDef>,
-  val enums: Map<String, com.giyeok.sugarproto.proto3kmp.compiler.EnumDef>,
+  val services: List<ServiceDef>,
+  val messages: Map<String, MessageDef>,
+  val enums: Map<String, EnumDef>,
 )
