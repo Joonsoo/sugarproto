@@ -18,7 +18,7 @@ object SugarFormat {
     }
 
   fun printTo(message: MessageOrBuilder, writer: Writer) {
-    SugarFormatPrinterImpl(CodeWriter(writer)).print(message)
+    SugarFormatPrinterImpl2(CodeWriter(writer)).print(message)
   }
 
   fun <T: Message.Builder> merge(sufText: String, builder: T): T {

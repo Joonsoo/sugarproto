@@ -157,6 +157,7 @@ sugarformat {
   )
 
   testProto {
+    jprProto = generateProto("sugarformat/test/proto/jpr.supro", filename="jpr.proto")
     schema = protobuf.schema(glob("sugarformat/test/proto/**.proto"))
     protoJava = protobuf.java(schema)
 
